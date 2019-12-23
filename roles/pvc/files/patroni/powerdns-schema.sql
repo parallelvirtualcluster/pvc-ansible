@@ -11,7 +11,6 @@ CREATE TABLE domains (
 
 CREATE UNIQUE INDEX name_index ON domains(name);
 
-
 CREATE TABLE records (
   id                    BIGSERIAL PRIMARY KEY,
   domain_id             INT DEFAULT NULL,
