@@ -12,7 +12,7 @@
     seconds: 15
 
 - block:
-    - name: create user for role
+    - name: create user for DNS role
       postgresql_user:
         name: "{{ pvc_dns_database_user }}"
         password: "{{ pvc_dns_database_password }}"
@@ -20,7 +20,7 @@
         state: present
         login_host: /run/postgresql
   
-    - name: create database for role
+    - name: create database for DNS role
       postgresql_db:
         name: "{{ pvc_dns_database_name }}"
         owner: "{{ pvc_dns_database_user }}"
@@ -28,14 +28,37 @@
         state: present
         login_host: /run/postgresql
   
-    - name: set user privs for role
+    - name: set user privs for DNS role
       postgresql_user:
         name: "{{ pvc_dns_database_user }}"
         db: "{{ pvc_dns_database_name }}"
         priv: ALL
         login_host: /run/postgresql
   
-    - name: create extensions
+    - name: create user for Provisioner role
+      postgresql_user:
+        name: "{{ pvc_prov_database_user }}"
+        password: "{{ pvc_prov_database_password }}"
+        encrypted: yes
+        state: present
+        login_host: /run/postgresql
+  
+    - name: create database for Provisioner role
+      postgresql_db:
+        name: "{{ pvc_prov_database_name }}"
+        owner: "{{ pvc_prov_database_user }}"
+        encoding: utf8
+        state: present
+        login_host: /run/postgresql
+  
+    - name: set user privs for Provisioner role
+      postgresql_user:
+        name: "{{ pvc_prov_database_user }}"
+        db: "{{ pvc_prov_database_name }}"
+        priv: ALL
+        login_host: /run/postgresql
+  
+    - name: create extensions for DNS database
       postgresql_ext:
         name: "{{ item }}"
         db: "{{ pvc_dns_database_name }}"
@@ -43,8 +66,19 @@
       with_items: "{{ extensions }}"
       when: extensions is defined
 
-    - name: import dns database schema
+    - name: create extensions for Provisioner database
+      postgresql_ext:
+        name: "{{ item }}"
+        db: "{{ pvc_prov_database_name }}"
+        login_host: /run/postgresql
+      with_items: "{{ extensions }}"
+      when: extensions is defined
+
+    - name: import DNS database schema
       command: "psql -U {{ pvc_dns_database_user }} -f /etc/postgresql/powerdns-schema.sql {{ pvc_dns_database_name }}"
+
+    - name: import Provisioner database schema
+      command: "psql -U {{ pvc_prov_database_user }} -f /etc/postgresql/provisioner-schema.sql {{ pvc_prov_database_name }}"
 
   become: yes
   become_user: postgres
