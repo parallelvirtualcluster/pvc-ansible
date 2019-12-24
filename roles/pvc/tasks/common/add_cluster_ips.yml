@@ -20,10 +20,14 @@
   command: ip link set brcluster up
   ignore_errors: yes
 
+- name: add IP addresses to upstream interfaces
+  command: ip address add {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.upstream_ip }}/{{ pvc_upstream_netmask }}{% endfor %} dev {{ pvc_upstream_device }}
+  ignore_errors: yes
+
 - name: add IP addresses to cluster interfaces
-  command: ip address add {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.cluster_ip }}/{{ node.cluster_cidr }}{% endfor %} dev brcluster
+  command: ip address add {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.cluster_ip }}/{{ pvc_cluster_netmask }}{% endfor %} dev brcluster
   ignore_errors: yes
 
 - name: add IP addresses to storage interfaces
-  command: ip address add {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.storage_ip }}/{{ node.storage_cidr }}{% endfor %} dev {{ pvc_storage_device }}
+  command: ip address add {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.storage_ip }}/{{ pvc_storage_netmask }}{% endfor %} dev {{ pvc_storage_device }}
   ignore_errors: yes
