@@ -59,8 +59,8 @@
     line: "{{ item }}"
     state: present
   with_items:
-    - "public network = {{ pvc_storage_subnet }}"
-    - "cluster network = {{ pvc_storage_subnet }}"
+    - "public network = {{ pvc_storage_subnet }}/{{ pvc_storage_netmask }}"
+    - "cluster network = {{ pvc_storage_subnet }}/{{ pvc_storage_netmask }}"
     - "auth cluster required = cephx"
     - "auth service required = cephx"
     - "auth client required = cephx"
