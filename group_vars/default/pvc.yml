@@ -30,6 +30,9 @@ pvc_ceph_storage_secret_uuid: ""            # Use uuidgen to generate
 pvc_dns_database_name: "pvcdns"
 pvc_dns_database_user: "pvcdns"
 pvc_dns_database_password: ""               # Use pwgen to generate
+pvc_prov_database_name: "pvcprov"
+pvc_prov_database_user: "pvcprov"
+pvc_prov_database_password: ""               # Use pwgen to generate
 pvc_replication_database_user: "replicator"
 pvc_replication_database_password: ""       # Use pwgen to generate
 pvc_superuser_database_user: "postgres"
