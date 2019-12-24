@@ -54,11 +54,8 @@ pvc_nodes:
     node_id: 1
     router_id: "192.168.100.11"
     upstream_ip: "192.168.100.11"
-    upstream_cidr: 24
     cluster_ip: "10.0.0.1"
-    cluster_cidr: 24
     storage_ip: "10.0.1.1"
-    storage_cidr: 24
     ipmi_host: "pvchv1-lom.{{ local_domain }}"
     ipmi_user: "{{ username_ipmi_host }}"
     ipmi_password: "{{ passwd_ipmi_host }}"
@@ -67,11 +64,8 @@ pvc_nodes:
     node_id: 2
     router_id: "192.168.100.12"
     upstream_ip: "192.168.100.12"
-    upstream_cidr: 24
     cluster_ip: "10.0.0.2"
-    cluster_cidr: 24
     storage_ip: "10.0.1.2"
-    storage_cidr: 24
     ipmi_host: "pvchv2-lom.{{ local_domain }}"
     ipmi_user: "{{ username_ipmi_host }}"
     ipmi_password: "{{ passwd_ipmi_host }}"
@@ -80,11 +74,8 @@ pvc_nodes:
     node_id: 3
     router_id: "192.168.100.13"
     upstream_ip: "192.168.100.13"
-    upstream_cidr: 24
     cluster_ip: "10.0.0.3"
-    cluster_cidr: 24
     storage_ip: "10.0.1.3"
-    storage_cidr: 24
     ipmi_host: "pvchv3-lom.{{ local_domain }}"
     ipmi_user: "{{ username_ipmi_host }}"
     ipmi_password: "{{ passwd_ipmi_host }}"
@@ -94,16 +85,19 @@ pvc_nodes:
 pvc_upstream_device: "{{ networks['upstream']['device'] }}"
 pvc_upstream_mtu: "{{ networks['upstream']['mtu'] }}"
 pvc_upstream_domain: "{{ networks['upstream']['domain'] }}"
+pvc_upstream_netmask: "{{ networks['upstream']['netmask'] }}"
 pvc_upstream_subnet: "{{ networks['upstream']['subnet'] }}"
 pvc_upstream_floatingip: "{{ networks['upstream']['floating_ip'] }}"
 pvc_upstream_gatewayip: "{{ networks['upstream']['gateway_ip'] }}"
 pvc_cluster_device: "{{ networks['cluster']['device'] }}"
 pvc_cluster_mtu: "{{ networks['cluster']['mtu'] }}"
 pvc_cluster_domain: "{{ networks['cluster']['domain'] }}"
+pvc_cluster_netmask: "{{ networks['cluster']['netmask'] }}"
 pvc_cluster_subnet: "{{ networks['cluster']['subnet'] }}"
 pvc_cluster_floatingip: "{{ networks['cluster']['floating_ip'] }}"
 pvc_storage_device: "{{ networks['storage']['device'] }}"
 pvc_storage_mtu: "{{ networks['storage']['mtu'] }}"
 pvc_storage_domain: "{{ networks['storage']['domain'] }}"
+pvc_storage_netmask: "{{ networks['storage']['netmask'] }}"
 pvc_storage_subnet: "{{ networks['storage']['subnet'] }}"
 pvc_storage_floatingip: "{{ networks['storage']['floating_ip'] }}"

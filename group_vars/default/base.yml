@@ -53,8 +53,9 @@ networks:
       - "enp1s0f1"
     mtu: 1500
     domain: "{{ local_domain }}"
-    subnet: "192.168.100.0/24"
-    floating_ip: "192.168.100.10/24"
+    netmask: "24"
+    subnet: "192.168.100.0"
+    floating_ip: "192.168.100.10"
     gateway_ip: "192.168.100.1"
   "cluster":
     device: "vlan1001"
@@ -62,13 +63,15 @@ networks:
     raw_device: "bondU"
     mtu: 1500
     domain: "pvc-cluster.local"
-    subnet: "10.0.0.0/24"
-    floating_ip: "10.0.0.254/24"
+    netmask: "24"
+    subnet: "10.0.0.0"
+    floating_ip: "10.0.0.254"
   "storage":
     device: "vlan1002"
     type: "vlan"
     raw_device: "bondU"
     mtu: 1500
     domain: "pvc-storage.local"
-    subnet: "10.0.1.0/24"
-    floating_ip: "10.0.1.254/24"
+    netmask: "24"
+    subnet: "10.0.1.0"
+    floating_ip: "10.0.1.254"
