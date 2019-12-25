@@ -30,14 +30,16 @@
 #   * etc.
 # This results in a practical sense in a "serial=1" sequence of restarts allowing the service
 # to float its primary around after changing a configuration.
+# Note that this only applies to coordinators; hypervisor-only nodes restart immediately in
+# parallel, and the first two of three handlers do not apply to hypervisor-only nodes.
 - name: restart ceph-mon
-  shell: sleep {{ 15 * (hostvars[ansible_hostname].ansible_local.host_id|int - 1) }} && systemctl restart ceph-mon@{{ ansible_hostname }}.service
+  shell: "{% if is_coordinator %}sleep {{ 15 * (hostvars[ansible_hostname].ansible_local.host_id|int - 1) }} && systemctl restart ceph-mon@{{ ansible_hostname }}.service{% endif %}"
   ignore_errors: true
 
 - name: restart ceph-mgr
-  shell: sleep {{ 15 * (hostvars[ansible_hostname].ansible_local.host_id|int - 1) }} && systemctl restart ceph-mgr@{{ ansible_hostname }}.service
+  shell: "{% if is_coordinator %}sleep {{ 15 * (hostvars[ansible_hostname].ansible_local.host_id|int - 1) }} &&  systemctl restart ceph-mgr@{{ ansible_hostname }}.service{% endif %}"
   ignore_errors: true
 
 - name: restart pvcd
-  shell: sleep {{ 15 * (hostvars[ansible_hostname].ansible_local.host_id|int - 1) }} && systemctl restart pvcd.service
+  shell: "{% if is_coordinator %}sleep {{ 15 * (hostvars[ansible_hostname].ansible_local.host_id|int - 1) }} &&{% endif %} systemctl restart pvcd.service"
   ignore_errors: true
