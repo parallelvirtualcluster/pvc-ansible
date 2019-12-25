@@ -19,24 +19,25 @@
     name: patroni
     state: restarted
 
+# Restart services one-at-a-time
+# Ideally, this would be accomplished by a serial=1, but Ansible doesn't support that and
+# likely never will. Instead, we just run the service restart manually, waiting X seconds
+# before each iteration, where X is 15 seconds times the "host_id" minus 1. Thus, the
+# following host configuration leads to the specified sleep times:
+#   * pvchv1: 0s
+#   * pvchv2: 15s
+#   * pvchv3: 30s
+#   * etc.
+# This results in a practical sense in a "serial=1" sequence of restarts allowing the service
+# to float its primary around after changing a configuration.
 - name: restart ceph-mon
-  service:
-    name: ceph-mon@{{ ansible_hostname }}
-    state: restarted
+  shell: sleep {{ 15 * (hostvars[ansible_hostname].ansible_local.host_id|int - 1) }} && systemctl restart ceph-mon@{{ ansible_hostname }}.service
+  ignore_errors: true
 
 - name: restart ceph-mgr
-  service:
-    name: ceph-mgr@{{ ansible_hostname }}
-    state: restarted
-
-# Restart pvcd, but sequentially one-host-at-a-time with a 15s wait in between; this provides
-# plenty of time for the primary state to switch around without putting the cluster in a
-# no-primary state
-- name: restart pvcd
-  shell: systemctl restart pvcd && sleep 15
+  shell: sleep {{ 15 * (hostvars[ansible_hostname].ansible_local.host_id|int - 1) }} && systemctl restart ceph-mgr@{{ ansible_hostname }}.service
   ignore_errors: true
-  run_once: true
-  delegate_to: "{{ play_host }}"
-  with_items: "{{ play_hosts }}"
-  loop_control:
-    loop_var: play_host
+
+- name: restart pvcd
+  shell: sleep {{ 15 * (hostvars[ansible_hostname].ansible_local.host_id|int - 1) }} && systemctl restart pvcd.service
+  ignore_errors: true
