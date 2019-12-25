@@ -37,6 +37,13 @@ pvc:
         name: {{ pvc_dns_database_name }}
         user: {{ pvc_dns_database_user }}
         pass: {{ pvc_dns_database_password }}
+    metadata:
+      database:
+        host: localhost
+        port: 5432
+        name: {{ pvc_prov_database_name }}
+        user: {{ pvc_prov_database_user }}
+        pass: {{ pvc_prov_database_password }}
   system:
     intervals:
       keepalive_interval: 5
