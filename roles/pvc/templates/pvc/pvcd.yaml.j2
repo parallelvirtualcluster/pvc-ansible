@@ -26,9 +26,9 @@ pvc:
         floating_ip: {{ pvc_storage_floatingip }}/{{ pvc_storage_netmask }}
       upstream:
         domain: {{ pvc_upstream_domain }}
-        network: {{ pvc_upstream_subnet }}
+        network: {{ pvc_upstream_subnet }}/{{ pvc_upstream_netmask }}
         floating_ip: {{ pvc_upstream_floatingip }}/{{ pvc_upstream_netmask }}
-        gateway: {{ pvc_upstream_gatewayip }}/{{ pvc_upstream_netmask }}
+        gateway: {{ pvc_upstream_gatewayip }}
   coordinator:
     dns:
       database:
