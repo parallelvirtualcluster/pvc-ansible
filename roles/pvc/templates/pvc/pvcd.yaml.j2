@@ -16,6 +16,11 @@ pvc:
       - {{ node.hostname }}
 {% endfor %}
     networks:
+      upstream:
+        domain: {{ pvc_upstream_domain }}
+        network: {{ pvc_upstream_subnet }}/{{ pvc_upstream_netmask }}
+        floating_ip: {{ pvc_upstream_floatingip }}/{{ pvc_upstream_netmask }}
+        gateway: {{ pvc_upstream_gatewayip }}
       cluster:
         domain: {{ pvc_cluster_domain }}
         network: {{ pvc_cluster_subnet }}/{{ pvc_cluster_netmask }}
@@ -24,11 +29,6 @@ pvc:
         domain: {{ pvc_storage_domain }}
         network: {{ pvc_storage_subnet }}/{{ pvc_storage_netmask }}
         floating_ip: {{ pvc_storage_floatingip }}/{{ pvc_storage_netmask }}
-      upstream:
-        domain: {{ pvc_upstream_domain }}
-        network: {{ pvc_upstream_subnet }}/{{ pvc_upstream_netmask }}
-        floating_ip: {{ pvc_upstream_floatingip }}/{{ pvc_upstream_netmask }}
-        gateway: {{ pvc_upstream_gatewayip }}
   coordinator:
     dns:
       database:
@@ -77,6 +77,11 @@ pvc:
         log_keepalive_storage_details: {{ pvc_log_keepalive_storage_details }}
         console_log_lines: {{ pvc_log_console_lines }}
       networking:
+        upstream:
+          device: {{ pvc_upstream_device }}
+          mtu: {{ pvc_upstream_mtu }}
+          address: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.upstream_ip }}/{{ pvc_upstream_netmask }}{% endfor %}
+
         cluster:
           device: {{ pvc_cluster_device }}
           mtu: {{ pvc_cluster_mtu }}
@@ -86,9 +91,4 @@ pvc:
           device: {{ pvc_storage_device }}
           mtu: {{ pvc_storage_mtu }}
           address: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.storage_ip }}/{{ pvc_storage_netmask }}{% endfor %}
-
-        upstream:
-          device: {{ pvc_upstream_device }}
-          mtu: {{ pvc_upstream_mtu }}
-          address: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.upstream_ip }}/{{ pvc_upstream_netmask }}{% endfor %}
 
