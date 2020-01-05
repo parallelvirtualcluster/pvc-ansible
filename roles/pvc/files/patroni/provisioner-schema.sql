@@ -7,4 +7,5 @@ CREATE TABLE userdata (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE, userdat
 CREATE TABLE script (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE, script TEXT NOT NULL);
 CREATE TABLE profile (id SERIAL PRIMARY KEY, name TEXT NOT NULL UNIQUE, system_template INT REFERENCES system_template(id), network_template INT REFERENCES network_template(id), storage_template INT REFERENCES storage_template(id), userdata INT REFERENCES userdata(id), script INT REFERENCES script(id), arguments text);
 
-INSERT INTO userdata(name, userdata) VALUES ('empty', '');
+INSERT INTO userdata (name, userdata) VALUES ('empty', '');
+INSERT INTO script (name, script) VALUES ('empty', '');
