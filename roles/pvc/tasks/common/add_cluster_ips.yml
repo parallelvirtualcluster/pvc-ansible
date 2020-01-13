@@ -4,7 +4,6 @@
   with_items:
     - "{{ pvc_cluster_device }}"
     - "{{ pvc_storage_device }}"
-    - "{{ pvc_upstream_device }}"
 
 - name: create bridge interfacec
   command: brctl addbr {{ item }}
@@ -12,7 +11,6 @@
   with_items:
     - "brcluster"
     - "brstorage"
-    - "brupstream"
 
 - name: add underlying interfaces to bridges
   command: brctl addif {{ item.bridge }} {{ item.device }}
@@ -20,7 +18,6 @@
   with_items:
     - { "bridge": "brcluster", "device": "{{ pvc_cluster_device }}" }
     - { "bridge": "brstorage", "device": "{{ pvc_storage_device }}" }
-    - { "bridge": "brupstream", "device": "{{ pvc_upstream_device }}" }
 
 - name: set bridge interfaces up
   command: ip link set {{ item }} up
@@ -28,11 +25,6 @@
   with_items:
     - "brcluster"
     - "brstorage"
-    - "brupstream"
-
-- name: add IP addresses to upstream bridge
-  command: ip address add {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.upstream_ip }}/{{ pvc_upstream_netmask }}{% endfor %} dev brupstream
-  ignore_errors: yes
 
 - name: add IP addresses to cluster bridge
   command: ip address add {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.cluster_ip }}/{{ pvc_cluster_netmask }}{% endfor %} dev brcluster
