@@ -1,33 +1,43 @@
 ---
-- name: bring up upstream interface
-  command: ifup {{ pvc_upstream_device }}
+- name: bring up interfaces interface
+  command: ifup {{ item }}
+  with_items:
+    - "{{ pvc_cluster_device }}"
+    - "{{ pvc_storage_device }}"
+    - "{{ pvc_upstream_device }}"
 
-- name: bring up cluster interface
-  command: ifup {{ pvc_cluster_device }}
+- name: create bridge interfacec
+  command: brctl addbr {{ item }}
+  ignore_errors: yes
+  with_items:
+    - "brcluster"
+    - "brstorage"
+    - "brupstream"
 
-- name: brindg up storage interface
-  command: ifup {{ pvc_storage_device }}
+- name: add underlying interfaces to bridges
+  command: brctl addif {{ item.bridge }} {{ item.device }}
+  ignore_errors: yes
+  with_items:
+    - { "bridge": "brcluster", "device": "{{ pvc_cluster_device }}" }
+    - { "bridge": "brstorage", "device": "{{ pvc_storage_device }}" }
+    - { "bridge": "brupstream", "device": "{{ pvc_upstream_device }}" }
 
-- name: create cluster bridge interface
-  command: brctl addbr brcluster
+- name: set bridge interfaces up
+  command: ip link set {{ item }} up
+  ignore_errors: yes
+  with_items:
+    - "brcluster"
+    - "brstorage"
+    - "brupstream"
+
+- name: add IP addresses to upstream bridge
+  command: ip address add {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.upstream_ip }}/{{ pvc_upstream_netmask }}{% endfor %} dev brupstream
   ignore_errors: yes
 
-- name: add underlying interface to bridge
-  command: brctl addif brcluster {{ pvc_cluster_device }}
-  ignore_errors: yes
-
-- name: set brcluster up
-  command: ip link set brcluster up
-  ignore_errors: yes
-
-- name: add IP addresses to upstream interfaces
-  command: ip address add {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.upstream_ip }}/{{ pvc_upstream_netmask }}{% endfor %} dev {{ pvc_upstream_device }}
-  ignore_errors: yes
-
-- name: add IP addresses to cluster interfaces
+- name: add IP addresses to cluster bridge
   command: ip address add {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.cluster_ip }}/{{ pvc_cluster_netmask }}{% endfor %} dev brcluster
   ignore_errors: yes
 
-- name: add IP addresses to storage interfaces
-  command: ip address add {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.storage_ip }}/{{ pvc_storage_netmask }}{% endfor %} dev {{ pvc_storage_device }}
+- name: add IP addresses to storage bridge
+  command: ip address add {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.storage_ip }}/{{ pvc_storage_netmask }}{% endfor %} dev brstorage
   ignore_errors: yes
