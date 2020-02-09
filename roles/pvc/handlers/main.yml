@@ -40,6 +40,6 @@
   shell: "{% if is_coordinator %}sleep {{ 15 * (hostvars[ansible_hostname].ansible_local.host_id|int - 1) }} &&  systemctl restart ceph-mgr@{{ ansible_hostname }}.service{% endif %}"
   ignore_errors: true
 
-- name: restart pvcd
-  shell: "{% if is_coordinator %}sleep {{ 15 * (hostvars[ansible_hostname].ansible_local.host_id|int - 1) }} &&{% endif %} systemctl restart pvcd.service"
+- name: restart pvcnoded
+  shell: "{% if is_coordinator %}sleep {{ 15 * (hostvars[ansible_hostname].ansible_local.host_id|int - 1) }} &&{% endif %} systemctl restart pvcnoded.service"
   ignore_errors: true

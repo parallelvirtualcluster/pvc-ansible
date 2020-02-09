@@ -2,10 +2,10 @@
 - name: install pvc packages
   apt:
     name:
-      - pvc-daemon
-      - pvc-client-common
+      - pvc-daemon-node
+      - pvc-daemon-api
+      - pvc-daemon-common
       - pvc-client-cli
-      - pvc-client-api
       - debootstrap
       - ethtool
       - jq
@@ -16,10 +16,10 @@
     src: pvc/{{ item }}.j2
     dest: /etc/pvc/{{ item }}
   notify:
-    - restart pvcd
+    - restart pvcnoded
   with_items:
-    - pvcd.yaml
-    - pvc-api.yaml
+    - pvcnoded.yaml
+    - pvcapid.yaml
 
 - name: install API SSL certificate file
   copy:
@@ -56,8 +56,8 @@
     enabled: yes
   with_items:
     - pvc-flush.service
-    - pvcd.service
-    - pvcd.target
+    - pvcnoded.service
+    - pvc.target
 
 - name: install daily vacuum script
   template:
