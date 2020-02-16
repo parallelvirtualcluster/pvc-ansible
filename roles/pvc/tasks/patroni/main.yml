@@ -69,7 +69,6 @@
     mode: 0640
   with_items:
     - { src: "patroni/powerdns-schema.sql", dest: "/etc/postgresql/powerdns-schema.sql" }
-    - { src: "patroni/provisioner-schema.sql", dest: "/etc/postgresql/provisioner-schema.sql" }
 
 - include: patroni/bootstrap.yml
   run_once: yes

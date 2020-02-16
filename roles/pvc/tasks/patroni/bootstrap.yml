@@ -89,8 +89,5 @@
     - name: import DNS database schema
       command: "psql -U {{ pvc_dns_database_user }} -f /etc/postgresql/powerdns-schema.sql {{ pvc_dns_database_name }}"
 
-    - name: import Provisioner database schema
-      command: "psql -U {{ pvc_prov_database_user }} -f /etc/postgresql/provisioner-schema.sql {{ pvc_prov_database_name }}"
-
   become: yes
   become_user: postgres
