@@ -2,7 +2,7 @@
 
 **NOTICE FOR GITHUB**: This repository is a read-only mirror of the PVC repositories from my personal GitLab instance. Pull requests submitted here will not be merged. Issues submitted here will however be treated as authoritative.
 
-A set of Ansible roles to set up a PVC node. Part of the [Parallel Virtual Cluster system](https://github.com/parallelvirtualcluster/pvc).
+A set of Ansible roles to set up PVC nodes. Part of the [Parallel Virtual Cluster system](https://github.com/parallelvirtualcluster/pvc).
 
 Tested on Ansible 2.2 through 2.8; it is not guaranteed to work properly on older or newer versions.
 
