@@ -10,6 +10,8 @@
 - include: zookeeper.yml
   tags: pvc-zookeeper
 
+- meta: flush_handlers
+
 - include: libvirt.yml
   tags: pvc-libvirt
 

@@ -1,13 +1,13 @@
 scope: pvcdns
-namespace: /patroni
+namespace: /patroni/
 name: {{ ansible_hostname }}
 
 restapi:
     listen: '0.0.0.0:8008'
-    connect_address: '{{ ansible_fqdn }}:8008'
+    connect_address: '{{ ansible_hostname }}.{{ pvc_cluster_domain }}:8008'
 
 zookeeper:
-    hosts: [ {% for host in groups[ansible_local.host_group] %}'{{ host }}.{{ ansible_domain }}:2181',{% endfor %} ]
+    hosts: [ {% for host in groups[hostvars[inventory_hostname].group_names[0]] %}'{{ host }}.{{ pvc_cluster_domain }}:2181',{% endfor %} ]
 
 bootstrap:
     dcs:
@@ -25,8 +25,8 @@ bootstrap:
     pg_hba:
     - local all all peer
     - host replication replicator 127.0.0.1/32 trust
-{% for host in groups[ansible_local.host_group] %}
-    - host replication replicator {{ host }}.{{ ansible_domain }} trust
+{% for host in groups[hostvars[inventory_hostname].group_names[0]] %}
+    - host replication replicator {{ host }}.{{ pvc_cluster_domain }} trust
 {% endfor %}
     - host all all 0.0.0.0/0 md5
 
@@ -39,7 +39,7 @@ bootstrap:
 
 postgresql:
     listen: '0.0.0.0:5432'
-    connect_address: '{{ ansible_fqdn }}:5432'
+    connect_address: '{{ ansible_hostname }}.{{ pvc_cluster_domain }}:5432'
     log_destination: 'stderr'
     log_min_messages: INFO
     custom_conf: /etc/postgresql/postgresql.pvc.conf

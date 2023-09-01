@@ -10,10 +10,10 @@
     update-cache: yes
 
 - name: first run check
-  shell: "echo 'bootstrapped' > /etc/postgresql/pvc"
+  shell: "echo 'bootstrapped' > /etc/patroni-install"
   register: newinstance
   args:
-    creates: /etc/postgresql/pvc
+    creates: /etc/patroni-install
 
 - name: stop and disable postgresql
   service:
@@ -66,14 +66,6 @@
     dest: /usr/lib/check_mk_agent/plugins/postgres
     mode: 0755
 
-- name: ensure patroni services are enabled and started
-  service:
-    name: "{{ item }}.service"
-    state: started
-    enabled: yes
-  with_items:
-    - patroni
-
 - name: install initial schema files
   copy:
     src: "{{ item.src }}"
@@ -85,14 +77,27 @@
     - { src: "patroni/powerdns-schema.sql", dest: "/etc/postgresql/powerdns-schema.sql" }
 
 - block:
+    - name: ensure patroni services are enabled and started on this host so it becomes header
+      service:
+        name: "{{ item }}.service"
+        state: started
+        enabled: yes
+      with_items:
+        - patroni
+
     - name: wait 15s for cluster to initialize
       pause:
         seconds: 15
 
+  when: newinstance.changed
+  run_once: yes
+
+- block:
     - name: create user for role
       postgresql_user:
         name: "{{ pvc_dns_database_user }}"
         password: "{{ pvc_dns_database_password }}"
+        encrypted: yes
         state: present
         login_host: /run/postgresql
   
@@ -124,4 +129,13 @@
 
   become: yes
   become_user: postgres
-  when: newinstance.changed and ansible_local.host_id == '1'
+  when: newinstance.changed
+  run_once: yes
+
+- name: ensure patroni services are enabled and started
+  service:
+    name: "{{ item }}.service"
+    state: started
+    enabled: yes
+  with_items:
+    - patroni
