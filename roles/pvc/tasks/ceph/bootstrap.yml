@@ -7,6 +7,11 @@
 - set_fact:
     fsid: "{{ fsid_raw.stdout }}"
 
+- name: create bootstrap ceph.conf
+  file:
+    dest: /etc/ceph/ceph.conf
+    state: touch
+
 - name: initialize bootstrap ceph.conf
   lineinfile:
     dest: /etc/ceph/ceph.conf
