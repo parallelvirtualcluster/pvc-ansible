@@ -73,7 +73,7 @@
           register: pvcflush
           failed_when: pvcflush.stdout != 'flushed'
           until: pvcflush.stdout == 'flushed'
-          retries: 60
+          retries: 180
           delay: 10
 
         - name: ensure VMs are migrated away
@@ -81,7 +81,7 @@
           register: virshcount
           failed_when: virshcount.stdout != "0"
           until: virshcount.stdout == "0"
-          retries: 60
+          retries: 180
           delay: 10
 
         - name: wait 15 seconds for system to stabilize
@@ -177,7 +177,7 @@
           register: pvcunflush
           failed_when: pvcunflush.stdout != 'ready'
           until: pvcunflush.stdout == 'ready'
-          retries: 60
+          retries: 180
           delay: 10
 
         - name: wait 30 seconds for system to stabilize
