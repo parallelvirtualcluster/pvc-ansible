@@ -1,0 +1,258 @@
+---
+- hosts: all
+  remote_user: deploy
+  become: yes
+  become_user: root
+  gather_facts: yes
+  serial: 1
+  tasks:
+    - name: set Debian details (with ansible_distribution_*)
+      set_fact:
+        debian_version: "{{ ansible_distribution_major_version }}"
+        debian_codename: "{{ ansible_distribution_release }}"
+      when: ansible_distribution_release is defined
+    
+    - name: set Debian details (with ansible_lsb)
+      set_fact:
+        debian_version: "{{ ansible_lsb.major_release }}"
+        debian_codename: "{{ ansible_lsb.codename }}"
+      when: ansible_lsb.codename is defined
+
+    - name: set PVC maintenance mode
+      command: pvc maintenance on
+
+    - name: secondary node
+      command: "pvc node secondary {{ ansible_hostname }}"
+      ignore_errors: yes
+  
+    - name: wait 30 seconds for system to stabilize
+      pause:
+        seconds: 30
+      become: no
+      connection: local
+  
+    - name: flush node
+      command: "pvc node flush {{ ansible_hostname }} --wait"
+  
+    - name: ensure VMs are migrated away
+      shell: "virsh list | grep running | wc -l"
+      register: virshcount
+      failed_when: virshcount.stdout != "0"
+      until: virshcount.stdout == "0"
+      retries: 60
+      delay: 10
+
+    - name: make sure all VMs have migrated
+      shell: "pvc node info {{ ansible_hostname }} | grep '^Domain State' | awk '{ print $NF }'"
+      register: pvcflush
+      failed_when: pvcflush.stdout != 'flushed'
+      until: pvcflush.stdout == 'flushed'
+      retries: 60
+      delay: 10
+
+    - name: wait 15 seconds for system to stabilize
+      pause:
+        seconds: 15
+      become: no
+      connection: local
+
+    - name: stop PVC daemon cleanly
+      service:
+        name: pvcnoded
+        state: stopped
+
+    - name: stop Zookeeper daemon cleanly
+      service:
+        name: zookeeper
+        state: stopped
+
+    - name: wait 15 seconds for system to stabilize
+      pause:
+        seconds: 15
+      become: no
+      connection: local
+
+    - name: set OSD noout
+      command: pvc storage osd set noout
+
+    - name: get running OSD services
+      shell: "systemctl | awk '{ print $1 }' | grep 'ceph-osd@[0-9]*.service'"
+      ignore_errors: yes
+      register: osd_services
+
+    - name: stop Ceph OSD daemons cleanly
+      service:
+        name: "{{ item }}"
+        state: stopped
+      ignore_errors: yes
+      with_items: "{{ osd_services.stdout_lines }}"
+
+    - name: stop Ceph Monitor daemon cleanly
+      service:
+        name: "ceph-mon@{{ ansible_hostname }}"
+        state: stopped
+      ignore_errors: yes
+
+    - name: stop Ceph Manager daemon cleanly
+      service:
+        name: "ceph-mgr@{{ ansible_hostname }}"
+        state: stopped
+      ignore_errors: yes
+
+    - name: wait 30 seconds for system to stabilize
+      pause:
+        seconds: 30
+      become: no
+      connection: local
+
+    - name: replace sources.list entries will bookworm
+      replace:
+        dest: "{{ item }}"
+        regexp: "{{ debian_codename }}"
+        replace: "bookworm"
+      with_items:
+        - /etc/apt/sources.list
+
+    - name: replace sources.list non-free with non-free-firmware
+      replace:
+        dest: "{{ item }}"
+        regexp: "non-free$"
+        replace: "non-free-firmware"
+      with_items:
+        - /etc/apt/sources.list
+
+    - name: remove security entry if on Debian 10
+      lineinfile:
+        dest: /etc/apt/sources.list
+        regexp: "security.debian.org"
+        state: absent
+      when: debian_version < 11
+
+    - name: update apt cache
+      apt:
+        update_cache: yes
+
+    - name: install python-is-python3
+      apt:
+        name: python-is-python3
+        state: latest
+
+    - name: aptitude dist upgrade and cleanup
+      apt:
+        update_cache: yes
+        autoremove: yes
+        autoclean: yes
+        upgrade: dist
+
+    - name: clean up obsolete kernels
+      command: /usr/local/sbin/kernel-cleanup.sh
+
+    - name: clean up obsolete packages
+      command: /usr/local/sbin/dpkg-cleanup.sh
+
+    - name: clean apt archives
+      file:
+        dest: /var/cache/apt/archives
+        state: absent
+
+    - name: regather facts
+      setup:
+
+    - name: include base role
+      import_role:
+        name: base
+
+    - name: include pvc role
+      import_role:
+        name: pvc
+
+    - name: aptitude full upgrade and cleanup
+      apt:
+        update_cache: yes
+        autoremove: yes
+        autoclean: yes
+        upgrade: full
+
+    - name: remove obsolete database directories
+      file:
+        dest: "{{ item }}"
+        state: absent
+      with_items:
+        - "/etc/postgresql/13"
+        - "/var/lib/postgresql/13"
+
+    - name: restart system
+      reboot:
+        post_reboot_delay: 15
+        reboot_timeout: 1800
+
+    - name: make sure all OSDs are active
+      shell: "ceph osd stat | grep 'osds:' | awk '{ if ( $1 == $3 ) { print \"OK\" } else { print \"NOK\" } }'"
+      register: osdstat
+      failed_when: osdstat.stdout == "NOK"
+      until: osdstat.stdout == "OK"
+      retries: 60
+      delay: 10
+
+    - name: make sure all PGs have recovered
+      shell: "ceph health | grep -wo 'Degraded data redundancy'"
+      register: cephhealth
+      failed_when: cephhealth.stdout == "Degraded data redundancy'"
+      until: cephhealth.stdout == ""
+      retries: 60
+      delay: 10
+
+    - name: unset OSD noout
+      command: pvc storage osd unset noout
+
+    - name: unflush node
+      command: "pvc node ready {{ ansible_hostname }} --wait"
+ 
+    - name: make sure all VMs have returned
+      shell: "pvc node info {{ ansible_hostname }} | grep '^Domain State' | awk '{ print $NF }'"
+      register: pvcunflush
+      failed_when: pvcunflush.stdout != 'ready'
+      until: pvcunflush.stdout == 'ready'
+      retries: 60
+      delay: 10
+
+    - name: wait 30 seconds for system to stabilize
+      pause:
+        seconds: 30
+      become: no
+      connection: local
+
+    - name: reset any systemd failures
+      command: systemctl reset-failed
+
+    - name: wait 30 seconds for system to stabilize
+      pause:
+        seconds: 30
+      become: no
+      connection: local
+
+    - name: unset PVC maintenance mode
+      command: pvc maintenance off
+
+- hosts: all
+  remote_user: deploy
+  become: yes
+  become_user: root
+  gather_facts: yes
+  tasks:
+    - name: disable insecure global id reclaim in Ceph
+      command: ceph config set mon auth_allow_insecure_global_id_reclaim false
+      run_once: yes
+
+    - name: set OSDs to require pacific
+      command: ceph osd require-osd-release pacific
+      run_once: yes
+
+    - name: backup CRUSH map
+      command: ceph osd getcrushmap -o /srv/backups/backup-crushmap-deb12-upgrade
+      run_once: yes
+
+    - name: update CRUSH map
+      command: ceph osd crush set-all-straw-buckets-to-straw2
+      run_once: yes
+
