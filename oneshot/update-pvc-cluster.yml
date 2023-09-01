@@ -39,9 +39,9 @@
           command: 'pvc node secondary {{ ansible_hostname }}'
           ignore_errors: true
   
-        - name: wait 15 seconds for system to stabilize
+        - name: wait 30 seconds for system to stabilize
           pause:
-            seconds: "15"
+            seconds: "30"
           become: no
           connection: local
   
@@ -56,9 +56,9 @@
           retries: 60
           delay: 10
 
-        - name: wait 15 seconds for system to stabilize
+        - name: wait 30 seconds for system to stabilize
           pause:
-            seconds: "15"
+            seconds: "30"
           become: no
           connection: local
 
@@ -89,9 +89,9 @@
             state: stopped
           ignore_errors: true
 
-        - name: wait 15 seconds for system to stabilize
+        - name: wait 30 seconds for system to stabilize
           pause:
-            seconds: "15"
+            seconds: "30"
           become: no
           connection: local
 
@@ -157,8 +157,8 @@
     - name: set PVC maintenance mode
       command: pvc maintenance off
 
-    - name: wait 5 seconds for system to stabilize
+    - name: wait 30 seconds for system to stabilize
       pause:
-        seconds: "5"
+        seconds: "30"
       become: no
       connection: local
