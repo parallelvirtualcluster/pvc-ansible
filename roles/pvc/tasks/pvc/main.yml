@@ -6,6 +6,7 @@
       - pvc-client-cli
       - pvc-client-common
       - debootstrap
+      - ethtool
     state: latest
 
 - name: install pvc configuration
