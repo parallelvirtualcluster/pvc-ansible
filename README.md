@@ -1,7 +1,10 @@
 # PVC Ansible
 
-A set of Ansible roles to set up a PVC node host. Tested on Ansible 2.2 through 2.6; it is
-not guaranteed to work properly on older or newer versions.
+**NOTICE FOR GITHUB**: This repository is a read-only mirror of the PVC repositories from my personal GitLab instance. Pull requests submitted here will not be merged. Issues submitted here will however be treated as authoritative.
+
+A set of Ansible roles to set up a PVC node. Part of the [Parallel Virtual Cluster system](https://github.com/parallelvirtualcluster/pvc).
+
+Tested on Ansible 2.2 through 2.8; it is not guaranteed to work properly on older or newer versions.
 
 ## Roles
 
@@ -11,6 +14,9 @@ This repository contains two roles:
 
 This role provides a standardized and configured base system for PVC. This role expects that
 the system was installed via the PVC installer ISO, which results in a Debian Buster system.
+
+This role is optional; the administrator may configure the base system however they please so
+long as the `pvc` role can be installed thereafter.
 
 #### pvc
 
@@ -47,7 +53,7 @@ For full details, please see the general [PVC install documentation](https://par
 
 ## License
 
-Copyright (C) 2018-2019  Joshua M. Boniface <joshua@boniface.me>
+Copyright (C) 2018-2020  Joshua M. Boniface <joshua@boniface.me>
 
 This repository, and all contained files, is free software: you can
 redistribute it and/or modify it under the terms of the GNU General
