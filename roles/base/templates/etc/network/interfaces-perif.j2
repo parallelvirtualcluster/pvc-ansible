@@ -5,8 +5,8 @@ auto {{ network.value['device'] }}
 iface {{ network.value['device'] }} inet manual
     post-up ip link set $IFACE mtu {{ network.value['mtu'] }}
 {% if network.value['type'] == 'bond' %}
-    bond_mode {{ network.value['bond_mode'] }}
-    slaves {% for device in network.value['bond_devices'] %}{{ device }} {% endfor %}
+    bond-mode {{ network.value['bond_mode'] }}
+    bond-slaves {{ network.value['bond_devices'] | join(' ') }}
 {% endif %}
 {% if network.value['type'] == 'vlan' %}
     vlan_raw_device {{ network.value['raw_device'] }}
