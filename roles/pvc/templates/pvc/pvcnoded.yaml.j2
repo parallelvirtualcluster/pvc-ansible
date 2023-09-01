@@ -93,3 +93,6 @@ pvc:
           mtu: {{ pvc_storage_mtu }}
           address: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.storage_ip }}/{{ pvc_storage_netmask }}{% endfor %}
 
+      storage:
+        ceph_config_file: "/etc/ceph/ceph.conf"
+        ceph_admin_keyring: "/etc/ceph/ceph.client.admin.keyring"
