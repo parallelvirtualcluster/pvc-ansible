@@ -89,6 +89,10 @@
     - ceph-mon@{{ ansible_hostname }}
   when: newhost is defined and newhost
 
+- name: set msgr2 enabled
+  command: ceph mon enable-msgr2
+  run_once: true
+
 - name: create mgr auth keyring
   command: ceph auth get-or-create mgr.{{ ansible_hostname }} mon 'allow profile mgr' osd 'allow *' mds 'allow *' --out-file /var/lib/ceph/mgr/ceph-{{ ansible_hostname }}/keyring
   become_user: ceph
