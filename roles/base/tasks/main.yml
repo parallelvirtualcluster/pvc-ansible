@@ -596,6 +596,14 @@
     state: absent
   tags: base-shell
 
+# htop
+- name: install htop configuration
+  template:
+    src: "etc/htoprc.j2"
+    dest: "/etc/htoprc"
+    mode: 0644
+  tags: base-shell
+
 # fail2ban
 - name: install fail2ban configurations
   template:
@@ -741,11 +749,13 @@
     - users
     - user-root
 
-- name: write htoprc to homedir
-  template:
-    src: var/home/user/config/htop/htoprc.j2
-    dest: /root/.htoprc
-    mode: 0600
+- name: remove root htoprc
+  file:
+    dest: "{{ item }}"
+    state: absent
+  loop:
+    - /root/.htoprc
+    - /root/.config/htop
   tags:
     - users
     - user-root
@@ -960,25 +970,10 @@
     - users
     - user-admin
 
-- name: ensure htop config directory exists
+- name: remove user htop configuration directory
   file:
     dest: "/var/home/{{ item.name }}/.config/htop"
-    state: directory
-    owner: "{{ item.name }}"
-    group: operator
-    mode: 0755
-  with_items: "{{ admin_users }}"
-  tags:
-    - users
-    - user-admin
-
-- name: write htoprc to homedir
-  template:
-    src: var/home/user/config/htop/htoprc.j2
-    dest: "/var/home/{{ item.name }}/.config/htop/htoprc"
-    owner: "{{ item.name }}"
-    group: operator
-    mode: 0644
+    state: absent
   with_items: "{{ admin_users }}"
   tags:
     - users
