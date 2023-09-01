@@ -163,7 +163,21 @@
     - "wireshark-common wireshark-common/install-setuid boolean true"
   tags: base-packages
 
-- name: install common packages (all arch)
+- name: install common packages (buster)
+  apt:
+    name:
+      - python
+  when: debian_codename == 'buster'
+  tag: base-packages
+
+- name: install common packages (bullseye)
+  apt:
+    name:
+      - python-is-python3
+  when: debian_codename == 'bullseye'
+  tag: base-packages
+
+- name: install common packages (all versions)
   apt:
     name:
       - debconf-utils
