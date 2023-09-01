@@ -1,9 +1,12 @@
 ---
 # PVC cluster specification for pvcbootstrapd
 #
-# This configuration is entirely optional, and is not required unless you are using pvcbootstrap to
-# deploy the cluster. It must be filled out and committed before connecting any hosts from
+# This configuration is entirely optional, and is not required unless you are using pvcbootstrap
+# to deploy the cluster. It must be filled out and committed before connecting any hosts from
 # the new cluster.
+#
+# This example provides a detailed explanation for, and examples of, the various options that can
+# be used by this subsystem.
 #
 # Bootstrap Host Definitions
 #
@@ -13,190 +16,275 @@
 # BMCs can be used, but they must be pre-configured with a system disk RAID, to boot from network,
 # etc. and the per-host TFTP files must be created manually.
 #
-# Disks Logic
+# Each host is specified by its hardware BMC MAC address, usually available on the system asset
+# tag or on some sort of label on the system board.
 #
-# There are 3 categories of disks that can be specified for use in the pvcbootstrapd system:
-#  * System disk (for the host OS)
-#  * Data disks (for VM data, i.e. Ceph OSDs)
-#  * Ceph database disk (if applicable, for OSD journaling/database)
+# Under the parent tag are a series of required and optional values, which are self-documented.
 #
-# The first two categories are not optional; at least one system disk and one data disk per
-# coordinator node must be specified for a usable cluster.
+# System Disks Logic
 #
-# OSD Database Disks
+# The key "bootstrap" -> "config" -> "system_disks" specifies the disk(s) that the system will
+# be installed to. These disks are specified as a YAML list of one (or more) of the following:
 #
-# OSD database disks are optional, and only required in some specific situations with some specific
-# guest workloads. Only one (1) device may be specified, and this should usually be an NVMe device
-# with a Linux path (e.g. '/dev/nvme0n1', see format specifications below).
+#  1. A fixed Linux "/dev" path, for example "/dev/sda" (SCSI/SAS/SATA), "/dev/nvme0n1" (NVMe),
+#     "/dev/disk/by-id" (fixed-ID paths), or "/dev/disk/by-path" (fixed-location paths).
+#     Generally, the latter options are preferable as they are more consistent and more easily
+#     guessed before a Linux operating system is booted, but all are acceptable depending on the
+#     disk type.
 #
-# The post-bootstrap hooks will use this disk, if present, to create an "osd-db-vg" device within
-# PVC before creating OSDs, and this database VG will then be used for all OSDs on the node.
+#  2. A "detect:" string, in the form "detect:<name>:<human-readable size>:<id>". Detect strings
+#     leverage the "lsscsi" tool in the installer to logically determine the desired block device
+#     path from the given information.
 #
-# Data Disks
+#     The "<name>" can be any identifier the device will have, for example "INTEL" for an Intel
+#     SSD, "SEAGATE" for a Seagate HDD, "DELLBOSS" for a Dell BOSS (Boot-Optimized Storage System)
+#     virtual volume, "PERC" for a Dell PERC RAID card, etc. This should usually match something
+#     found in the "Vendor" column of "lsscsi" or elsewhere in the output line. Multiple space-
+#     separated "words" are supported but should only be used to avoid ambiguity.
 #
-# At least one (1) data disk must be specified, and these should be fast devices (SATA, SAS, or
-# NVMe SSD); the former two can use any format below, but the latter should use a Linux path.
+#     The "<size>" is a human-readable size, usually matching the label size of the disk (e.g.
+#     300GB, 800GB, 1.92TB, etc.). This will be matched to within +/- 2% of a real block device
+#     in "lsscsi" to find a match.
+#     
+#     The "<id>" specifies the Nth (0-indexed) match on both the "<name>" and "<size>". So for
+#     example, if there are 3x 800GB Intel SSDs, "detect:INTEL:800GB:2" will match the third.
+#     Note that this ordering is based on SCSI bus ID, and is thus normally consistent and
+#     predictable, but there can be corner cases.
 #
-# These disk(s) will be used for OSD volumes within PVC, and will be provisioned by the post-
-# bootstrap hooks.
+#  3. A logical, 0-indexed disk ID detectable by Redfish, for example "0", "1", etc. On systems
+#     with support for it, up to two (2), but no more, disks can be specified in this list by
+#     these logical IDs. In such a case, the Redfish bootstrap will attempt to find the physical
+#     disks at the given IDs on the first storage (RAID) controller and, if found, create a RAID-1
+#     virtual disk out of them. This allows easy specification of the situation where you might
+#     want, for example, "the first and second disks" to be turned into a RAID-1, with the rest
+#     used for other purposes.
 #
-# System Disks
+#     Note that only the 3rd method supports this auto-creation of RAID devices; the first two
+#     require an existing (single) disk or virtual device which is visible by Linux. Also note
+#     that the PVC installer does not support software RAID-1 for system volumes, though this
+#     could be added later.
 #
-# At least one (1) and at most two (2) system disks must be specified, and these can be any
-# devices (SSDs, SD Cards, etc.), though faster system disks will result in a more responsive
-# system.
-#
-# If one system disk is specified, the system will be installed directly onto it.
-#
-# If two system disks are specified, and the controller supports it, a hardware RAID will be
-# created out of the disks for use as the resulting single system disk.
-#
-# PVC does not supports software RAID for node system disks; of the controller does not support
-# Redfish and hardware RAID therein, only the first listed disk will be used.
-#
-# Drive Specification Formats
-#
-# The disks in each group can be specified in one of 3 ways:
-#
-#  1. A full Linux block path beginning with '/dev/'. Any path can be used but, if possible,
-#     reliable paths like '/dev/disk/by-path' or '/dev/disk/by-id' are recommended unless there is
-#     no chance for ambiguity (e.g. only a single sdX drive is present for the system disk).
-#
-#     These direct paths are the most reliable way to specify NVMe disks due to the predicable
-#     format of Linux "/dev/nvmeX" drive names.
-#
-#  2. On Redfish-capable hosts only, a chassis disk ID number, usually 0-7 (0-indexed), indicating
-#     the position of the disk on the primary storage controller. When specified this way, the
-#     system will query the active storage devices from Redfish and then automatically construct
-#     a "detect:" string for each one based on its vendor/model, size and ID.
-#
-#     Note that on most chassis, the bays are labeled "1-8"; these must be converted by
-#     subtracting 1 from them to get 0-indexed IDs. So for example the drive in bay "1" would
-#     have the index of 0, and so on.
-#
-#     These ID numbers are the most relible way to specify SATA/SAS disks on Redfish-capable
-#     nodes and should be preferred for their simplicity there.
-#
-#     The pvcbootstrapd setup will use the values provided by Redfish to craft a "detect:" string
-#     for the block device (or virtual RAID array, if two devices are specified for the system
-#     disk entries).
-#
-#  3. A "detect:" string. This is a specially-formatted string which can be used by the installer
-#     to search the output of 'lsscsi' for the given device. A "detect:" string is formatted as
-#     such:
-#       detect:<Controller-or-Model-Name>:<0-indexed-ID>:<Capacity-in-human-units>
-#
-#     For example, to detect the *second* 800GB Intel SSD:
-#       detect:INTEL:1:800GB
-#     Or to detect a (single) Dell BOSS card's virtual RAID-1 of two 240GB M.2 SSDs:
-#       detect:DELLBOSS:0:240GB
-#     Or to detect the first RAID-1 volume on a Dell PERC controller of two 200GB SSDs:
-#       detect:PERC:0:200GB
-#
-#     The controller/vendor name will usually be fully capitalized. This string can contain
-#     multiple space-separated elements, though usually only the first word is required, for
-#     example "DELLBOSS VD" -> "DELLBOSS" or "PERC H330 Mini" -> "PERC", unless there is
-#     potential for ambiguity.
-#
-#     The ID is the Nth entry *of multiple identical devices*, and should usually be "0" unless
-#     there are multiple identically-sized devices with the same vendor. If there is only a set
-#     of identical drives, these will usually match in position to the drive bay because they will
-#     be sorted by the PCIe bus identifier, but this does not map 1-to-1 with chassis disk IDs as
-#     used by specification format 2, and must always be 0-indexed based on a given vendor+size.
-#
-#     The size should be the expected human-readable size of the disk with a suffix attached, for
-#     example "800GB", "240GB", "1.92TB", "2TB", etc.. This value will be used to match, within
-#     +/-2%, the actual reported sizes of the block devices (which are usually slightly smaller).
-#
-#     These "detect:" strings are the most reliable way to determine a SATA/SSD disk or hardware
-#     RAID volume independent of Redfish, and should generally be used for these device types on
-#     non-Redfish capable systems. NVMe devices can *not* use this format and should always use
-#     the predicable '/dev/nvmeX' names instead as mentioned in specification format 1.
-
-bootstrap:
-  # First node
-  "d8:d7:d6:d5:d4:d1":              # BMC MAC Address (from asset tag, etc.)
-  node:                             # Node information
-    hostname: hv1                   # The (short) hostname. Must be present in the pvc_nodes list.
-  config:                           # Node configuration (optional)
-    kernel_options:                 # Additional options for the installer kernel command line
-      - "console=ttyS1,115200n"
-    release: buster                 # The Debian release to install, OPTIONAL
-    mirror: http://ftp.debian.org   # The Debian mirror to use, OPTIONAL
-    packages:                       # List of additional packages to install, OPTIONAL
-      - ca-certificates
-    filesystem: ext4                # The filesystem to use for the system partitions, OPTIONAL
-
-  bmc:
-    username: Administrator         # BMC/IPMI administrative username
-    password: SuperSecret           # BMC/IPMI administrative password (initial)
-                                    # NOTE: This is usually the out-of-box password; the actual
-                                    # password will be set later by the Ansible roles.
-    redfish: yes                    # Can system BMC support Redfish?
-    bios_settings:                  # An optional listing of BIOS settings to alter before bootstrap
-      BootMode: "Uefi"              # NOTE: Must be valid Redfish BIOS options or will be ignored.
-      SecureBoot: "Disabled"
-  disks:                            # Disk definitions (see explanations above)
-    system:                         # List of system disk(s)
-      - "detect:Internal SD-CARD:0:64GB"
-    data:                           # List of data disks for OSDs
-      - "/dev/disk/by-path/pci-0000:01:00.0-sas-phy0-lun-0"
-      - "/dev/disk/by-path/pci-0000:01:00.0-sas-phy4-lun-0"
-    osd_db:                         # List of OSD database disk (maximum one)
-      - "/dev/nvme0n1"
-  # Second node
-  "d8:d7:d6:d5:d4:d2":
-    node:
-      hostname: hv2
-    config:
-    bmc:
-      username: Administrator
-      password: SuperSecret
-      redfish: yes
-    disks:
-      system:
-        - "detect:DELLBOSS:0:240GB"
-      data:
-        - "detect:INTEL:0:960GB"
-        - "detect:INTEL:1:960GB"
-  # Third node
-  "d8:d7:d6:d5:d4:d3":
-    node:
-      hostname: hv3
-    config:
-    bmc:
-      username: Administrator
-      password: SuperSecret
-      redfish: no
-    disks:
-      system:
-        - "/dev/sda"
-      data:
-        - "/dev/nvme0n1"
-        - "/dev/nvme0n2"
-
+#     Once created, the virtual RAID-1 created using this method will be found via a "detect:"
+#     string identical to method 2.
 #
 # Hooks
 #
-# Hooks are sets of tasks (commands, etc.) to be run against the cluster once the bootstrap Ansible run has
-# been completed. These are useful to perform post-Ansible setup tasks, for instance creating storage OSDs and
-# pools, deploying VMs, running hooks, executing webhooks, etc.
+# Hooks are a series of tasks that are run against one or more nodes in the cluster after the
+# completion of the Ansible configuration. These hooks, specified on a cluster-level, can be
+# used to automate post-deployment tasks. Hooks are specified as a YAML list of dictionaries.
 #
-# Each hook can define which host(s) it should be run on or against depending on the handler.
-# There are several fixed, defined hooks which are known to the cluster, while all other hooks must be defined
-# with their full specifications.
+# Each hook is given a "name" which is used in the log output but which is otherwise unimportant.
 #
-# The hook type can be one of the defined hooks, "pvc", "script", "python", or "webhook".
-# * "pvc" hooks use the PVC CLI on one node to execute the desired command, without the leading "pvc".
-# * "script" hooks are a set of shell commands that will be run in a ROOT shell on the given node(s).
-# * "python" hooks are a set of Python commands that will be run in a ROOT interpreter on the given node(s).
-# * "webhook" hooks send POST events with the specified body to the specified URL from pvcprovisionerd itself.
+# There are several "type"s of hooks, some of which are specialized for common tasks, and others
+# which can be free-form. The primary types are:
 #
-# Hooks are always executed in the order they are presented.
-hooks:
-  - name: install virtual router
-  type: script
-  node: hv1
-  action: |
-  pvc provisioner profile list
+#   * osddb    Create an OSD DB volume group on a given node from a given block path, specified
+#              by one of the first two (2) methods mentioned above for system disks.
+#   * osd      Create a storage OSD on a given node from a given block device path, specified by
+#              one of the first two (2) methods mentioned above for system disk.
+#              If multiple nodes have the same devices, the same task can run against several
+#              at once in one task, otherwise they should be run sequentially, per-node.
+#   * pool     Create a storage pool on the cluster with the specified number of PGs.
+#
+#   Note: The above 3 hooks should always be specified in the given order if they are to be used.
+#
+#   * network  Create a network on the PVC cluster with the specified parameters (see below).
+#
+#   * script   Run a script on the given host(s). Can be used to run arbitrary commands or other
+#              scripts on the remote system.
+#              The script may be specified in one of 3 ways:
+#                1. A raw YAML block, containing a valid shebang and the contents of the script.
+#                   For a single BASH command, this would be something like:
+#                     #!/usr/bin/env bash
+#                     mycommand
+#                2. A "local" source and a "path" to a script to copy to the destination host.
+#                   The path may be absolute, or relative to the Ansible repository directory.
+#                3. A "remote" source and a "path" to the script on the destination host.
+#
+#   Note: A script hook will run as the "deploy_user" on the remote system. If you require the
+#         command to have root privileges, use "sudo" in the script.
+#
+# A hook can "target" one or more nodes in the cluster. These are specified by their "node
+# hostname" as specified in the "bootstrap" section in a YAML list. The special value "all" can
+# be used to represent all nodes in the cluster; if "all" is specified it should be the only value.
+#
+# The value of "target" is used slightly differently for the osddb, osd, pool, and network (PVC)
+# hook types above. For osddb and osd, the list of "target"s will be the nodes that the given
+# block device will be created on with the given parameters, but will actually target the API.
+# For pool and network hook types, the target is ignored completely and can/should be empty or
+# "all" for clarity.
+#
+# Each hook has a series of "args" which are unique to that particular hook type. These are
+# self-documented inline below for each hook type.
 
+# Bootstrap elements
+bootstrap:
+  # First node
+  "d8:d3:85:12:34:56":                  # BMC MAC Address (from asset tag, etc.)
+    node:                               # Node information
+        hostname: hv1                   # The (short) hostname. Must be present in the pvc_nodes list.
+    config:                             # Node configuration
+        kernel_options:                 # Additional kernel options for the installer, OPTIONAL
+          - console=ttyS1,115200n       # "Use the serial console ttyS1 at 115200 baud"
+        release: buster                 # The Debian release to install, OPTIONAL
+        mirror: http://ftp.debian.org/debian   # The Debian mirror to use, OPTIONAL
+        packages:                       # List of additional packages to install, OPTIONAL
+          - ca-certificates             # "Install the ca-certificates package in the target system"
+        filesystem: ext4                # The filesystem to use for the system partitions, OPTIONAL
+        system_disks:                   # List of system disks to install to
+          - "detect:Intel:200GB:0"      # "Find the first 200GB Intel SSD"
+    bmc:                                # BMC information
+        username: Administrator         # BMC/IPMI administrative username
+        password: SuperSecretPassword   # BMC/IPMI administrative password (initial)
+                                        # NOTE: This is usually the out-of-box password; the production
+                                        # password will be set later by the Ansible roles.
+        redfish: yes                    # Can system BMC support Redfish?
+                                        # NOTE: This is optional; Redfish will be probed if missing.
+  # Second node
+  "68:b5:99:12:34:78":                  # BMC MAC Address (from asset tag, etc.)
+    node:                               # Node information
+        hostname: hv2                   # The (short) hostname. Must be present in the pvc_nodes list.
+    config:                             # Node configuration (optional)
+        kernel_options:                 # Additional kernel options for the installer, OPTIONAL
+          - console=ttyS1,115200n       # "Use the serial console ttyS1 at 115200 baud"
+        release: buster                 # The Debian release to install, OPTIONAL
+        mirror: http://ftp.debian.org/debian   # The Debian mirror to use, OPTIONAL
+        packages:                       # List of additional packages to install, OPTIONAL
+          - ca-certificates             # "Install the ca-certificates package in the target system"
+        filesystem: ext4                # The filesystem to use for the system partitions, OPTIONAL
+        system_disks:                   # List of system disks to install to
+          - "0"                         # "Create a RAID out of the first and second physical disks"
+          - "1"
+    bmc:
+        username: Administrator         # BMC/IPMI administrative username
+        password: SuperSecretPassword   # BMC/IPMI administrative password (initial)
+                                        # NOTE: This is usually the out-of-box password; the actual live password
+                                        # will be set later by the Ansible roles.
+        redfish: yes                    # Can system BMC support Redfish?
+                                        # NOTE: This is optional; Redfish will be probed if missing.
+  # Third node
+  "18:a9:05:12:45:90":                  # BMC MAC Address (from asset tag, etc.)
+    node:                               # Node information
+        hostname: hv3                   # The (short) hostname. Must be present in the pvc_nodes list.
+    config:                             # Node configuration (optional)
+        kernel_options:                 # Additional kernel options for the installer, OPTIONAL
+          - console=ttyS1,115200n       # "Use the serial console ttyS1 at 115200 baud"
+        release: buster                 # The Debian release to install, OPTIONAL
+        mirror: http://ftp.debian.org/debian   # The Debian mirror to use, OPTIONAL
+        packages:                       # List of additional packages to install, OPTIONAL
+          - ca-certificates             # "Install the ca-certificates package in the target system"
+        filesystem: ext4                # The filesystem to use for the system partitions, OPTIONAL
+        system_disks:                   # List of system disks to install to
+          - "/dev/sda"                  # "Use the disk at /dev/sda"
+    bmc:
+        username: Administrator         # BMC/IPMI administrative username
+        password: SuperSecretPassword   # BMC/IPMI administrative password (initial)
+                                        # NOTE: This is usually the out-of-box password; the actual live password
+                                        # will be set later by the Ansible roles.
+        redfish: yes                    # Can system BMC support Redfish?
+                                        # NOTE: This is optional; Redfish will be probed if missing.
+
+# Bootstrap hooks (post-configuration)
+hooks:
+  - name: "Create OSD database volume on the first NVMe device"
+    type: osddb
+    target:
+      - all
+    args:
+      disk: "/dev/nvme0n1"              # The disk to be used for the OSD DB volume group
+
+  - name: "Create OSDs on the first 300GB HDD device on each node"
+    type: osd
+    target:
+      - all
+    args:
+      disk: "detect:LOGICAL:300GB:0"    # The disk to be used for the OSD, first 300GB LOGICAL disk
+      weight: 8                         # The weight of the OSD
+      ext_db: no                        # Use external OSD DB
+
+  - name: "Create OSDs on the first 800GB  Intel SSD device on each node"
+    type: osd
+    target:
+      - all
+    args:
+      disk: "detect:INTEL:800GB:0"      # The disk to be used for the OSD, first 400GB Intel SSD
+      weight: 4                         # The weight of the OSD, note half of first OSD weight
+      ext_db: yes                       # Use external OSD DB
+      ext_db_ratio: 0.08                # External OSD DB percentage ratio if different from default 0.05
+
+  - name: "Create storage pool 'vms'"
+    type: pool
+    target:
+      - all
+    args:
+      name: "vms"                       # The name of the pool
+      pgs: 128                          # The number of placement groups (#OSD * ~250 / 3 / 2, round down to 2^n)
+      tier: "ssd"                       # The tier of storage devices to use (default, hdd, ssd, nvme if available)
+
+  - name: "Create bridged public network on vLAN 1000"
+    type: network
+    target:
+      - all
+    args:
+      vni: 1000                         # The PVC VNI (vLAN ID)
+      description: "public"             # The network description (no whitespace)
+      type: bridged                     # The type of network (bridged or managed)
+      mtu: 9000                         # The network MTU
+
+  - name: "Create managed deployment network on VXLAN 10000"
+    type: network
+    target:
+      - all
+    args:
+      vni: 10000                        # The PVC VNI (VXLAN ID)
+      description: "deployment"         # The network description (no whitespace)
+      type: managed                     # The type of network (bridged or managed)
+      mtu: auto                         # The network MTU; 'auto' and 'default' preserve default
+      domain: pvc.local                 # The network domain for DNSMasq
+      dns_servers:                      # The remote DNS servers
+        - 10.100.100.10
+        - 10.100.100.11
+      ip4: yes                          # Enable IPv4 networking
+      ip4_network: 10.0.0.0/24          # The IPv4 network, required if ip4
+      ip4_gateway: 10.0.0.1             # The IPv4 gateway, required if ip4
+      ip4_dhcp: yes                     # Enable IPv4 DHCP, required if ip4
+      ip4_dhcp_start: 10.0.0.100        # IPv4 DHCP start address, required if ip4_dhcp
+      ip4_dhcp_end: 10.0.0.199          # IPv4 DHCP end address, required if ip4_dhcp
+      ip6: yes                          # Enable IPv6 networking
+      ip6_network: 2001:1234:5678::/64  # The IPv6 network, required if ip6
+      ip6_gateway: 2001:1234:5678::1    # The IPv6 gateway, required if ip6
+
+  - name: "Run a quick storage benchmark leveraging node 1 as the runner"
+    type: script
+    target:
+      - hv1
+    args:
+      script: |
+        #!/usr/bin/env bash
+        pvc storage benchmark run --yes vms
+
+  - name: "Run a quick Python script on all nodes"
+    type: script
+    target:
+      - all
+    args:
+      script: |
+        #!/usr/bin/env python
+        print("Hello, world!")
+
+  - name: "Run a more complex Python script on nodes 2 and 3"
+    type: script
+    target:
+      - hv2
+      - hv3
+    args:
+      source: local                     # Copy the script first from the local system (full path or relative under the Ansible repository)
+      path: "scripts/mytask.py"         # This is the path to the script, which must have a valid shebang.
+
+  - name: "Run a more complex BASH script on nodes 1"
+    type: script
+    target:
+      - hv1
+    args:
+      source: remote
+      path: "/usr/local/bin/dostuff"
