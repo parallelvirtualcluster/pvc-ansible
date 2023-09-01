@@ -589,6 +589,7 @@
     - dpkg
     - entropy
     - freshness
+    - ipmi
     - kernelversion
     - ownership
   tags: base-cmkagent
