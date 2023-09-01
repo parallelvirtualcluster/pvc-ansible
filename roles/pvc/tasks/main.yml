@@ -69,3 +69,20 @@
   become: yes 
   when: newhost is defined and newhost
   tags: always
+
+- name: wait 30 seconds for system to stabilize
+  pause:
+    seconds: 30
+  become: no
+  connection: local
+  when: newhost is defined and newhost
+  tags: always
+  
+- name: restart pvcnoded on first install
+  service:
+    name: pvcnoded
+    state: restarted
+  throttle: 1
+  ignore_errors: yes
+  when: newhost is defined and newhost
+  tags: always
