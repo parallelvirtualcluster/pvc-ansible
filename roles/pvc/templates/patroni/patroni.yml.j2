@@ -17,6 +17,10 @@ bootstrap:
         maximum_lag_on_failover: 1048576
         postgresql:
             use_pg_rewind: true
+            parameters:
+                wal_keep_segments: 64
+                max_wal_senders: 8
+                max_replication_slots: 8
 
     initdb:
     - encoding: UTF8
@@ -55,6 +59,9 @@ postgresql:
             password: '{{ pvc_superuser_database_password }}'
     parameters:
         unix_socket_directories: '/run/postgresql'
+        wal_keep_segments: 64
+        max_wal_senders: 8
+        max_replication_slots: 8
 
 tags:
     nofailover: false
