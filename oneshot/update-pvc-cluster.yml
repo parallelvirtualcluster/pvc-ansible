@@ -1,15 +1,13 @@
 ---
+
+- include: update-pvc-daemons.yml
+
 - hosts: all
   remote_user: deploy
   become: yes
   become_user: root
   gather_facts: yes
   tasks:
-    - name: set PVC maintenance mode (legacy)
-      command: pvc maintenance on
-      run_once: yes
-      ignore_errors: yes
-
     - name: set PVC maintenance mode
       command: pvc cluster maintenance on
       run_once: yes
@@ -47,7 +45,7 @@
       file:
         dest: /var/cache/apt/archives
         state: absent
-  
+
     - name: remove temporarily set norestart policy
       file:
         dest: "/usr/sbin/policy-rc.d"
@@ -72,17 +70,17 @@
         - name: secondary node
           command: 'pvc node secondary --wait {{ ansible_hostname }}'
           ignore_errors: true
-  
+
         - name: wait 15 seconds for system to stabilize
           pause:
             seconds: 15
           become: no
           connection: local
-  
+
         - name: flush node
           command: "pvc node flush {{ ansible_hostname }} --wait"
           ignore_errors: yes
-  
+
         - name: make sure node is in flushed state
           shell: "pvc node info {{ ansible_hostname }} | grep '^Domain State' | awk '{ print $NF }'"
           register: pvcflush
@@ -204,7 +202,7 @@
             seconds: 30
           become: no
           connection: local
-  
+
         - name: reset any systemd failures
           command: systemctl reset-failed
       when: freshness.changed

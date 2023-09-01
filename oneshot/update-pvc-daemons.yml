@@ -43,7 +43,7 @@
     - name: restart daemons cleanly
       block:
         - name: secondary node
-          command: 'pvc node secondary {{ ansible_hostname }}'
+          command: 'pvc node secondary --wait {{ ansible_hostname }}'
           ignore_errors: true
   
         - name: wait 15 seconds for system to stabilize
