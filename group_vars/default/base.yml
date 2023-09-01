@@ -1,4 +1,7 @@
 ---
+# Local timezone for the cluster
+timezone_location: Canada/Eastern
+
 # Cluster domain for node FQDNs
 local_domain: upstream.local
 
