@@ -1,4 +1,69 @@
 ---
+# Play 1: Sanity check, information gathering, patroni freeze
+- hosts: all
+  remote_user: deploy
+  become: yes
+  become_user: root
+  gather_facts: yes
+  vars:
+    minimum_pvc_version: 0.9.68
+  tasks:
+    - name: check that cluster is on the minimum PVC version or newer
+      shell: "dpkg --compare-versions $(pvc --quiet cluster status -f json | jq '.pvc_version' | tr -d '\"') ge {{ minimum_pvc_version }}"
+      run_once: yes
+
+    - name: set PVC maintenance mode
+      command: pvc cluster maintenance on
+      ignore_errors: yes
+
+    - name: get current postgresql directory
+      shell: "find /usr/lib/postgresql -mindepth 1 -maxdepth 1 -type d -name '[0-9][0-9]' | sort -n | tail -1"
+      register: old_postgres_dir_output
+
+    - name: set old_postgres_bin_dir fact
+      set_fact:
+        old_postgres_bin_dir: "{{ old_postgres_dir_output.stdout.strip() }}/bin"
+
+    - name: get current patroni leader node
+      shell: "patronictl -c /etc/patroni/config.yml list --format json | jq '.[] | select(.Role == \"Leader\") | .Member' | tr -d '\"'"
+      register: patroni_leader_output
+
+    - name: set patroni_leader fact
+      set_fact:
+        patroni_leader: "{% for node in ansible_play_hosts if node.split('.')[0].strip() == patroni_leader_output.stdout.strip() %}{{ node }}{% endfor %}"
+
+    - name: set patroni_followers fact
+      set_fact:
+        patroni_followers: "{{ ansible_play_hosts | difference([ patroni_leader ]) }}"
+
+    - debug:
+        var: patroni_leader
+    - debug:
+        var: patroni_followers
+
+    - name: fail out if patroni_leader is empty
+      command: "echo {{ patroni_leader }}"
+      register: check_output
+      failed_when: check_output.stdout == ""
+
+    - name: stop and mask patroni service on followers to perform database upgrade (later)
+      service:
+        name: patroni
+        state: stopped
+        masked: yes
+      run_once: yes
+      delegate_to: "{{ item }}"
+      loop: "{{ patroni_followers }}"
+
+    - name: stop and mask patroni service on leader to perform database upgrade (later)
+      service:
+        name: patroni
+        state: stopped
+        masked: yes
+      run_once: yes
+      delegate_to: "{{ patroni_leader }}"
+
+# Play 2: Per-node upgrade to Debian 12
 - hosts: all
   remote_user: deploy
   become: yes
@@ -18,9 +83,6 @@
         debian_codename: "{{ ansible_lsb.codename }}"
       when: ansible_lsb.codename is defined
 
-    - name: set PVC maintenance mode
-      command: pvc cluster maintenance on
-
     - name: secondary node
       command: "pvc node secondary {{ ansible_hostname }}"
       ignore_errors: yes
@@ -33,6 +95,7 @@
   
     - name: flush node
       command: "pvc node flush {{ ansible_hostname }} --wait"
+      ignore_errors: yes
   
     - name: ensure VMs are migrated away
       shell: "virsh list | grep running | wc -l"
@@ -74,6 +137,7 @@
 
     - name: set OSD noout
       command: pvc storage osd set noout
+      ignore_errors: yes
 
     - name: get running OSD services
       shell: "systemctl | awk '{ print $1 }' | grep 'ceph-osd@[0-9]*.service'"
@@ -134,23 +198,68 @@
         dest: /etc/apt/sources.list
         regexp: "security.debian.org"
         state: absent
-      when: debian_version < 11
+      when: debian_version|int < 11
+
+    - name: link python to python3 on Debian 10
+      file:
+        state: link
+        src: python3
+        dest: /usr/bin/python
+        force: yes
+      when: debian_version|int < 11
 
     - name: update apt cache
       apt:
         update_cache: yes
+      register: apt_res
+      retries: 5
+      until: apt_res is success
 
-    - name: install python-is-python3
+    # This seems insane, but works around a fatal error upgrading from d10 to d12
+    - name: perform initial upgrade on Debian 10
+      block:
+        - name: install script to perform safe d10->d12 upgrade
+          copy:
+            dest: /tmp/upgrade-d10.sh
+            mode: 0755
+            content: |
+              #!/usr/bin/env bash
+              export DEBIAN_FRONTEND=noninteractive
+              apt-get --download-only install libcrypt1
+              dpkg --force-all --install /var/cache/apt/archives/{libcrypt1,libpam0g,libc6}*.deb
+              apt --fix-broken install
+              apt-get --no-install-recommends install apt dpkg dpkg-dev base-files zstd
+              apt-get --no-install-recommends install ca-certificates
+              apt-get --no-install-recommends --option Dpkg::Options::="--force-confold" install sudo
+              apt-get --no-install-recommends --option Dpkg::Options::="--force-confnew" upgrade
+              apt-get --no-install-recommends --option Dpkg::Options::="--force-confnew" dist-upgrade
+              systemctl restart ssh
+  
+        - name: run script to perform safe d10->d12 upgrade (will take a long time)
+          shell: /tmp/upgrade-d10.sh
+
+        - name: install python-is-python3
+          apt:
+            name: python-is-python3
+            state: latest
+
+      when: debian_version|int < 11
+
+    - name: aptitude upgrade
       apt:
-        name: python-is-python3
-        state: latest
+        upgrade: safe
+      register: apt_res
+      retries: 5
+      until: apt_res is success
 
     - name: aptitude dist upgrade and cleanup
       apt:
-        update_cache: yes
         autoremove: yes
         autoclean: yes
         upgrade: dist
+      register: apt_res
+      retries: 5
+      until: apt_res is success
 
     - name: clean up obsolete kernels
       command: /usr/local/sbin/kernel-cleanup.sh
@@ -180,6 +289,9 @@
         autoremove: yes
         autoclean: yes
         upgrade: full
+      register: apt_res
+      retries: 5
+      until: apt_res is success
 
     - name: remove obsolete database directories
       file:
@@ -213,6 +325,12 @@
     - name: unset OSD noout
       command: pvc storage osd unset noout
 
+    - name: wait 30 seconds for system to stabilize
+      pause:
+        seconds: 30
+      become: no
+      connection: local
+
     - name: unflush node
       command: "pvc node ready {{ ansible_hostname }} --wait"
  
@@ -239,28 +357,167 @@
       become: no
       connection: local
 
-    - name: unset PVC maintenance mode
-      command: pvc cluster maintenance off
-
+# Play 3: Ceph upgrades for Debian 12
 - hosts: all
   remote_user: deploy
   become: yes
   become_user: root
   gather_facts: yes
   tasks:
-    - name: disable insecure global id reclaim in Ceph
-      command: ceph config set mon auth_allow_insecure_global_id_reclaim false
-      run_once: yes
-
-    - name: set OSDs to require pacific
-      command: ceph osd require-osd-release pacific
-      run_once: yes
-
     - name: backup CRUSH map
       command: ceph osd getcrushmap -o /srv/backups/backup-crushmap-deb12-upgrade
+
+    - block:
+        - name: disable insecure global id reclaim in Ceph
+          command: ceph config set mon auth_allow_insecure_global_id_reclaim false
+
+        - name: set OSDs to require pacific
+          command: ceph osd require-osd-release pacific
+
+        - name: update CRUSH map
+          command: ceph osd crush set-all-straw-buckets-to-straw2
+
+        - name: set OSDs to quick fsck
+          command: ceph config set osd bluestore_fsck_quick_fix_on_mount true
       run_once: yes
 
-    - name: update CRUSH map
-      command: ceph osd crush set-all-straw-buckets-to-straw2
-      run_once: yes
+    - name: restart ceph-mgr
+      service:
+        name: "ceph-mgr@{{ ansible_hostname }}"
+        state: restarted
 
+# Play 4: Ceph OSD restart (serial per-node)
+- hosts: all
+  remote_user: deploy
+  become: yes
+  become_user: root
+  gather_facts: yes
+  serial: 1
+  tasks:
+    - name: restart all OSDs on node
+      shell: "systemctl restart --all ceph-osd@*"
+
+    - name: make sure all OSDs are active
+      shell: "ceph osd stat | grep 'osds:' | awk '{ if ( $1 == $3 ) { print \"OK\" } else { print \"NOK\" } }'"
+      register: osdstat
+      failed_when: osdstat.stdout == "NOK"
+      until: osdstat.stdout == "OK"
+      retries: 60
+      delay: 10
+
+    - name: make sure all PGs have recovered
+      shell: "ceph health | grep -wo 'Degraded data redundancy'"
+      register: cephhealth
+      failed_when: cephhealth.stdout == "Degraded data redundancy'"
+      until: cephhealth.stdout == ""
+      retries: 60
+      delay: 10
+
+# Play 4: Patroni upgrades for Debian 12
+- hosts: all
+  remote_user: deploy
+  become: yes
+  become_user: root
+  gather_facts: yes
+  vars:
+    new_postgres_version: 15
+  tasks:
+    - name: stop patroni service on followers to perform database upgrade
+      service:
+        name: patroni
+        state: stopped
+      run_once: yes
+      delegate_to: "{{ item }}"
+      loop: "{{ patroni_followers }}"
+
+    - name: stop patroni service on leader to perform database upgrade
+      service:
+        name: patroni
+        state: stopped
+      run_once: yes
+      delegate_to: "{{ patroni_leader }}"
+
+    - block:
+        - name: initialize new postgres database
+          shell:
+            cmd: "sudo -u postgres /usr/lib/postgresql/{{ new_postgres_version }}/bin/initdb -D /var/lib/postgresql/{{ new_postgres_version }}/pvc"
+            chdir: "/var/lib/postgresql"
+
+        - name: enable data checksums in new database
+          shell:
+            cmd: "sudo -u postgres /usr/lib/postgresql/{{ new_postgres_version }}/bin/pg_checksums --enable /var/lib/postgresql/{{ new_postgres_version }}/pvc"
+            chdir: "/var/lib/postgresql"
+
+        - name: run postgres upgrade
+          shell:
+            cmd: "sudo -u postgres /usr/lib/postgresql/{{ new_postgres_version }}/bin/pg_upgrade -b {{ old_postgres_bin_dir }} -d /var/lib/postgresql/patroni/pvc -D /var/lib/postgresql/{{ new_postgres_version }}/pvc"
+            chdir: "/var/lib/postgresql"
+
+        - name: move old postgres database out of the way
+          shell:
+            cmd: "sudo -u postgres mv /var/lib/postgresql/patroni/pvc /var/lib/postgresql/patroni/pvc.old"
+            chdir: "/var/lib/postgresql"
+
+        - name: move new postgres database into place
+          shell:
+            cmd: "sudo -u postgres mv /var/lib/postgresql/{{ new_postgres_version }}/pvc /var/lib/postgresql/patroni/pvc"
+            chdir: "/var/lib/postgresql"
+
+        - name: ensure recovery.conf is absent
+          file:
+            dest: /var/lib/postgresql/patroni/pvc/recovery.conf
+            state: absent
+
+        - name: delete patroni cluster znodes
+          shell: "/usr/share/zookeeper/bin/zkCli.sh -server {{ ansible_hostname }}:2181 deleteall /patroni/pvc"
+
+        - name: start patroni service on leader
+          service:
+            name: patroni
+            state: started
+            masked: no
+      run_once: yes
+      delegate_to: "{{ patroni_leader }}"
+
+    - name: remove old data directory on patroni followers
+      file:
+        dest: /var/lib/postgresql/patroni/pvc
+        state: absent
+      run_once: yes
+      delegate_to: "{{ item }}"
+      loop: "{{ patroni_followers }}"
+
+    - name: start patroni service on followers
+      service:
+        name: patroni
+        state: started
+        masked: no
+      run_once: yes
+      delegate_to: "{{ item }}"
+      loop: "{{ patroni_followers }}"
+
+    - name: wait 30 seconds for system to stabilize
+      pause:
+        seconds: 30
+      become: no
+      connection: local
+
+    - name: restart pvcnoded on all nodes
+      service:
+        name: pvcnoded
+        state: restarted
+
+    - name: wait 30 seconds for system to stabilize
+      pause:
+        seconds: 30
+      become: no
+      connection: local
+
+    - name: set first node as primary coordinator
+      command: "pvc node primary --wait"
+      run_once: yes
+      delegate_to: "{{ item }}"
+      loop: "{{ ansible_play_hosts[0] }}"
+
+    - name: unset PVC maintenance mode
+      command: pvc cluster maintenance off
