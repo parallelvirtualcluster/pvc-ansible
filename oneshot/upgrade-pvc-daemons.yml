@@ -1,0 +1,79 @@
+---
+- hosts: all
+  remote_user: deploy
+  become: yes
+  become_user: root
+  gather_facts: yes
+  serial: 1
+  tasks:
+    - name: set PVC maintenance mode
+      command: pvc maintenance on
+
+    - name: install latest PVC packages
+      apt:
+        update_cache: yes
+        autoremove: yes
+        autoclean: yes
+        package:
+          - pvc-client-cli
+          - pvc-daemon-common
+          - pvc-daemon-api
+          - pvc-daemon-node
+        state: latest
+      register: packages
+
+    - name: clean apt archives
+      file:
+        dest: /var/cache/apt/archives
+        state: absent
+  
+    - name: restart system cleanly
+      block:
+        - name: secondary node
+          command: 'pvc node secondary {{ ansible_hostname }}'
+          ignore_errors: true
+  
+        - name: wait 30 seconds for system to stabilize
+          pause:
+            seconds: 30
+          become: no
+          connection: local
+  
+        - name: restart PVC daemons
+          service:
+            name: "{{ item }}"
+            state: restarted
+            enabled: yes
+          with_items:
+            - pvcapid-worker
+            - pvcnoded
+
+        - name: wait 60 seconds for system to stabilize
+          pause:
+            seconds: 60
+          become: no
+          connection: local
+
+        - name: get service facts
+          service_facts:
+
+        - name: fail if PVC daemons are not running
+          fail:
+            msg: "PVC daemons are not running"
+          when: ansible_facts.services[item] is not defined or ansible_facts.services[item]["state"] != "running"
+          with_items:
+            - pvcnoded.service
+            - pvcapid-worker.service
+
+        - name: reset any systemd failures
+          command: systemctl reset-failed
+      when: packages.changed
+
+    - name: unset PVC maintenance mode
+      command: pvc maintenance off
+
+    - name: wait 30 seconds for system to stabilize
+      pause:
+        seconds: 30
+      become: no
+      connection: local

@@ -11,21 +11,21 @@
 
     - name: aptitude full upgrade and cleanup
       apt:
-        update_cache: "yes"
-        autoremove: "yes"
-        autoclean: "yes"
-        upgrade: "full"
+        update_cache: yes
+        autoremove: yes
+        autoclean: yes
+        upgrade: full
 
     - name: clean up obsolete kernels
-      command: "/usr/local/sbin/kernel-cleanup.sh"
+      command: /usr/local/sbin/kernel-cleanup.sh
 
     - name: clean up obsolete packages
-      command: "/usr/local/sbin/dpkg-cleanup.sh"
+      command: /usr/local/sbin/dpkg-cleanup.sh
 
     - name: clean apt archives
       file:
-        dest: "/var/cache/apt/archives"
-        state: "absent"
+        dest: /var/cache/apt/archives
+        state: absent
   
     - name: check library freshness
       command: /usr/lib/check_mk_agent/plugins/freshness
@@ -47,12 +47,12 @@
   
         - name: wait 30 seconds for system to stabilize
           pause:
-            seconds: "30"
+            seconds: 30
           become: no
           connection: local
   
         - name: flush node
-          command: 'pvc node flush {{ ansible_hostname }} --wait'
+          command: "pvc node flush {{ ansible_hostname }} --wait"
   
         - name: ensure VMs are migrated away
           shell: "virsh list | grep running | wc -l"
@@ -72,29 +72,29 @@
 
         - name: wait 15 seconds for system to stabilize
           pause:
-            seconds: "15"
+            seconds: 15
           become: no
           connection: local
 
         - name: stop and disable PVC flush daemon cleanly
           service:
-            name: "pvc-flush"
+            name: pvc-flush
             state: stopped
             enabled: no
 
         - name: stop PVC daemon cleanly
           service:
-            name: "pvcnoded"
+            name: pvcnoded
             state: stopped
 
         - name: stop Zookeeper daemon cleanly
           service:
-            name: "zookeeper"
+            name: zookeeper
             state: stopped
 
         - name: wait 15 seconds for system to stabilize
           pause:
-            seconds: "15"
+            seconds: 15
           become: no
           connection: local
 
@@ -127,7 +127,7 @@
 
         - name: wait 30 seconds for system to stabilize
           pause:
-            seconds: "30"
+            seconds: 30
           become: no
           connection: local
 
@@ -168,13 +168,13 @@
 
         - name: wait 30 seconds for system to stabilize
           pause:
-            seconds: "30"
+            seconds: 30
           become: no
           connection: local
   
         - name: start and enable PVC flush daemon cleanly
           service:
-            name: "pvc-flush"
+            name: pvc-flush
             state: started
             enabled: yes
 
@@ -182,11 +182,11 @@
           command: systemctl reset-failed
       when: freshness.changed or kernelversion.changed
 
-    - name: set PVC maintenance mode
+    - name: unset PVC maintenance mode
       command: pvc maintenance off
 
     - name: wait 30 seconds for system to stabilize
       pause:
-        seconds: "30"
+        seconds: 30
       become: no
       connection: local
