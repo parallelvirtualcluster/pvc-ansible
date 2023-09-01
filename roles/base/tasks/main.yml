@@ -76,8 +76,7 @@
 
 - name: regather facts
   setup:
-  when: installed_facts.changed
-  tags: base-ansible
+  tags: always
 
 - debug:
     var: ansible_local.host_group
