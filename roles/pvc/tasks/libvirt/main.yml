@@ -17,6 +17,13 @@
     groups: ceph
     append: yes
 
+- name: add admin users to libvirt groups
+  user:
+    name: "{{ item.name }}"
+    groups: kvm,libvirt
+    append: yes
+  with_items: "{{ admin_users }}"
+
 - name: install libvirt configuration
   template:
     src: libvirt/{{ item }}.j2

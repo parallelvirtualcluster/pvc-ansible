@@ -9,6 +9,13 @@
       - radosgw
     state: latest
 
+- name: add admin users to ceph groups
+  user:
+    name: "{{ item.name }}"
+    groups: ceph
+    append: yes
+  with_items: "{{ admin_users }}"
+
 - name: install sysctl tweaks
   template:
     src: ceph/sysctl.conf.j2
