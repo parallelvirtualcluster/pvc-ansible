@@ -2,6 +2,10 @@
 #
 # First run check
 #
+- name: regather facts
+  setup:
+  tags: always
+
 - name: check if this is a new instance
   shell: "echo 'bootstrapped' > /etc/pvc-install.base"
   args:
