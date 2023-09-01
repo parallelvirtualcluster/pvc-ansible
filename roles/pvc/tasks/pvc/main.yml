@@ -10,13 +10,12 @@
       - ethtool
       - jq
     state: latest
+  when: bootstrap is defined and bootstrap
 
 - name: install pvc node daemon configuration
   template:
     src: pvc/{{ item }}.j2
     dest: /etc/pvc/{{ item }}
-  notify:
-    - restart pvcnoded
   with_items:
     - pvcnoded.yaml
 
@@ -24,8 +23,6 @@
   template:
     src: pvc/{{ item }}.j2
     dest: /etc/pvc/{{ item }}
-  notify:
-    - restart pvcapid
   with_items:
     - pvcapid.yaml
 
@@ -54,12 +51,6 @@
 - include: pvc/bootstrap.yml
   run_once: yes
   when: bootstrap is defined and bootstrap and is_coordinator
-
-- name: install daily vacuum script
-  template:
-    src: pvc/pvc-vacuum.j2
-    dest: /etc/cron.daily/pvc-vacuum
-    mode: 0755
 
 - meta: flush_handlers
 

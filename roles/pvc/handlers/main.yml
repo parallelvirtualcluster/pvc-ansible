@@ -40,13 +40,3 @@
 - name: restart ceph-mgr
   shell: "{% if is_coordinator %}sleep {{ 30 * (hostvars[inventory_hostname].ansible_local.host_id|int - 1) }} &&  systemctl restart ceph-mgr@{{ this_node }}.service{% endif %}"
   ignore_errors: true
-
-- name: restart pvcnoded
-  shell: "{% if is_coordinator %}sleep {{ 30 * (hostvars[inventory_hostname].ansible_local.host_id|int - 1) }} &&{% endif %} systemctl restart pvcnoded.service"
-  ignore_errors: true
-  when: bootstrap is not defined
-
-- name: restart pvcapid
-  shell: "{% if is_coordinator %}sleep {{ 30 * (hostvars[inventory_hostname].ansible_local.host_id|int - 1) }} &&{% endif %} systemctl restart pvcapid.service"
-  ignore_errors: true
-  when: bootstrap is not defined
