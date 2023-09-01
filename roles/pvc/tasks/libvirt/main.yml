@@ -8,6 +8,7 @@
       - qemu-block-extra
       - vhostmd
       - ceph-common
+      - libguestfs-tools
     state: latest
 
 - name: add libvirt user to ceph group
