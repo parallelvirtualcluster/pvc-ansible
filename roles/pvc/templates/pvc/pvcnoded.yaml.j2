@@ -65,6 +65,7 @@ pvc:
       target_selector: {{ pvc_migrate_target_selector }}
     configuration:
       directories:
+        plugin_directory: "/usr/share/pvc/plugins"
         dynamic_directory: "/run/pvc"
         log_directory: "/var/log/pvc"
         console_log_directory: "/var/log/libvirt"
