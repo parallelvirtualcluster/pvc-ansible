@@ -1,0 +1,23 @@
+---
+- name: install frr packages
+  apt:
+    name:
+      - frr
+    state: latest
+
+- name: install frr configuration
+  template:
+    src: frr/{{ item }}.j2
+    dest: /etc/frr/{{ item }}
+  with_items:
+    - daemons
+    - frr.conf
+  notify: restart frr
+  ignore_errors: true
+
+- name: disable services
+  service:
+    name: "{{ item }}"
+    enabled: no
+  with_items:
+    - frr

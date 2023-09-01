@@ -1,0 +1,144 @@
+#!/bin/bash
+
+# BLSE 2.0 bashrc file
+# {{ ansible_managed }}
+
+#
+# GENERAL SETTINGS
+#
+
+# Before anything, see if we're running interactively. If not, skip everything here.
+[[ $- == *i* ]] || return
+
+# Ensure bash completion is enabled if installed
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+# Some other tweaks
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# Set history limits and values
+shopt -s cdspell
+shopt -s dirspell
+shopt -s dotglob
+shopt -s histreedit
+shopt -s histverify
+shopt -s histappend
+PROMPT_COMMAND="history -a;$PROMPT_COMMAND"
+HISTCONTROL=ignoreboth
+HISTSIZE=25000
+HISTFILESIZE=25000
+
+#
+# BASH SETTINGS
+#
+
+# Set a shiny Linux Mint-style PS1 with spaces for easy double-click-select
+git_branch() {
+	git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/git:\1 /'
+}
+export PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\[\033[01;32m\]\H\[\033[01;34m\] \[\e[35m\]$(git_branch)\[\033[01;34m\]\w \$\[\033[00m\] '
+
+# Sensible PATH (find things in *sbin* as non-root user)
+export PATH="/usr/lib/check_mk_agent/plugins:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games"
+
+# Set PATH to include ~/Scripts if it exists
+if [ -d ~/Scripts ]; then
+	export PATH=~/Scripts:$PATH
+fi
+
+# Set editor to vim
+export EDITOR=/usr/bin/vim
+
+# Force SCREEN to xterm due to Debian weirdness
+export SCREEN="xterm"
+
+
+#
+# ALIASES
+#
+
+# Coloured command aliases
+alias ls='ls --color=always'
+alias dir='dir --color=always'
+alias vdir='vdir --color=always'
+alias grep='grep --color=always'
+alias fgrep='fgrep --color=always'
+alias egrep='egrep --color=always'
+alias xzgrep='xzgrep --color=always'
+alias less='less -r'
+
+# Convenient ls aliases
+alias ll='ls -alh'
+alias la='ls -A'
+alias l='ls -lh'
+
+# Always-sudo commands, because fuck typing sudo all the time
+alias service='sudo service'
+alias systemctl='sudo systemctl'
+alias journalctl='sudo journalctl'
+alias dmesg='sudo dmesg'
+alias apt='sudo apt'
+alias dpkg='sudo dpkg'
+alias find='sudo find'
+alias htop='sudo htop'
+alias powertop='sudo powertop'
+alias jnettop='sudo jnettop'
+alias wavemon='sudo wavemon'
+alias parted='sudo parted'
+alias fdisk='sudo fdisk'
+alias gdisk='sudo gdisk'
+alias chroot='sudo chroot'
+alias mount='sudo mount'
+alias umount='sudo umount'
+alias virsh='sudo virsh -c qemu:///system'
+alias ceph='sudo ceph'
+alias rbd='sudo rbd'
+alias mysql='sudo mysql'
+alias zpool='sudo zpool'
+alias zfs='sudo zfs'
+alias crm='sudo crm'
+
+# Cool aliases
+alias cccp='sudo rsync -auv --progress'
+alias untmp='sudo umount /tmp/tmp.*{/*/*,/*,} 2>/dev/null'
+alias txz='tar -p --same-owner -I pxz'
+alias stxz='sudo tar -p --same-owner -I pxz'
+alias zkcli='sudo /usr/share/zookeeper/bin/zkCli.sh'
+alias hatop='sudo hatop -s /var/lib/haproxy/admin.sock'
+alias patronictl='sudo patronictl -c /etc/patroni/config.yml -d zookeeper://localhost:2181'
+alias repo='sudo reprepro -b /srv/debrepo'
+alias beet='sudo -u debian-deluged beet --config=/srv/deluged/config.beets/config.yaml'
+{% if 'mon' in group_names %}
+alias icli='sudo -u monitor icli --status-file /omd/sites/monitor/tmp/nagios/status.dat --config /omd/sites/monitor/var/nagios/objects.cache -z \!o'
+
+#
+# Show monitoring stats
+#
+
+icli
+{% endif %}
+
+#
+# SOURCE OTHER SCRIPTS
+#
+
+test -f ~/.bashrc.d/* && . ~/.bashrc.d/*
+
+#
+# NICE AND CLEAN
+#
+
+echo
+
+#
+# END OF FILE
+#

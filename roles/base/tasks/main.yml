@@ -1,0 +1,719 @@
+---
+#
+# First run check
+#
+- name: first run check
+  shell: "echo 'bootstrapped' > /etc/pvc-install"
+  register: newhost
+  args:
+    creates: "/etc/pvc-install"
+
+#
+# Install custom fact scripts
+#
+- name: create facts directory
+  file:
+    dest: "/etc/ansible/facts.d"
+    state: directory
+    recurse: yes
+
+- name: install custom facts
+  template:
+    src: "etc/ansible/facts.d/{{ item }}.fact.j2"
+    dest: "/etc/ansible/facts.d/{{ item }}.fact"
+    mode: 0755
+  register: installed_facts
+  with_items:
+    - host_id
+    - host_group
+    - dhcp_status
+
+- name: regather local facts
+  setup:
+    gather_subset: "!all,!any,local"
+  when: installed_facts.changed
+
+- debug:
+    var: ansible_local.host_group
+    verbosity: 1
+  
+- debug:
+    var: ansible_local.host_id
+    verbosity: 1
+  
+- debug:
+    var: ansible_local.dhcp_status
+    verbosity: 1
+
+#
+# Debian Buster pre-release tweaks
+#
+- name: add proper VERSION line in os-release (Debian 10.X testing only)
+  lineinfile:
+    dest: "/etc/os-release"
+    line: 'VERSION="10 (buster)"'
+    state: present
+  register: installed_facts
+  when:
+    - ansible_distribution_major_version == "buster/sid" 
+
+- name: regather distribution facts
+  setup:
+  when:
+    - installed_facts.changed
+    - ansible_distribution_major_version == "buster/sid" 
+
+- debug:
+    var: ansible_distribution_release
+    verbosity: 1
+  when:
+    - ansible_distribution_major_version == "buster/sid" 
+
+#
+# Configure APT
+#
+
+- name: install apt config files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: "etc/apt/apt.conf.d/10norecommends.j2", dest: "/etc/apt/apt.conf.d/10norecommends" }
+    - { src: "etc/apt/apt.conf.d/50unattended-upgrades.j2", dest: "/etc/apt/apt.conf.d/50unattended-upgrades" }
+    - { src: "etc/apt/preferences.d/pins.j2", dest: "/etc/apt/preferences.d/pins" }
+    - { src: "etc/apt/sources.list.{{ ansible_machine }}.j2", dest: "/etc/apt/sources.list" }
+  tags: apt
+
+#
+# Safe apt upgrades (on first install only)
+#
+
+- name: apt update
+  apt:
+    update-cache: yes
+  when: newhost.changed
+
+- name: aptitude safe upgrade with autoremove
+  apt:
+    update_cache: yes
+    autoremove: yes
+    upgrade: safe
+  when: newhost.changed
+
+- name: install dbus
+  apt:
+    name:
+      - dbus
+    state: latest
+  when: newhost.changed
+
+- name: clean out apt cache
+  file:
+    path: "/var/cache/apt/archives"
+    state: absent
+  when: newhost.changed
+
+#
+# Purge unneeded packages
+#
+
+- name: remove unneeded packages
+  apt:
+    name:
+      - exim4
+      - exim4-base
+      - exim4-config
+      - exim4-daemon-light
+      - nano
+      - joe
+    state: absent
+    purge: yes
+    autoremove: yes
+
+#
+# Install common packages
+#
+
+- name: set override debconf selections
+  shell: 'echo "{{ item }}" | debconf-set-selections'
+  with_items:
+    - "wireshark-common wireshark-common/install-setuid boolean true"
+
+- name: install common packages (all arch)
+  apt:
+    name:
+      - debconf-utils
+      - iptables
+      - locales
+      - acpid
+      - acpi-support-base
+      - rsync
+      - bash
+      - bash-completion
+      - net-tools
+      - check-mk-agent
+      - dns-root-data
+      - bind9-host
+      - dnsutils
+      - postfix
+      - ntp
+      - openssh-client
+      - openssh-server
+      - libpam-systemd
+      - fail2ban
+      - ca-certificates
+      - openssl
+      - sudo
+      - rsyslog
+      - logrotate
+      - man
+      - less
+      - vim
+      - git
+      - nmap
+      - netcat-openbsd
+      - htop
+      - psmisc
+      - dstat
+      - iotop
+      - lsof
+      - jnettop
+      - iperf
+      - sysstat
+      - binutils
+      - deborphan
+      - wget
+      - curl
+      - gawk
+      - mmv
+      - pv
+      - bc
+      - reptyr
+      - sharutils
+      - tcptraceroute
+      - nethogs
+      - strace
+      - tshark
+      - acl
+      - bzip2
+      - haveged
+      - unattended-upgrades
+      - linux-image-amd64
+      - linux-headers-amd64
+
+#
+# System configuration
+#
+
+# capabilities
+- name: set ping capabilities
+  capabilities:
+    path: /bin/ping
+    capability: cap_net_raw=ep
+
+# locale
+- name: install locale config files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  notify:
+    - generate locales
+  with_items:
+    - { src: "etc/default/locale.j2", dest: "/etc/default/locale" }
+    - { src: "etc/locale.gen.j2", dest: "/etc/locale.gen" }
+
+- name: set timezone
+  file:
+    src: /usr/share/zoneinfo/Canada/Eastern
+    dest: /etc/localtime
+    state: link
+    force: yes
+
+# dns
+- name: write the hosts config
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: "etc/hosts.j2", dest: "/etc/hosts" }
+  tags: dns
+
+- name: write the resolver configs
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: "etc/dhcp/dhclient-enter-hooks.d/noresolv.j2", dest: "/etc/dhcp/dhclient-enter-hooks.d/noresolv" }
+    - { src: "etc/resolv.conf.j2", dest: "/etc/resolv.conf" }
+  tags: dns
+
+# acpi
+- name: install sysctl tweaks
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: "etc/sysctl.d/pvc.conf.j2", dest: "/etc/sysctl.d/pvc.conf" }
+
+- name: activate sysctl tweaks
+  shell: "sysctl -p {{ item }}"
+  with_items:
+    - /etc/sysctl.d/pvc.conf
+
+# syslog
+- name: install rsyslog and logrotate configs
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  notify:
+    - restart rsyslog
+  with_items:
+    - { src: "etc/rsyslog.conf.j2", dest: "/etc/rsyslog.conf" }
+    - { src: "etc/logrotate.d/rsyslog.j2", dest: "/etc/logrotate.d/rsyslog" }
+  tags: rsyslog
+
+- name: set journalctl persistence
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0644
+  with_items:
+    - { src: "etc/systemd/journald.conf.j2", dest: "/etc/systemd/journald.conf" }
+  tags: rsyslog
+
+# cron
+- name: install crontab
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0755
+  with_items:
+    - { src: "etc/crontab.j2", dest: "/etc/crontab" }
+
+# mta
+- name: install postfix generic config
+  template:
+    src: "etc/postfix/main.cf.j2"
+    dest: "/etc/postfix/main.cf"
+  notify:
+    - restart postfix
+
+- name: touch the postfix aliases file
+  file:
+    dest: /etc/postfix/aliases
+    state: touch
+
+#
+# Local alias maps
+#
+- name: install local alias maps for various users
+  lineinfile:
+    dest: "/etc/aliases"
+    regexp: "^{{ item }}:"
+    line: "{{ item }}: {{ username_email_root }}"
+    state: present
+  with_items:
+    - root
+    - postmaster
+    - amavis
+    - clamav
+  notify:
+    - newaliases
+
+# ntp
+- name: write the NTP config file
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  notify:
+    - restart ntp
+  with_items:
+    - { src: "etc/ntp.conf.j2", dest: "/etc/ntp.conf" }
+  tags: ntp
+
+# ssl
+- name: ensure haveged is running
+  service:
+    name: haveged
+    state: started
+
+- name: generate diffie-hellman parameters
+  command: openssl dhparam -out /etc/ssl/dhparams.pem 2048
+  args:
+    creates: /etc/ssl/dhparams.pem
+
+- name: correct permissions on dhparams
+  file:
+    dest: /etc/ssl/dhparams.pem
+    mode: 0440
+
+# ssh
+- name: write the sshd_config files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  notify:
+    - restart ssh
+  with_items:
+    - { src: 'etc/ssh/ssh_config.j2', dest: '/etc/ssh/ssh_config' }
+    - { src: 'etc/ssh/sshd_config.j2', dest: '/etc/ssh/sshd_config' }
+    - { src: 'etc/ssh/shosts.equiv.j2', dest: '/etc/ssh/shosts.equiv' }
+    - { src: 'etc/ssh/ssh_known_hosts.j2', dest: '/etc/ssh/ssh_known_hosts' }
+  tags: ssh
+
+- name: write sshd pam.d config
+  template:
+    src: "etc/pam.d/sshd.j2"
+    dest: "/etc/pam.d/sshd"
+  tags: ssh
+
+- name: remove unneeded SSH keys (leave only RSA and ED25519)
+  file:
+    name: "{{ item }}"
+    state: "absent"
+  with_items:
+    - /etc/ssh/ssh_host_dsa_key
+    - /etc/ssh/ssh_host_dsa_key.pub
+    - /etc/ssh/ssh_host_ecdsa_key
+    - /etc/ssh/ssh_host_ecdsa_key.pub
+  notify:
+    - restart ssh
+  tags: ssh
+
+- name: set permissions on rsa and ed25519 host keys (just in case they're wrong)
+  file:
+    name: "/etc/ssh/{{ item.name }}"
+    mode: "{{ item.mode }}"
+  with_items:
+    - { name: 'ssh_host_rsa_key', mode: '600' }
+    - { name: 'ssh_host_rsa_key.pub', mode: '644' }
+    - { name: 'ssh_host_ed25519_key', mode: '600' }
+    - { name: 'ssh_host_ed25519_key.pub', mode: '644' }
+  tags: ssh
+
+# sudo
+- name: write the sudoers file
+  template:
+    src: "etc/sudoers.j2"
+    dest: "/etc/sudoers"
+    mode: 0440
+
+# bash
+- name: write the bash.bashrc config file
+  template:
+    src: "etc/bash.bashrc.j2"
+    dest: "/etc/bash.bashrc"
+
+# motd
+- name: ensure update-motd and w scripts are present
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0755
+  with_items:
+    - { src: "usr/local/sbin/update-motd.sh.j2", dest: "/usr/local/sbin/update-motd.sh" }
+    - { src: "etc/profile.d/w.sh.j2", dest: "/etc/profile.d/w.sh" }
+  tags: motd
+
+- name: install update-motd crontab
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0644
+  with_items:
+    - { src: "etc/cron.d/update-motd.j2", dest: "/etc/cron.d/update-motd" }
+  tags: motd
+
+- name: ensure /etc/motd is absent
+  file:
+    dest: "/etc/motd"
+    state: absent
+  tags: motd
+
+# dpkg
+- name: install dpkg-cleanup script
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0755
+  with_items:
+    - { src: "usr/local/sbin/dpkg-cleanup.sh.j2", dest: "/usr/local/sbin/dpkg-cleanup.sh" }
+  tags: dpkg
+
+# fail2ban
+- name: install fail2ban configurations
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0644
+  notify: restart fail2ban
+  with_items:
+    - { src: "etc/fail2ban/action.d/route.conf.j2", dest: "/etc/fail2ban/action.d/route.conf" }
+    - { src: "etc/fail2ban/filter.d/sshd.conf.j2", dest: "/etc/fail2ban/filter.d/sshd.conf" }
+    - { src: "etc/fail2ban/jail.d/sshd.conf.j2", dest: "/etc/fail2ban/jail.d/sshd.conf" }
+    - { src: "etc/fail2ban/jail.d/sshd.local.j2", dest: "/etc/fail2ban/jail.d/sshd.local" }
+  tags: fail2ban
+
+#
+# Configure users
+#
+
+# common
+- name: ensure /var/home exists
+  file:
+    state: directory
+    dest: /var/home
+  tags: users
+
+- name: ensure group media exists
+  group:
+    name: media
+    gid: 9000
+    state: present
+  tags: users
+
+# root
+- name: set Root password
+  user:
+    name: root
+    password: "{{ passwdhash_root }}"
+  tags: users
+
+- name: remove Root known_hosts
+  file:
+    state: absent
+    dest: /root/.ssh/known_hosts
+  tags: users
+
+- name: write vimrc to root homedir
+  template:
+    src: var/home/user/vimrc.j2
+    dest: /root/.vimrc
+    mode: 0600
+  tags: users
+
+- name: create vimdir
+  file:
+    state: directory
+    dest: /root/.vim
+    mode: 0700
+  tags: users
+
+- name: write htoprc to homedir
+  template:
+    src: var/home/user/config/htop/htoprc.j2
+    dest: /root/.htoprc
+    mode: 0600
+  tags: users
+
+# backup
+- name: ensure backup user has shell
+  user:
+    name: backup
+    shell: /bin/sh
+  tags: users
+
+- name: create backup .ssh directory
+  file:
+    path: /var/backups/.ssh
+    state: directory
+    owner: backup
+    group: root
+    mode: 0700
+  tags: users
+
+- name: create backup authorized_keys file
+  template:
+    src: var/backups/ssh/authorized_keys.j2
+    dest: /var/backups/.ssh/authorized_keys
+    owner: backup
+    group: root
+    mode: 0640
+  tags: users
+
+- name: write the sudoers file
+  template:
+    src: etc/sudoers.d/sudoers-backup.j2
+    dest: /etc/sudoers.d/backup
+  tags: users
+
+- name: install the post-backup timestamp script
+  template:
+    src: var/backups/timestamp.sh.j2
+    dest: /var/backups/timestamp.sh
+    mode: 0755
+  tags: users
+
+- name: touch shares file
+  file:
+    dest: /var/backups/shares
+    state: touch
+    owner: backup
+  tags: users
+
+# deploy
+- name: ensure user deploy exists
+  user:
+    name: deploy
+    uid: 200
+    group: operator
+    shell: /bin/bash
+    home: /var/home/deploy
+    createhome: yes
+    move_home: yes
+    state: present
+    append: yes
+  tags: users
+
+- name: ensure homedir has right permissions
+  file:
+    dest: /var/home/deploy
+    state: directory
+    owner: deploy
+    group: operator
+    mode: 0700
+  tags: users
+
+- name: ensure .ssh directory exists
+  file:
+    dest: /var/home/deploy/.ssh
+    state: directory
+    owner: deploy
+    group: operator
+    mode: 0700
+  tags: users
+
+- name: add authorized keys
+  authorized_key:
+    user: "deploy"
+    key: "{{ item.key }}"
+  with_items: "{{ admin_users }}"
+  tags: users
+
+# admin_users
+- name: ensure user exists
+  user:
+    name: "{{ item.name }}"
+    uid: "{{ item.uid }}"
+    group: operator
+    groups: sudo,adm,media,wireshark
+    shell: /bin/bash
+    home: "/var/home/{{ item.name }}"
+    createhome: yes
+    state: present
+    append: yes
+  with_items: "{{ admin_users }}"
+  tags: users
+
+- name: ensure homedir has right permissions
+  file:
+    dest: "/var/home/{{ item.name }}"
+    state: directory
+    owner: "{{ item.name }}"
+    group: operator
+    mode: 0700
+  with_items: "{{ admin_users }}"
+  tags: users
+
+- name: ensure .ssh directory exists
+  file:
+    dest: "/var/home/{{ item.name }}/.ssh"
+    state: directory
+    owner: "{{ item.name }}"
+    group: operator
+    mode: 0700
+  with_items: "{{ admin_users }}"
+  tags: users
+
+- name: add authorized keys
+  authorized_key:
+    user: "{{ item.name }}"
+    key: "{{ item.key }}"
+  with_items: "{{ admin_users }}"
+  tags: users
+
+- name: write bashrc to homedir
+  template:
+    src: var/home/user/bashrc.j2
+    dest: "/var/home/{{ item.name }}/.bashrc"
+    owner: "{{ item.name }}"
+    group: operator
+    mode: 0700
+  with_items: "{{ admin_users }}"
+  tags: users
+
+- name: write bash_logout to homedir
+  template:
+    src: var/home/user/bash_logout.j2
+    dest: "/var/home/{{ item.name }}/.bash_logout"
+    owner: "{{ item.name }}"
+    group: operator
+    mode: 0700
+  with_items: "{{ admin_users }}"
+  tags: users
+
+- name: ensure htop config directory exists
+  file:
+    dest: "/var/home/{{ item.name }}/.config/htop"
+    state: directory
+    owner: "{{ item.name }}"
+    group: operator
+    mode: 0755
+  with_items: "{{ admin_users }}"
+  tags: users
+
+- name: write htoprc to homedir
+  template:
+    src: var/home/user/config/htop/htoprc.j2
+    dest: "/var/home/{{ item.name }}/.config/htop/htoprc"
+    owner: "{{ item.name }}"
+    group: operator
+    mode: 0644
+  with_items: "{{ admin_users }}"
+  tags: users
+
+- name: write profile to homedir
+  template:
+    src: var/home/user/profile.j2
+    dest: "/var/home/{{ item.name }}/.profile"
+    owner: "{{ item.name }}"
+    group: operator
+    mode: 0700
+  with_items: "{{ admin_users }}"
+  tags: users
+
+- name: write vimrc to homedir
+  template:
+    src: var/home/user/vimrc.j2
+    dest: "/var/home/{{ item.name }}/.vimrc"
+    owner: "{{ item.name }}"
+    group: operator
+    mode: 0600
+  with_items: "{{ admin_users }}"
+  tags: users
+
+- name: create vimdir
+  file:
+    state: directory
+    dest: /var/home/{{ item.name }}/.vim
+    owner: "{{ item.name }}"
+    group: operator
+    mode: 0700
+  with_items: "{{ admin_users }}"
+  tags: users
+
+#
+# Verify and enable services
+#
+
+- name: verify and enable services
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - acpid
+    - rsyslog
+    - postfix
+    - ntp
+    - ssh

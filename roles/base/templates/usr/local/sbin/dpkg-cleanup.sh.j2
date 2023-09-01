@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# dpkg-cleanup.sh - Remove obsolete packages and config files
+# {{ ansible_managed }}
+
+# Phase 1 - purge `rc` packages
+PACKAGE_LIST=( $( dpkg --list | awk '/^rc/{ print $2 } /^ri/{ print $2 }' ) )
+apt purge -y ${PACKAGE_LIST[@]}
+
+# Phase 2 - autoremove packages
+apt autoremove --purge -y
+
+# Phase 3 - clean archives
+apt clean
+
+# Phase 4 - find and remove obsolete config files
+OLD_FILES_LIST=( $( find /etc -type f -a \( -name '*.dpkg-*' -o -name '*.ucf-*' \) 2>/dev/null ) )
+rm -f ${OLD_FILES_LIST[@]}

@@ -1,0 +1,5 @@
+#!/bin/bash
+# Ansible fact - dhcp_status
+# {{ ansible_managed }}
+DHCP_STATUS="$( grep -o 'dhcp' /etc/network/interfaces | uniq )"
+echo "\"${DHCP_STATUS}\""

@@ -1,0 +1,5 @@
+#!/bin/bash
+# Ansible fact - host_group
+# {{ ansible_managed }}
+HOST_GROUP="$( hostname -s | sed 's/[0-9]*//g' )"
+echo "\"${HOST_GROUP}\""

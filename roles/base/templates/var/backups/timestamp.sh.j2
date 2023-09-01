@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Writes timestamps on successful BackupPC completion and updates dynamic share inventory for this host
+# {{ ansible_managed }}
+
+OK="$1"
+SHARE="$2"
+grep -F "${SHARE}" /var/backups/shares || echo "${SHARE}" >> /var/backups/shares
+if [[ ${OK} -eq 1 ]]; then
+	/bin/date +%s > ${SHARE}/.backup
+fi

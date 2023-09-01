@@ -1,0 +1,43 @@
+---
+- name: install pvc packages
+  apt:
+    name:
+      - pvc-daemon
+      - pvc-client-cli
+      - pvc-client-common
+    state: latest
+
+- name: install pvc configuration
+  template:
+    src: pvc/{{ item }}.j2
+    dest: /etc/pvc/{{ item }}
+  with_items:
+    - pvcd.yaml
+  notify: restart pvcd
+
+- name: verify if cluster has been started
+  shell: "/usr/share/zookeeper/bin/zkCli.sh stat /nodes 2>&1 | grep -q 'Node does not exist'"
+  register: cluster_init
+  failed_when: no
+
+- name: bootstrap a fresh cluster
+  shell: /usr/bin/pvc init
+  when: cluster_init.rc == 0 and ansible_local.host_id == 1
+
+- name: stop and disable unneccessary services
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  with_items:
+    - pdns.service
+
+- name: start and enable services
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - pvc-flush.service
+    - pvcd.service
+    - pvcd.target

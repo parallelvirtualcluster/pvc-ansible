@@ -1,0 +1,53 @@
+! frr main configuration
+! {{ ansible_managed }}
+!
+frr version 4.0
+frr defaults traditional
+hostname cloud-14
+no ipv6 forwarding
+username cumulus nopassword
+!
+service integrated-vtysh-config
+!
+log syslog informational
+!
+line vty
+!
+! BGP EVPN mesh configuration
+!
+router bgp {{ pvc_asn }}
+  bgp router-id {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.router_id }}{% endfor %}
+
+  no bgp default ipv4-unicast
+  ! BGP sessions with route reflectors
+  neighbor fabric peer-group
+  neighbor fabric remote-as {{ pvc_asn }}
+  neighbor fabric capability extended-nexthop
+{% for node in pvc_nodes if node.is_coordinator %}
+  neighbor {{ node.router_id }} peer-group fabric
+{% endfor %}
+  ! BGP sessions with upstream routers
+  neighbor upstream peer-group
+  neighbor upstream remote-as {{ pvc_asn }}
+  neighbor upstream capability extended-nexthop
+{% for router in pvc_routers %}
+  neighbor {{ router }} peer-group upstream
+{% endfor %}
+  !
+  address-family l2vpn evpn
+   neighbor fabric activate
+   advertise-all-vni
+  exit-address-family
+  address-family ipv4 unicast
+   neighbor fabric activate
+   neighbor upstream activate
+   redistribute connected
+  exit-address-family
+  address-family ipv6 unicast
+   neighbor fabric activate
+   neighbor upstream activate
+   redistribute connected
+  exit-address-family
+  !
+  exit
+!

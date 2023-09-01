@@ -1,0 +1,30 @@
+# Fail2Ban configuration file
+#
+# Author: Wolfgang Karall (based on sshd.conf from Cyril Jaquier)
+#
+
+[INCLUDES]
+
+# Read common prefixes. If any customizations available -- read them from
+# common.local
+before = common.conf
+
+
+[Definition]
+
+_daemon = sshd
+
+# Option:  failregex
+# Notes.:  regex to match the password failures messages in the logfile. The
+#          host must be matched by a group named "host". The tag "<HOST>" can
+#          be used for standard IP/hostname matching and is only an alias for
+#          (?:::f{4,6}:)?(?P<host>[\w\-.^_]+)
+# Values:  TEXT
+#
+failregex = ^%(__prefix_line)sUnable to negotiate with <HOST> .*$
+
+# Option:  ignoreregex
+# Notes.:  regex to ignore. If this regex matches, the line is ignored.
+# Values:  TEXT
+#
+ignoreregex = ^%(__prefix_line)sDid not receive identification string from .*$

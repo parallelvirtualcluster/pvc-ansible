@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Entropy availability check for Check_MK
+# Installed by BLSE 2.0 ansible
+
+if [ -e /proc/sys/kernel/random/entropy_avail ]; then
+
+  echo '<<<entropy_avail>>>'
+
+  echo -n "entropy_avail "
+  cat /proc/sys/kernel/random/entropy_avail
+
+  echo -n "poolsize "
+  cat /proc/sys/kernel/random/poolsize
+
+fi

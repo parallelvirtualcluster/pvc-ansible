@@ -1,0 +1,47 @@
+# General sysctl parameters for BLSE2
+# {{ ansible_managed }}
+
+# Reduce swappiness
+vm.swappiness = 1
+
+# enable Spoof protection (reverse-path filter)
+# Turn on Source Address Verification in all interfaces to
+# prevent some spoofing attacks
+net.ipv4.conf.default.rp_filter = 1
+net.ipv4.conf.all.rp_filter = 1
+
+# Ignore ICMP broadcasts
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+
+# Ignore bogus ICMP errors
+net.ipv4.icmp_ignore_bogus_error_responses = 1
+
+# Do not accept ICMP redirects (prevent MITM attacks)
+net.ipv4.conf.all.accept_redirects = 0
+{% if not 'rpi' in group_names %}
+net.ipv6.conf.all.accept_redirects = 0
+{% endif %}
+
+# Do not send ICMP redirects (we are not a router)
+net.ipv4.conf.all.send_redirects = 0
+
+# Do not accept IP source route packets (we are not a router)
+net.ipv4.conf.all.accept_source_route = 0
+{% if not 'rpi' in group_names %}
+net.ipv6.conf.all.accept_source_route = 0
+{% endif %}
+
+# Don't log Martian Packets
+net.ipv4.conf.all.log_martians = 0
+
+# Explicit Congestion Notification (ECN)
+net.ipv4.tcp_ecn = 1
+
+# number of seconds the kernel waits before rebooting on a panic
+kernel.panic = 60
+
+# Panic on an OOPS
+kernel.panic_on_oops = 1
+
+# Restrict dmesg
+kernel.dmesg_restrict = 1

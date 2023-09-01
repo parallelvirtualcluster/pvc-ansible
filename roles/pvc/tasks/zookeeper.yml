@@ -1,0 +1,26 @@
+---
+- name: install zookeeper packages
+  apt:
+    name:
+      - zookeeperd
+      - zookeeper-bin
+    state: latest
+
+- name: install zookeeper configuration
+  template:
+    src: zookeeper/{{ item }}.j2
+    dest: /etc/zookeeper/conf/{{ item }}
+  with_items:
+    - configuration.xsl
+    - environment
+    - log4j.properties
+    - myid
+    - zoo.cfg
+  notify: restart zookeeper
+
+- name: disable services
+  service:
+    name: "{{ item }}"
+    enabled: no
+  with_items:
+    - zookeeper

@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Archive old logs on loghost
+# {{ ansible_managed }}
+
+LOGPATH=/srv/log
+ARCHIVEPATH=${LOGPATH}/archive/
+test -d $ARCHIVEPATH || mkdir -p $ARCHIVEPATH
+for LOGFILE in \
+  kern.log \
+  daemon.log \
+  haproxy.log \
+  auth.log \
+  cron.log \
+  mail.log \
+  boot.log \
+  system.log
+do
+	test -d ${ARCHIVEPATH}/${LOGFILE} || mkdir -p ${ARCHIVEPATH}/${LOGFILE}
+	mv ${LOGPATH}/${LOGFILE}-* ${ARCHIVEPATH}/${LOGFILE}
+	gzip ${ARCHIVEPATH}/${LOGFILE}/*
+    find ${ARCHIVEPATH}/${LOGFILE} -type f -ctime +90 -exec rm {} \;
+done

@@ -1,0 +1,8 @@
+#!/bin/bash
+# Ansible fact - host_id
+# {{ ansible_managed }}
+HOST_ID="$( hostname -s | grep -o '[0-9]\+' )"
+if [[ -z ${HOST_ID} ]]; then
+	HOST_ID="0"
+fi
+echo "\"${HOST_ID}\""

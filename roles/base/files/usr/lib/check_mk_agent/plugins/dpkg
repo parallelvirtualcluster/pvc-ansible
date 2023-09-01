@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Apt and dpkg status check for Check_MK
+# Installed by BLSE 2.0 ansible
+
+TMP_DPKG="$( COLUMNS=200 dpkg --list )"
+TMP_AWK="$( awk '
+    { if (NR>5) {
+        if ($1 != "ii") bad_package[$2]=$1;
+    }}
+    END {
+        print NR-5;
+        bad_package_count=asort(bad_package,junk)
+        if (bad_package_count) {
+            for (package in bad_package)
+                print package "[" bad_package[package] "]"
+            exit 1
+        }
+    }
+' <<<"$TMP_DPKG" )"
+
+DEBIAN_VERSION="$( cat /etc/debian_version )"
+TOTAL_PACKAGES=$( head --lines=1 <<<"${TMP_AWK}" )
+UPGRADABLE_PACKAGES=( $( apt list --upgradable 2>/dev/null | grep -v '^Listing' | awk '{ gsub(/\]/,"",$NF); print $1 "[" $NF "<>" $2 "]" }' ) )
+INCONSISTENT_PACKAGES=( $( tail --lines=+2 <<<"${TMP_AWK}" ) )
+OLD_CONFIG_FILES=( $( ionice -c3 find /etc -type f -a \( -name '*.dpkg-*' -o -name '*.ucf-*' \) 2>/dev/null ) )
+
+echo "<<<dpkg>>>"
+echo "debian_version ${DEBIAN_VERSION}"
+echo "total_packages ${TOTAL_PACKAGES}"
+echo "upgradable_packages ${#UPGRADABLE_PACKAGES[*]} ${UPGRADABLE_PACKAGES[*]}"
+echo "inconsistent_packages ${#INCONSISTENT_PACKAGES[*]} ${INCONSISTENT_PACKAGES[*]}"
+echo "obsolete_configuration_files ${#OLD_CONFIG_FILES[*]} ${OLD_CONFIG_FILES[*]}"

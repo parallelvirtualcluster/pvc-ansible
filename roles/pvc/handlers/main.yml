@@ -1,0 +1,25 @@
+---
+- name: restart zookeeper
+  service:
+    name: zookeeper
+    state: restarted
+
+- name: restart libvirtd
+  service:
+    name: libvirtd
+    state: restarted
+
+- name: restart frr
+  service:
+    name: frr
+    state: restarted
+
+- name: restart patroni
+  service:
+    name: patroni
+    state: restarted
+
+- name: restart pvcd
+  service:
+    name: pvcd
+    state: restarted

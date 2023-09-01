@@ -1,0 +1,37 @@
+# Main rsyslog configuration
+# {{ ansible_managed }}
+
+####         ####
+#### MODULES ####
+####         ####
+
+module(load="imuxsock") # provides support for local system logging (e.g. via logger command)
+module(load="imklog")   # provides kernel logging support (previously done by rklogd)
+
+$ModLoad imudp
+$UDPServerAddress ::1
+$UDPServerRun 514
+
+####                   ####
+#### GLOBAL DIRECTIVES ####
+####                   ####
+
+$PreserveFQDN on
+$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat
+
+####       ####
+#### RULES ####
+####       ####
+
+ruleset(name="local") {
+    kern.*                                                                  /var/log/kern.log
+    auth,authpriv.*                                                         /var/log/auth.log
+    cron.*                                                                  /var/log/cron.log
+    daemon,user.*                                                           /var/log/daemon.log
+    mail.*                                                                  /var/log/mail.log
+    local5.*                                                                /var/log/nginx.log
+    local6.*                                                                /var/log/haproxy.log
+    local7.*                                                                /var/log/boot.log
+    *.info;kern,daemon,user,auth,authpriv,cron,mail,local6.none,local7.none /var/log/system.log
+}
+$DefaultRuleset local

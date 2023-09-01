@@ -1,0 +1,13 @@
+# PVC Zookeeper configuration
+# {{ ansible_managed }}
+
+tickTime=1000
+initLimit=10
+syncLimit=5
+dataDir=/var/lib/zookeeper
+
+clientPort=2181
+
+{% for node in pvc_nodes if node.is_coordinator %}
+server.{{ node.node_id }}={{ node.hostname }}:2888:3888
+{% endfor %}

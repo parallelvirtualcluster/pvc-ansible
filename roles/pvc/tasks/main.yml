@@ -1,0 +1,26 @@
+---
+- name: add module blacklist
+  template:
+    src: system/blacklist.j2
+    dest: /etc/modprobe.d/blacklist.conf
+
+- include_tasks: ceph.yml
+  tags: pvc-ceph
+
+- include_tasks: zookeeper.yml
+  tags: pvc-zookeeper
+
+- include_tasks: libvirt.yml
+  tags: pvc-libvirt
+
+- include_tasks: frr.yml
+  tags: pvc-frr
+
+- include_tasks: patroni.yml
+  tags: pvc-patroni
+
+- include_tasks: pvc.yml
+  tags: pvc-pvc
+  run_once: true
+  delegate_to: "{{ item }}"
+  with_items: "{{ play_hosts }}"

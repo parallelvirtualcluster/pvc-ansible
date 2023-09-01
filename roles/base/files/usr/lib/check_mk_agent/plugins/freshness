@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Open file handle freshness check for Check_MK
+# Installed by BLSE 2.0 ansible
+
+OK=0
+WARNING=1
+
+FRESHNESS="$( lsof -Fcftn / 2>/dev/null | grep -v '/tmp' | \
+awk '
+{
+    field=substr($0,1,1);
+    data=substr($0,2);
+    if (field=="f") {
+        file_descriptor=data;
+    } else if (field=="t") {
+        file_type=data;
+    } else if (field=="c") {
+        command_name=data;
+    } else if (field=="n" && file_descriptor=="DEL" && file_type=="REG") {
+        name=data;
+        file[command_name]++;
+    }
+}
+END {
+    for (name in file) {
+        error++;
+    # Skip these problematic programs
+    if (name=="systemd-udevd") { continue; }
+    if (name=="pulseaudio") { continue; }
+    if (name=="light-locker") { continue; }
+    if (name=="at-spi-bus-laun") { continue; }
+    if (name=="node") { continue; }
+    if (error_name) { error_name=error_name " " };
+        error_name=error_name name;
+    }
+    if (error_name) {
+        print error_name;
+        exit error;
+    } else {
+        exit;
+    }
+}' )";
+
+echo "<<<freshness>>>"
+if [ "$FRESHNESS" ]; then
+    echo "Applications needing restart: $FRESHNESS"
+    exit $WARNING
+else
+    echo "No applications needing restart"
+    exit $OK
+fi

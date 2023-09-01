@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# File ownership check for Check_MK
+# Installed by BLSE 2.0 ansible
+
+UID_MAX=299
+# http://www.debian.org/doc/debian-policy/ch-opersys.html
+# 0-99: Globally allocated by the Debian project
+# 100-199: (BLSE) Dynamically allocated system users and groups
+# 200-299: (BLSE) BLSE users and groups
+# 300-499: (BLSE) reserved
+# 500-599: (BLSE) system administrators
+# 600-999: (BLSE) reserved
+# 64045:   (BLSE) ceph
+
+function is_element_of {
+    local TO_FIND=$1
+    shift
+
+    for ARRAY_ELEMENT in $*
+    do
+        if test $TO_FIND = $ARRAY_ELEMENT
+        then
+            return 0
+        fi
+    done
+    return 1
+}
+
+OK=0
+WARNING=1
+
+FILESYSTEMs=(/ /var/log)
+MOUNTs=($(awk '{print $2}' '/proc/mounts'))
+
+FILEs=()
+for FILESYSTEM in ${FILESYSTEMs[@]}; do
+    while IFS= read -r -d $'\0' FILE
+    do
+        if ! is_element_of "$FILE" ${FILESYSTEMs[*]}; then
+            if is_element_of $FILE ${MOUNTs[*]}; then
+                continue
+            fi
+        fi
+        FILEs+=($FILE)
+    done < <( find ${FILESYSTEM} -xdev -uid +$UID_MAX -not -uid +64000 -not -uid 2000 \
+        -not \( -type d -a \( -path /media -o -path /mnt \) \) \
+        -not \( -name '.*.swp' -a -mtime -3 \) \
+        -not \( -path '*/.git' -o -path '*/.git/*' \) \
+        -not \( -path '*.dirtrack.Storable' \) \
+        -not \( -path '/home/*' \) \
+        -not \( -path '/tmp/*' \) \
+        -not \( -path '/var/home/*' \) \
+        -not \( -path '/var/log/gitlab/*' \) \
+        -print0 2>/dev/null )
+done
+
+echo "<<<file_ownership>>>"
+
+if ! test ${#FILEs[*]} -eq 0; then
+    echo -n "${#FILEs[*]} file(s) found with invalid ownership (must be UID <299): "
+    echo "${FILEs[*]}"
+    exit $WARNING
+else
+    echo "All files have valid ownership"
+    exit $OK
+fi
+

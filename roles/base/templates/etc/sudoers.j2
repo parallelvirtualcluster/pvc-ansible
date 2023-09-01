@@ -1,0 +1,12 @@
+# sudoers configuraton; per-host declarations go in /etc/sudoers.d
+# {{ ansible_managed }}
+
+Defaults	env_reset
+Defaults	mail_badpass
+Defaults	secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+root	ALL=(ALL:ALL) NOPASSWD: ALL
+deploy	ALL=(ALL:ALL) NOPASSWD: /bin/sh
+%sudo	ALL=(ALL:ALL) NOPASSWD: ALL
+
+#includedir /etc/sudoers.d

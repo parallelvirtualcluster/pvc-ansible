@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Backup check for Check_MK
+# Installed by BLSE 2.0 ansible
+
+SHARELIST=( $( cat /var/backups/shares ) )
+
+echo "<<<backup>>>"
+for SHARE in ${SHARELIST[@]}; do
+    echo "${SHARE} $( cat ${SHARE}/.backup )"
+done

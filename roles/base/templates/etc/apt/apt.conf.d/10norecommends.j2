@@ -1,0 +1,5 @@
+# apt configuration: disable recommends
+# {{ ansible_managed }}
+
+APT::Install-Recommends "0";
+APT::Install-Suggests "0";

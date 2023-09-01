@@ -1,0 +1,23 @@
+# Logrotate configuration for loghost archives
+# {{ ansible_managed }}
+
+/srv/log/kern.log
+/srv/log/daemon.log
+/srv/log/haproxy.log
+/srv/log/auth.log
+/srv/log/cron.log
+/srv/log/mail.log
+/srv/log/boot.log
+/srv/log/system.log
+{
+	weekly
+	missingok
+	copytruncate
+	dateext
+	notifempty
+	sharedscripts
+	postrotate
+        /usr/lib/rsyslog/rsyslog-rotate &>/dev/null
+		/usr/local/sbin/loghost-archive.sh &>/dev/null
+	endscript
+}

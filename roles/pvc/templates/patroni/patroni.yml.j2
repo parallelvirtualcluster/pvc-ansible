@@ -1,0 +1,63 @@
+scope: pvcdns
+namespace: /patroni
+name: {{ ansible_hostname }}
+
+restapi:
+    listen: '0.0.0.0:8008'
+    connect_address: '{{ ansible_fqdn }}:8008'
+
+zookeeper:
+    hosts: [ {% for host in groups[ansible_local.host_group] %}'{{ host }}.{{ ansible_domain }}:2181',{% endfor %} ]
+
+bootstrap:
+    dcs:
+        ttl: 30
+        loop_wait: 10
+        retry_timeout: 10
+        maximum_lag_on_failover: 1048576
+        postgresql:
+            use_pg_rewind: true
+
+    initdb:
+    - encoding: UTF8
+    - data-checksums
+
+    pg_hba:
+    - local all all peer
+    - host replication replicator 127.0.0.1/32 trust
+{% for host in groups[ansible_local.host_group] %}
+    - host replication replicator {{ host }}.{{ ansible_domain }} trust
+{% endfor %}
+    - host all all 0.0.0.0/0 md5
+
+    users:
+        admin:
+            password: admin
+            options:
+                - createrole
+                - createdb
+
+postgresql:
+    listen: '0.0.0.0:5432'
+    connect_address: '{{ ansible_fqdn }}:5432'
+    log_destination: 'stderr'
+    log_min_messages: INFO
+    custom_conf: /etc/postgresql/postgresql.pvc.conf
+    bin_dir: /usr/lib/postgresql/11/bin
+    data_dir: /var/lib/postgresql/patroni/pvc
+    pgpass: /tmp/pgpass
+    authentication:
+        replication:
+            username: '{{ pvc_replication_database_user }}'
+            password: '{{ pvc_replication_database_password }}'
+        superuser:
+            username: '{{ pvc_superuser_database_user }}'
+            password: '{{ pvc_superuser_database_password }}'
+    parameters:
+        unix_socket_directories: '/run/postgresql'
+
+tags:
+    nofailover: false
+    noloadbalance: false
+    clonefrom: false
+    nosync: false

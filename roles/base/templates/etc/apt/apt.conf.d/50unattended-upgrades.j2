@@ -1,0 +1,37 @@
+# Unattended upgrades configuration
+# {{ ansible_managed }}
+
+Unattended-Upgrade::Origins-Pattern {
+        "origin=Debian,codename=${distro_codename},label=Debian";
+        "origin=Debian,codename=${distro_codename},label=Debian-Security";
+};
+
+Unattended-Upgrade::Package-Blacklist {
+    # "libc6$";
+    # "libc6-dev$";
+    # "libc6-i686$";
+};
+
+# General configurations
+Unattended-Upgrade::AutoFixInterruptedDpkg "true";
+Unattended-Upgrade::MinimalSteps "true";
+Unattended-Upgrade::InstallOnShutdown "false";
+Unattended-Upgrade::Mail "root@bonilan.net";
+Unattended-Upgrade::MailOnlyOnError "true";
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";
+Unattended-Upgrade::Remove-New-Unused-Dependencies "true";
+Unattended-Upgrade::Remove-Unused-Dependencies "true";
+Unattended-Upgrade::SyslogEnable "true";
+Unattended-Upgrade::SyslogFacility "daemon";
+Unattended-Upgrade::Verbose "false";
+Unattended-Upgrade::Debug "false";
+
+# Reboot configurations - skip cephX and hvX
+{% if 'hv' in group_names or 'ceph' in group_names %}
+Unattended-Upgrade::Automatic-Reboot "false";
+{% else %}
+Unattended-Upgrade::Automatic-Reboot "true";
+Unattended-Upgrade::Automatic-Reboot-WithUsers "true";
+{% set reboot_time_minute = 2 * ansible_local.host_id|int %}
+Unattended-Upgrade::Automatic-Reboot-Time "04:{{ '%02d' % reboot_time_minute }}";
+{% endif %}

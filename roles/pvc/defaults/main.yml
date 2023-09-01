@@ -1,0 +1,57 @@
+---
+# Ceph storage
+ceph_storage_secret_key: ""
+ceph_storage_secret_uuid: ""
+# Database
+pvc_dns_database_name: "pvcdns"
+pvc_dns_database_user: "pvcdns"
+pvc_dns_database_password: "PVCdnsPassw0rd"
+# Coordinators
+pvc_nodes:
+  - hostname: "pvc1"
+    is_coordinator: yes
+    node_id: 1
+    router_id: "10.0.0.1"
+    cluster_ip: "by-id"
+    storage_ip: "by-id"
+    upstream_ip: ""
+    ipmi_host: "pvc1-lom"
+    ipmi_user: ""
+    ipmi_password: ""
+  - hostname: "pvc2"
+    is_coordinator: yes
+    node_id: 2
+    router_id: "10.0.0.2"
+    cluster_ip: "by-id"
+    storage_ip: "by-id"
+    upstream_ip: ""
+    ipmi_host: "pvc2-lom"
+    ipmi_user: ""
+    ipmi_password: ""
+  - hostname: "pvc3"
+    is_coordinator: yes
+    node_id: 3
+    router_id: "10.0.0.3"
+    cluster_ip: "by-id"
+    storage_ip: "by-id"
+    upstream_ip: ""
+    ipmi_host: "pvc3-lom"
+    ipmi_user: ""
+    ipmi_password: ""
+# Networks
+pvc_asn: "65001"
+pvc_routers:
+  - ""
+pvc_cluster_device: "eth0"
+pvc_cluster_domain: "pvc.local"
+pvc_cluster_subnet: "10.0.0.0/24"
+pvc_cluster_floatingip: "10.0.0.251/24"
+pvc_storage_device: "eth1"
+pvc_storage_domain: "pvc.storage"
+pvc_storage_subnet: "10.0.1.0/24"
+pvc_storage_floatingip: "10.0.1.251/24"
+pvc_upstream_device: "eth2"
+pvc_upstream_domain: ""
+pvc_upstream_subnet: ""
+pvc_upstream_floatingip: ""
+pvc_upstream_gatewayip: ""

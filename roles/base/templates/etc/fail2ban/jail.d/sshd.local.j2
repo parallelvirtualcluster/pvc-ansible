@@ -1,0 +1,11 @@
+[DEFAULT]
+maxretry    = 3
+bantime     = 14400
+ignoreip    = 127.0.0.0/8 10.0.0.0/8 198.55.48.48/28
+
+[ssh]
+enabled     = true
+filter      = sshd
+action      = route
+logpath     = /var/log/auth.log
+

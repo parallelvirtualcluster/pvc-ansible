@@ -1,0 +1,14 @@
+#!/bin/bash
+OK=0
+WARNING=1
+
+echo "<<<kernelversion>>>"
+ACTIVE="$( uname -v | awk '{ print $4" "$5 }' )"
+ONDISK="$( strings /vmlinuz | grep 'Debian' | head -1 | awk '{ print $6" "$7 }' )"
+echo ${ACTIVE}
+echo ${ONDISK}
+if [[ ${ACTIVE} != ${ONDISK} ]]; then
+    exit $WARNING
+else
+    exit $OK
+fi

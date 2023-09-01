@@ -1,0 +1,12 @@
+# apt configuration: pinning preferences
+# {{ ansible_managed }}
+
+Package: *
+Pin: release a={{ ansible_distribution_release }}
+Pin-Priority: 999
+
+{% if 'base' in group_names %}
+Package: *
+Pin: release a={{ ansible_distribution_release }}-backports
+Pin-Priority: -1
+{% endif %}

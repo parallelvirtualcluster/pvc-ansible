@@ -1,0 +1,5 @@
+# sudoers configuraton for BackupPC
+# {{ ansible_managed }}
+
+Cmnd_Alias BACKUPS = /usr/bin/rsync, /var/backups/timestamp.sh
+backup ALL=(root) NOPASSWD: BACKUPS

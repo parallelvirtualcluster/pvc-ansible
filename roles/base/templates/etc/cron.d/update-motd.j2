@@ -1,0 +1,4 @@
+# cron file for motd
+# {{ ansible_managed }}
+
+* *	* * *	root	/bin/sh /usr/local/sbin/update-motd.sh &>/dev/null
