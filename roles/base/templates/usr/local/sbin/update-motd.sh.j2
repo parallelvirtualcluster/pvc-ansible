@@ -5,9 +5,16 @@
 
 set -o errexit
 
+# Title-case generator
+tc() { set ${*,,} ; echo ${*^} ; }
+
 TMPFILE=$(mktemp)
 TGTFILE=/run/pvc-motd.dynamic
-DEBVER="$( grep 'PRETTY_NAME=' /etc/os-release | awk -F'"' '{ print $2 }' )"
+
+NAME="$( grep '^NAME=' /etc/os-release | awk -F'"' '{ print $2 }' )"
+VERSION_ID="$( grep '^VERSION_ID=' /etc/os-release | awk -F'"' '{ print $2 }' )"
+VERSION_CODENAME="$( grep '^VERSION_CODENAME=' /etc/os-release | awk -F'=' '{ print $2 }' )"
+DEBVER="${NAME} ${VERSION_ID} \"$(tc ${VERSION_CODENAME} )\""
 
 echo >> $TMPFILE
 echo -e "\033[01;34mParallel Virtual Cluster \033[01;36m(${DEBVER})\033[0m" >> $TMPFILE
