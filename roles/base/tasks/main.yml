@@ -513,6 +513,62 @@
     - ownership
   tags: base-cmkagent
 
+# backups
+- name: create backup directory
+  file:
+    dest: /srv/backups
+    state: directory
+  tags: base-backups
+
+- name: install daily backup script
+  template:
+    src: etc/cron.daily/pvc-backup.j2
+    dest: /etc/cron.daily/pvc-backup
+    mode: 0755
+  tags: base-backups
+
+- name: install GRUB configuration
+  template:
+    src: etc/default/grub.j2
+    dest: /etc/default/grub
+  notify:
+    - update grub
+  tags: base-grub
+
+- name: install IPMI network interfaces fragment
+  template:
+    src: etc/network/interfaces.d/ipmi.j2
+    dest: /etc/network/interfaces.d/ipmi
+  tags: base-ipmi
+
+- name: configure IPMI username
+  command: "ipmitool user set name {{ ipmi_user_configuration[cluster_hardware][item]['id'] }} {{ ipmi_user_configuration[cluster_hardware][item]['username'] }}"
+  with_items:
+    - "admin"
+    - "pvc"
+  tags: base-ipmi
+
+- name: configure IPMI password
+  command: "ipmitool user set password {{ ipmi_user_configuration[cluster_hardware][item]['id'] }} {{ ipmi_user_configuration[cluster_hardware][item]['password'] }}"
+  with_items:
+    - "admin"
+    - "pvc"
+  tags: base-ipmi
+
+- name: configure IPMI role
+  command: "ipmitool user priv {{ ipmi_user_configuration[cluster_hardware][item]['id'] }} {{ ipmi_user_configuration[cluster_hardware][item]['role'] }} {{ ipmi_user_configuration[cluster_hardware]['channel'] }}"
+  with_items:
+    - "admin"
+    - "pvc"
+  tags: base-ipmi
+
+- name: enable IPMI user
+  command: "ipmitool user enable {{ ipmi_user_configuration[cluster_hardware][item]['id'] }}"
+  with_items:
+    - "admin"
+    - "pvc"
+  tags: base-ipmi
+
 #
 # Configure users
 #

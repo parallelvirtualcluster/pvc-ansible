@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Backup the PVC Zookeeper database
+# {{ ansible_managed }}
+
+set -o errexit
+
+BACKUP_DIR="/srv/backups/"
+BACKUP_FILENAME_BASE="pvc-zookeeper-backup"
+DATE="$( date +%Y%m%d )"
+BACKUP_FILENAME="${BACKUP_DIR}/${BACKUP_FILENAME_BASE}.${DATE}.json"
+
+pvc -c local task backup > ${BACKUP_FILENAME}
+xz ${BACKUP_FILENAME}
+find ${BACKUP_DIR} -type f -name "${BACKUP_FILENAME_BASE}*" -mtime +7 -exec rm {} \;

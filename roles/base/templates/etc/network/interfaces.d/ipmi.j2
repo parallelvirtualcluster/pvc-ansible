@@ -1,0 +1,5 @@
+iface ipmi inet manual
+    pre-up ipmitool lan set 1 ipsrc static
+    pre-up ipmitool lan set 1 ipaddr {{ ipmi['hosts'][ansible_hostname]['address'] }}
+    pre-up ipmitool lan set 1 netmask {{ ipmi['hosts'][ansible_hostname]['netmask'] }}
+    pre-up ipmitool lan set 1 defgw ipaddr {{ ipmi['hosts'][ansible_hostname]['gateway'] }}
