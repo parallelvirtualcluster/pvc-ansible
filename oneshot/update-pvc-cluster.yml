@@ -9,6 +9,14 @@
     - name: set PVC maintenance mode
       command: pvc maintenance on
 
+    - name: temporarily set norestart policy
+      copy:
+        dest: "/usr/sbin/policy-rc.d"
+        mode: "0755"
+        content: |
+          #!/bin/sh
+          exit 101
+
     - name: aptitude full upgrade and cleanup
       apt:
         update_cache: yes
@@ -27,6 +35,12 @@
         dest: /var/cache/apt/archives
         state: absent
   
+    - name: remove temporarily set norestart policy
+      file:
+        dest: "/usr/sbin/policy-rc.d"
+        state: "absent"
+        force: "yes"
+
     - name: check library freshness
       command: /usr/lib/check_mk_agent/plugins/freshness
       register: freshness
