@@ -41,9 +41,9 @@ pvc:
       database:
         host: localhost
         port: 5432
-        name: {{ pvc_prov_database_name }}
-        user: {{ pvc_prov_database_user }}
-        pass: {{ pvc_prov_database_password }}
+        name: {{ pvc_api_database_name }}
+        user: {{ pvc_api_database_user }}
+        pass: {{ pvc_api_database_password }}
   system:
     intervals:
       vm_shutdown_timeout: {{ pvc_vm_shutdown_timeout }}

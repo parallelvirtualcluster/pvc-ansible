@@ -49,24 +49,24 @@
   
     - name: create user for Provisioner role
       postgresql_user:
-        name: "{{ pvc_prov_database_user }}"
-        password: "{{ pvc_prov_database_password }}"
+        name: "{{ pvc_api_database_user }}"
+        password: "{{ pvc_api_database_password }}"
         encrypted: yes
         state: present
         login_host: /run/postgresql
   
     - name: create database for Provisioner role
       postgresql_db:
-        name: "{{ pvc_prov_database_name }}"
-        owner: "{{ pvc_prov_database_user }}"
+        name: "{{ pvc_api_database_name }}"
+        owner: "{{ pvc_api_database_user }}"
         encoding: utf8
         state: present
         login_host: /run/postgresql
   
     - name: set user privs for Provisioner role
       postgresql_user:
-        name: "{{ pvc_prov_database_user }}"
-        db: "{{ pvc_prov_database_name }}"
+        name: "{{ pvc_api_database_user }}"
+        db: "{{ pvc_api_database_name }}"
         priv: ALL
         login_host: /run/postgresql
   
@@ -81,7 +81,7 @@
     - name: create extensions for Provisioner database
       postgresql_ext:
         name: "{{ item }}"
-        db: "{{ pvc_prov_database_name }}"
+        db: "{{ pvc_api_database_name }}"
         login_host: /run/postgresql
       with_items: "{{ extensions }}"
       when: extensions is defined
