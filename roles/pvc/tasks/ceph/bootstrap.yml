@@ -68,9 +68,19 @@
     - "osd journal size = 2"
     - "osd pool default size = 3"
     - "osd pool default min size = 2"
-    - "osd pool default pg num = 512"
-    - "osd pool default pgp num = 512"
+    - "osd pool default pg num = 256"
+    - "osd pool default pgp num = 256"
     - "osd crush chooseleaf type = 1"
+    - "bluestore cache autotune = true"
+
+- name: add memory limit if requested
+  lineinfile:
+    dest: /tmp/ceph-bootstrap/ceph.conf
+    line: "{{ item }}"
+    state: present
+  with_items:
+    - "osd memory target = {{ pvc_osd_memory_limit }}"
+  when: pvc_osd_memory_limit is defined
 
 - name: collect bootstrapped Ceph files into the role
   fetch:

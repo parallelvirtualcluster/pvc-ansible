@@ -72,6 +72,12 @@ pvc_asn: "65500"
 pvc_routers:
   - "192.168.100.1"
 
+# Ceph OSD tuning
+# > Uncomment in low-memory situation (nodes with <32GB RAM).
+# > These options are *only* applied at cluster bootstrap and cannot be changed later.
+# OSD memory limit - 939524096 (~900MB) is the lowest possible value; default is 4GB.
+#pvc_osd_memory_limit: 939524096
+
 # Node list
 # > Every node configured with this playbook must be specified in this list.
 pvc_nodes:
