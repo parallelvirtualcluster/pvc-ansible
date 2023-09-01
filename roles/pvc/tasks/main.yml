@@ -23,17 +23,9 @@
   when: newhost is defined and newhost
   tags: always
 
-# General blacklisting of modules
-- name: add module blacklist
-  template:
-    src: system/blacklist.j2
-    dest: /etc/modprobe.d/blacklist.conf
-
-# Logrotate configuration
-- name: add logrotate configuration
-  template:
-    src: system/pvc.j2
-    dest: /etc/logrotate.d/pvc
+# Install system tweaks
+- include: system/main.yml
+  tags: pvc-system
 
 # Install base databases (coordinators only)
 - include: ceph/main.yml

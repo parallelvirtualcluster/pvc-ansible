@@ -1,0 +1,13 @@
+# PVC Ceph OSD cpuset service unit
+# {{ ansible_managed }}
+{% set cset_host = pvc_shield_osds_cset | selectattr('hostname', 'equalto', inventory_hostname) %}
+[Unit]
+Description = Ceph OSD cpuset shield creation
+Before = ceph-osd@.service libvirtd.service
+
+[Service]
+Type = oneshot
+ExecStart = /usr/local/sbin/ceph-osd-cpuset
+
+[Install]
+WantedBy = ceph.target

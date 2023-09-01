@@ -1,0 +1,63 @@
+#!/bin/bash
+# PVC Ceph OSD cpuset preparation script
+# {{ ansible_managed }}
+
+# This script is designed to prepare the cpusets for use by Ceph OSDs, VMs, and other system resources.
+# Libvirt does not make this easy with any way to globally set its CPUs, so we must do this trickery.
+{% set cset_host = pvc_shield_osds_cset | selectattr('hostname', 'equalto', inventory_hostname) %}
+
+A_OSD_CPUS=( {{ cset_host[0]['osd_cset'] | join(' ') }} )
+A_SYS_CPUS=()
+
+CPU_INFO="$( lscpu )"
+
+# First, we must determine how many NUMA nodes we have
+NUMA_COUNT="$( grep '^NUMA node(s)' <<<"${CPU_INFO}" | awk '{ print $NF }' )"
+
+# If we have 1 NUMA node, our SYS_MEMS is 0; otherwise it's 0-X
+# This is needed to explicitly set our memspec during the set
+if [[ ${NUMA_COUNT} -eq 1 ]]; then
+    SYS_MEMS="0"
+else
+    SYS_MEMS="0-$(( ${NUMA_COUNT} - 1 ))"
+fi
+
+# We must determine which NUMA nodes our OSD CPUS are in for the memspec during the set
+A_OSD_MEMS=()
+for CPU in ${A_OSD_CPUS[@]}; do
+    NODE="$( grep -E '^NUMA node[0-9]+ CPU' <<<"${CPU_INFO}" | grep -w "${CPU}" | awk '{ print $2 }' | sed 's/node//' )"
+    if [[ ! " ${A_OSD_MEMS} " =~ " ${NODE} " ]]; then
+        A_OSD_MEMS+=( $NODE )
+    fi
+done
+
+# Determine our CPU count
+CPU_COUNT="$( grep '^CPU(s)' <<<"${CPU_INFO}" | awk '{ print $NF }' )"
+echo "CPU count: ${CPU_COUNT}"
+
+# Loop through all the CPUs in the count; if they are not in OSD_CPUS, add them to the SYS_CPUS array
+for i in $( seq 0 $(( ${CPU_COUNT} - 1)) ); do
+    if [[ ! " ${A_OSD_CPUS[*]} " =~ " ${i} " ]]; then
+        A_SYS_CPUS+=( $i )
+    fi
+done
+
+# Convert arrays into CSV
+OSD_MEMS="$( IFS=, ; echo "${A_OSD_MEMS[*]}" )"
+OSD_CPUS="$( IFS=, ; echo "${A_OSD_CPUS[*]}" )"
+SYS_CPUS="$( IFS=, ; echo "${A_SYS_CPUS[*]}" )"
+
+echo "OSD CPUs: ${OSD_CPUS}"
+echo "OSD Mems: ${OSD_MEMS}"
+echo "System/VM CPUs: ${SYS_CPUS}"
+echo "System/VM Mems: ${SYS_MEMS}"
+
+# Create the system cpuset and move everything currently running into it
+/usr/bin/cset set --cpu=${SYS_CPUS} --mem=${SYS_MEMS} system
+/usr/bin/cset proc --move --force --threads root --toset=system
+
+# Create our Libvirt cpuset (identical to system cpuset)
+/usr/bin/cset set --cpu=${SYS_CPUS} --mem=${SYS_MEMS} machine
+
+# Create our OSD cpuset
+/usr/bin/cset set --cpu=${OSD_CPUS} --mem=${OSD_MEMS} osd

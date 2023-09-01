@@ -117,4 +117,55 @@
     - ceph-mon@{{ ansible_hostname }}
     - ceph-mgr@{{ ansible_hostname }}
 
+# System OSD CPU shielding activation
+- block:
+    - name: install packages
+      apt:
+        name:
+          - cpuset
+          - numactl
+        state: latest
+
+    - name: install ceph-osd-cpuset script
+      template:
+        src: ceph/ceph-osd-cpuset.j2
+        dest: /usr/local/sbin/ceph-osd-cpuset
+        mode: 0755
+
+    - name: install ceph-osd-cpuset service unit
+      template:
+        src: ceph/ceph-osd-cpuset.service.j2
+        dest: /etc/systemd/system/ceph-osd-cpuset.service
+      register: systemd_file_cpuset
+
+    - name: create ceph-osd override dropin directory
+      file:
+        dest: /etc/systemd/system/ceph-osd@.service.d
+        state: directory
+
+    - name: install ceph-osd override dropin
+      template:
+        src: ceph/ceph-osd-cpuset.conf.j2
+        dest: /etc/systemd/system/ceph-osd@.service.d/cpuset.conf
+      register: systemd_file_osd
+
+    - name: reload systemd to apply previous changes
+      command: "systemctl daemon-reload"
+      when: systemd_file_cpuset.changed or systemd_file_osd.changed
+
+    - name: enable ceph-osd-cpuset service
+      service:
+        name: ceph-osd-cpuset
+        enabled: yes
+
+    - debug:
+        msg: "NOTICE: cpuset configs have NOT been applied to the running system. This node must be rebooted to apply these changes."
+      when: systemd_file_cpuset.changed or systemd_file_osd.changed
+  tags: pvc-ceph-cpuset
+  when:
+    - pvc_shield_osds_enable is defined
+    - pvc_shield_osds_enable
+    - pvc_shield_osds_cset is defined
+    - pvc_shield_osds_cset | selectattr('hostname', 'equalto', inventory_hostname) | list | count > 0
+
 - meta: flush_handlers

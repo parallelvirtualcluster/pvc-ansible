@@ -14,8 +14,6 @@
 #pvc_log_node_lines: 2000                # The number of node log lines to store in Zookeeper for 'node log' commands.
 
 # Timing and fencing configuration (uncomment to override defaults)
-
-# Timing and fencing configuration (uncomment to override defaults)
 #   These default options are generally best for most clusters; override these if you want more granular
 #   control over the timings of various areas of the cluster, for instance if your hardware is slow or error-prone.
 #pvc_vm_shutdown_timeout: 180            # Number of seconds before a 'shutdown' VM is forced off
@@ -36,8 +34,8 @@ pvc_api_secret_key: ""                      # Use pwgen to generate
 # The first token will always be used for the "local" connection, and thus at least one token MUST be defined.
 pvc_api_enable_authentication: True
 pvc_api_tokens:
-  - description: "myuser"
-    token: "a3945326-d36c-4024-83b3-2a8931d7785a"
+#  - description: "myuser"
+#    token: "a3945326-d36c-4024-83b3-2a8931d7785a"
 
 # PVC API SSL configuration
 # Use these options to enable SSL for the API listener, providing security over WAN connections.
@@ -76,22 +74,7 @@ pvc_asn: "65500"
 pvc_routers:
   - "192.168.100.1"
 
-# Memory tuning
-# > Uncomment these options in low-memory situations (nodes with <32GB RAM).
-# OSD memory limit - 939524096 (~900MB) is the lowest possible value; default is 4GB.
-# > This option is *only* applied at cluster bootstrap and cannot be changed later
-#   here, only by editing the `files/ceph/<cluster>/ceph.conf` file directly.
-#pvc_osd_memory_limit: 939524096
-# Zookeeper heap memory limit, sets Xms and Xmx values to the Java process; default is 512M.
-# > WARNING: Unless you have an extremely limited amount of RAM, changing this setting is NOT RECOMMENDED.
-#            Lowering the heap limit may cause poor performance or crashes in Zookeeper during some tasks.
-#pvc_zookeeper_heap_limit: 128M   # 1/4 of default
-# Zookeeper stack memory limit, sets Xss value to the Java process; default is 1024M.
-# > WARNING: Unless you have an extremely limited amount of RAM, changing this setting is NOT RECOMMENDED.
-#            Lowering the stack limit may cause poor performance or crashes in Zookeeper during some tasks.
-#pvc_zookeeper_stack_limit: 256M  # 1/4 of default
-
-# Node list
+# PVC Node list
 # > Every node configured with this playbook must be specified in this list.
 pvc_nodes:
   - hostname: "pvchv1" # This name MUST match the Ansible inventory_hostname
@@ -143,8 +126,76 @@ pvc_sriov_enable: False
 #    mtu: 9000
 #    vfcount: 6
 
+# Memory tuning
+# > ADVANCED TUNING: For most users, this is unnecessary and PVC will run fine with the default memory
+#   allocations. Uncomment these options only low-memory situations (nodes with <32GB RAM).
+#
+# OSD memory limit - 939524096 (~900MB) is the lowest possible value; default is 4GB.
+# > This option is *only* applied at cluster bootstrap and cannot be changed later
+#   here, only by editing the `files/ceph/<cluster>/ceph.conf` file directly.
+#pvc_osd_memory_limit: 939524096
+#
+# Zookeeper heap memory limit, sets Xms and Xmx values to the Java process; default is 512M.
+# > WARNING: Unless you have an extremely limited amount of RAM, changing this setting is NOT RECOMMENDED.
+#            Lowering the heap limit may cause poor performance or crashes in Zookeeper during some tasks.
+#pvc_zookeeper_heap_limit: 128M   # 1/4 of default
+#
+# Zookeeper stack memory limit, sets Xss value to the Java process; default is 1024M.
+# > WARNING: Unless you have an extremely limited amount of RAM, changing this setting is NOT RECOMMENDED.
+#            Lowering the stack limit may cause poor performance or crashes in Zookeeper during some tasks.
+#pvc_zookeeper_stack_limit: 256M  # 1/4 of default
+
+# CPU pinning configuration via cset
+# > ADVANCED TUNING: For most users, this is unnecessary and PVC will run fine with the default scheduling.
+# > These options can be set to maximize the CPU performance of the Ceph subsystem. Because Ceph OSD
+#   performance is heavily limited more by CPU than anything else, for users with a lot of relatively slow CPU
+#   cores, or for those looking to get maximum storage performance, tuning the pinning options here might
+#   provide noticeable benefits.
+# > This configuration makes use of the cset command and will dedicate a specific number of CPU cores to the
+#   Ceph OSD processes on each node. This is accomplished by using cset's shield mechanism to create a cgroup
+#   which will contain only Ceph OSD processes, while putting everything else onto the remaining CPUs.
+# > Avoid using this tuning if you have less than 8 total CPU cores (excluding SMT threads). Otherwise, you
+#   might not have enough CPU cores to properly run VMs, unless you are very careful with vCPU allocation.
+# > Like the 'pvc_nodes' dictionary, these options are set per-host, even if all hosts are identical. This
+#   is required to handle sitations where hosts might have different CPU topologies. Each host can have a
+#   specific set of CPUs that are included in the shield.
+# > Ensure that you know which CPU cores are "real" and which are SMT "threads". This can be obtained using
+#   the 'virsh capabilities' command and noting the 'siblings' entries for each CPU.
+# > Ensure you consider NUMA nodes when setting up this tuning. Generally speaking it is better to keep the
+#   OSD processes onto one NUMA node for simplicity; more advanced tuning is outside of the scope of this
+#   playbook.
+# > You should set a number of cores in the shield (along with their respective SMT threads) equal to the
+#   number of OSDs in the system. This can be adjusted later as needed. For instance, if you have 2 OSDs per
+#   node, and each node has a 10-core SMT-capable CPU, you would want to assign cores 0 and 1 (the first two
+#   real cores) and 10 and 11 (the SMT siblings of those cores in 'virsh capabilities') in the cset.
+#
+# The shield mode is disabled by default and a commented out example configuration is shown.
+pvc_shield_osds_enable: False
+#pvc_shield_osds_cset:
+#  # This example host has 2x 6-core SMT-enabled CPUs; we want to use cores 0 (+SMT 12) and 2 (+SMT 14), which are
+#  # both on physical CPU 0, for 2x OSDs.
+#  - hostname: pvchv1
+#    osd_cset:
+#      - 0
+#      - 2
+#      - 12
+#      - 14
+#  # These example hosts have 1x 8-core SMT-enabled CPUs; we want to use cores 0 (+SMT 8) and 1 (+SMT 9) for 2x OSDs.
+#  - hostname: pvchv2
+#    osd_cset:
+#      - 0
+#      - 1
+#      - 8
+#      - 9
+#  - hostname: pvchv3
+#    osd_cset:
+#      - 0
+#      - 1
+#      - 8
+#      - 9
+
 # Configuration file networks
-# > Taken from base.yml's configuration; do not modify this section.
+# > Taken from base.yml's configuration; DO NOT MODIFY THIS SECTION.
 pvc_upstream_device: "{{ networks['upstream']['device'] }}"
 pvc_upstream_mtu: "{{ networks['upstream']['mtu'] }}"
 pvc_upstream_domain: "{{ networks['upstream']['domain'] }}"

@@ -1,0 +1,5 @@
+# ceph-osd@.service overrides for cpuset
+# {{ ansible_managed }}
+[Service]
+ExecStart =
+ExecStart = /usr/bin/cset proc --set=osd --exec /usr/bin/ceph-osd -- -f --cluster ${CLUSTER} --id %i --setuser ceph --setgroup ceph
