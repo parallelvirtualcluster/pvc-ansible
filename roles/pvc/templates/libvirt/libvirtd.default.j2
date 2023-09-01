@@ -1,0 +1,8 @@
+# Defaults for libvirtd initscript (/etc/init.d/libvirtd)
+# {{ ansible_managed }}
+
+# Start libvirtd to handle qemu/kvm:
+start_libvirtd="yes"
+
+# options passed to libvirtd, add "-l" to listen on tcp
+libvirtd_opts="--listen"

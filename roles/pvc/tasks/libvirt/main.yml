@@ -43,10 +43,9 @@
   ignore_errors: true
 
 - name: configure libvirt for listening
-  replace:
+  template:
+    src: libvirt/libvirtd.default.j2
     dest: /etc/default/libvirtd
-    regexp: '#libvirtd_opts=""'
-    replace: 'libvirtd_opts="--listen"'
   notify: restart libvirtd
 
 - name: install systemd unit file (override default on Bullseye)
