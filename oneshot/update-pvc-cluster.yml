@@ -64,9 +64,31 @@
           retries: 60
           delay: 10
 
-        - name: wait 30 seconds for system to stabilize
+        - name: wait 15 seconds for system to stabilize
           pause:
-            seconds: "30"
+            seconds: "15"
+          become: no
+          connection: local
+
+        - name: stop and disable PVC flush daemon cleanly
+          service:
+            name: "pvc-flush"
+            state: stopped
+            enabled: no
+
+        - name: stop PVC daemon cleanly
+          service:
+            name: "pvcnoded"
+            state: stopped
+
+        - name: stop Zookeeper daemon cleanly
+          service:
+            name: "zookeeper"
+            state: stopped
+
+        - name: wait 15 seconds for system to stabilize
+          pause:
+            seconds: "15"
           become: no
           connection: local
 
@@ -102,22 +124,6 @@
             seconds: "30"
           become: no
           connection: local
-
-        - name: stop and disable PVC flush daemon cleanly
-          service:
-            name: "pvc-flush"
-            state: stopped
-            enabled: no
-
-        - name: stop PVC daemon cleanly
-          service:
-            name: "pvcnoded"
-            state: stopped
-
-        - name: stop Zookeeper daemon cleanly
-          service:
-            name: "zookeeper"
-            state: stopped
 
         - name: restart system
           reboot:
