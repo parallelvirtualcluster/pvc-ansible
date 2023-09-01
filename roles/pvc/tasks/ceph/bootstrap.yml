@@ -21,7 +21,7 @@
   with_items:
     - "[global]"
     - "fsid = {{ fsid }}"
-    - "mon initial members = {% for host in pvc_nodes if host.is_coordinator %}{{ host.hostname }}{% if not loop.last %},{% endif %}{% endfor %}"
+    - "mon initial members = {% for node in pvc_nodes if node.is_coordinator %}{{ node.hostname.split('.')[0] }}{% if not loop.last %},{% endif %}{% endfor %}"
     - "mon host = {% for host in pvc_nodes if host.is_coordinator %}{{ host.storage_ip }}{% if not loop.last %},{% endif %}{% endfor %}"
 
 - name: create temporary directory
@@ -45,7 +45,7 @@
   command: ceph-authtool /tmp/ceph-bootstrap/ceph.mon.keyring --import-keyring /tmp/ceph-bootstrap/ceph.osd.bootstrap.keyring
 
 - name: create monmap
-  command: monmaptool --create --fsid {{ fsid }} {% for node in pvc_nodes if node.is_coordinator %}--add {{ node.hostname }} {{ node.storage_ip }} {% endfor %} /tmp/ceph-bootstrap/monmap
+  command: monmaptool --create --fsid {{ fsid }} {% for node in pvc_nodes if node.is_coordinator %}--add {{ node.hostname.split('.')[0] }} {{ node.storage_ip }} {% endfor %} /tmp/ceph-bootstrap/monmap
 
 - name: copy initial ceph.conf to the boostrap directory
   copy:
