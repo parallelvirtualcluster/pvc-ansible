@@ -251,6 +251,7 @@
       - lzop
       - xz-utils
       - haveged
+      - cpufrequtils
       - ipmitool
       - grub-efi
       - plymouth
@@ -322,6 +323,21 @@
   shell: "sysctl -p {{ item }}"
   with_items:
     - /etc/sysctl.d/pvc.conf
+  tags: base-system
+
+# cpufreq
+- name: write the cpufrequtils governor
+  template:
+    src: etc/default/cpufrequtils.j2
+    dest: /etc/default/cpufrequtils
+  register: cpufrequtils
+  tags: base-system
+
+- name: activate cpufrequtils governor
+  service:
+    name: cpufrequtils
+    state: restarted
+  when: cpufrequtils.changed
   tags: base-system
 
 # sudo
@@ -963,9 +979,10 @@
     enabled: yes
   with_items:
     - acpid
-    - rsyslog
-    - postfix
+    - cpufrequtils
     - ntp
+    - postfix
+    - rsyslog
     - ssh
   tags: base-services
 

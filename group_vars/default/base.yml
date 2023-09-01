@@ -19,6 +19,10 @@ recursive_dns_search_domains:
 # Cluster hardware model, used in pvc_user_configuration and grub_configuration below
 cluster_hardware: default
 
+# CPU governor, sets power and performance statistics of the system CPUs; default is ondemand
+# > Valid options are (usually): conservative, ondemand, powersave, userspace, performance, schedutil
+cpu_governor: ondemand
+
 # Debian package repository URL
 debian_main_repository: http://ftp.debian.org/debian
 debian_security_repository: http://security.debian.org
