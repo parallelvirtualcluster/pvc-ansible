@@ -1,5 +1,5 @@
 ---
-# Logging
+# Logging configuration
 pvc_log_to_file: True
 pvc_log_to_stdout: True
 pvc_log_keepalives: True
@@ -7,18 +7,24 @@ pvc_log_keepalive_cluster_details: True
 pvc_log_keepalive_storage_details: True
 pvc_log_console_lines: 1000
 
-# Client API authentication configuration
-# > If the key is left blank, the API will listen UNAUTHENTICATED on all IP addresses of the
-#   current primary node; use this with care and not in unsecured environments (e.g. if the
-#   upstream network is untrusted).
-pvc_api_authentication_key: ""              # Use pwgen to generate
+# Client API configuration
 pvc_api_listen_address: "0.0.0.0"
 pvc_api_listen_port: "7370"
+pvc_api_enable_authentication: False
+pvc_api_secret_key: ""
+pvc_api_tokens:
+  - description: "myuser"
+    token: ""
+pvc_api_enable_ssl: False
+pvc_api_ssl_cert: >
+  # A RAW CERTIFICATE FILE, installed to /etc/pvc/api-cert.pem
+pvc_api_ssl_key: >
+  # A RAW KEY FILE, installed to /etc/pvc/api-key.pem
 
-# Ceph storage
+# Ceph storage configuration
 pvc_ceph_storage_secret_uuid: ""            # Use uuidgen to generate
 
-# Database configurations
+# Database configuration
 pvc_dns_database_name: "pvcdns"
 pvc_dns_database_user: "pvcdns"
 pvc_dns_database_password: ""               # Use pwgen to generate

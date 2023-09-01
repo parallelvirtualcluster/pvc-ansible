@@ -12,21 +12,38 @@
 
 - name: install pvc configurations
   template:
-    src: pvc/{{ item }}.yaml.j2
-    dest: /etc/pvc/{{ item }}.yaml
+    src: pvc/{{ item }}.j2
+    dest: /etc/pvc/{{ item }}
   notify:
-    - restart {{ item }}
+    - restart pvcd
   with_items:
-    - pvcd
-    - pvc-api
+    - pvcd.yaml
+    - pvc-api.yaml
+
+- name: install API SSL certificate file
+  copy:
+    content: "{{ pvc_api_ssl_cert }}"
+    dest: /etc/pvc/api-cert.pem
+    mode: 0644
+  no_log: True
+  when: pvc_api_enable_ssl
+
+- name: install API SSL key file
+  copy:
+    content: "{{ pvc_api_ssl_key }}"
+    dest: /etc/pvc/api-key.pem
+    mode: 0640
+  no_log: True
+  when: pvc_api_enable_ssl
 
 - name: stop and disable unneccessary services
   service:
-    name: "{{ item }}"
+    name: "{{item }}"
     state: stopped
     enabled: no
   with_items:
     - pdns.service
+    - dnsmasq.service
 
 - include: pvc/bootstrap.yml
   when: bootstrap is defined and bootstrap

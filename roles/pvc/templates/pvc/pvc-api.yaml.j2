@@ -3,11 +3,40 @@
 # {{ ansible_managed }}
 pvc:
     coordinators:
-{% for node in pvc_nodes if node.is_coordinator %}
-        - {{ node.hostname }}.{{ pvc_cluster_domain }}
-{% endfor %}
     api:
         listen_address: "{{ pvc_api_listen_address }}"
         listen_port: "{{ pvc_api_listen_port }}"
         authentication:
             key: "{{ pvc_api_authentication_key }}"
+
+pvc:
+    coordinators:
+{% for node in pvc_nodes if node.is_coordinator %}
+        - {{ node.hostname }}
+{% endfor %}
+    # api: Configuration of the API listener
+    api:
+        # listen_address: IP address(es) to listen on; use 0.0.0.0 for all interfaces
+        listen_address: "{{ pvc_api_listen_address }}"
+        # listen_port: TCP port to listen on, usually 7370
+        listen_port: "{{ pvc_api_listen_port }}"
+        # authentication: Authentication and security settings
+        authentication:
+            # enabled: Enable or disable authentication (True/False)
+            enabled: {{ pvc_api_enable_authentication }}
+            # secret_key: Per-cluster secret key for API cookies; generate with uuidgen or pwgen
+            secret_key: "{{ pvc_api_secret_key }}"
+            # tokens: a list of authentication tokens; leave as an empty list to disable authentication
+            tokens:
+{% for token in pvc_api_tokens %}
+				- description: "{{ token.description }}"
+				  token: "{{ token.token }}"
+{% endfor %}
+        # ssl: SSL configuration
+        ssl:
+            # enabled: Enabled or disable SSL operation (True/False)
+            enabled: {{ pvc_api_enable_ssl }}
+            # cert_file: SSL certificate file
+            cert_file: "/etc/pvc/api-cert.pem"
+            # key_file: SSL certificate key file
+            key_file: "/etc/pvc/api-key.pem"
