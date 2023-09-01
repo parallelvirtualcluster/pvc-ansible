@@ -8,7 +8,7 @@
       - patroni
       - postgresql-11
   when: debian_version|int <= 10
-      
+
 - set_fact:
     package_list:
       - python3-psycopg2
@@ -16,7 +16,7 @@
       - patroni
       - postgresql-11
   when: debian_version|int >= 11
-      
+
 - name: install patroni packages via apt
   apt:
     name: "{{ package_list }}"
