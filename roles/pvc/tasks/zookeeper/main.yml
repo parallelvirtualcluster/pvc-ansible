@@ -49,6 +49,6 @@
     - zookeeper
 
 - include: zookeeper/bootstrap.yml
-  when: bootstrap is defined and bootstrap
+  when: do_bootstrap is defined and do_bootstrap
 
 - meta: flush_handlers

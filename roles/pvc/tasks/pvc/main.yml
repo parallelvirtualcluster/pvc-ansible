@@ -52,7 +52,7 @@
 
 - include: pvc/bootstrap.yml
   run_once: yes
-  when: bootstrap is defined and bootstrap and is_coordinator
+  when: do_bootstrap is defined and do_bootstrap and is_coordinator
 
 - meta: flush_handlers
 

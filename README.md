@@ -49,8 +49,8 @@ For full details, please see the general [PVC install documentation](https://par
 0. Create a set of vars in `group_vars`, using `group_vars/default` as an example. Ensure
    that all desired coordinators are configured with the `is_coordinator: yes` flag.
 0. Run the `pvc.yml` playbook against the servers. If this is the very first run for a given
-   cluster, use the `-e bootstrap=yes` variable to ensure the Ceph, Patroni, and PVC clusters
-   are initialized.
+   cluster, use the `-e do_bootstrap=yes` variable to ensure the Ceph, Patroni, and PVC
+   clusters are initialized.
 
 ## License
 

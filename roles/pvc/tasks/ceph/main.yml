@@ -40,7 +40,7 @@
     state: directory
 
 - include: ceph/bootstrap.yml
-  when: bootstrap is defined and bootstrap
+  when: do_bootstrap is defined and do_bootstrap
   run_once: yes
 
 - name: install configurations
