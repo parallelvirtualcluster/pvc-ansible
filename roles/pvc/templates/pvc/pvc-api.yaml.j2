@@ -3,14 +3,6 @@
 # {{ ansible_managed }}
 pvc:
     coordinators:
-    api:
-        listen_address: "{{ pvc_api_listen_address }}"
-        listen_port: "{{ pvc_api_listen_port }}"
-        authentication:
-            key: "{{ pvc_api_authentication_key }}"
-
-pvc:
-    coordinators:
 {% for node in pvc_nodes if node.is_coordinator %}
         - {{ node.hostname }}
 {% endfor %}
