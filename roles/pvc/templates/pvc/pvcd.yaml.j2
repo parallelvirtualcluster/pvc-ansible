@@ -63,14 +63,18 @@ pvc:
         stdout_logging: True
         console_log_lines: 1000
       networking:
-        devices:
-          cluster: {{ pvc_cluster_device }}
-          storage: {{ pvc_storage_device }}
-          upstream: {{ pvc_upstream_device }}
-        addresses:
-          cluster: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.cluster_ip }}/{{ node.cluster_cidr }}{% endfor %}
+        cluster:
+          device: {{ pvc_cluster_device }}
+          mtu: {{ pvc_cluster_mtu }}
+          address: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.cluster_ip }}/{{ node.cluster_cidr }}{% endfor %}
 
-          storage: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.storage_ip }}/{{ node.storage_cidr }}{% endfor %}
+        storage:
+          device: {{ pvc_storage_device }}
+          mtu: {{ pvc_storage_mtu }}
+          address: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.storage_ip }}/{{ node.storage_cidr }}{% endfor %}
 
-          upstream: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.upstream_ip }}/{{ node.upstream_cidr }}{% endfor %}
+        upstream:
+          device: {{ pvc_upstream_device }}
+          mtu: {{ pvc_upstream_mtu }}
+          address: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.upstream_ip }}/{{ node.upstream_cidr }}{% endfor %}
 
