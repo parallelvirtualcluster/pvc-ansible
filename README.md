@@ -1,6 +1,7 @@
 # PVC Ansible
 
-A set of Ansible roles to set up a PVC node host.
+A set of Ansible roles to set up a PVC node host. Tested on Ansible 2.2 through 2.6; it is
+not guaranteed to work properly on older or newer versions.
 
 ## Roles
 
@@ -11,24 +12,30 @@ This repository contains two roles:
 This role provides a standardized and configured base system for PVC. This role expects that
 the system was installed via the PVC installer ISO, which results in a Debian Buster system.
 
+#### pvc
+
+This role configures the various subsystems required by PVC, including Ceph, Libvirt, Zookeeper,
+FRR, and Patroni, as well as the main PVC components themselves.
+
 ## Variables
 
-A default example set of configuration variables can be found in `group_vars/default/vars.yml
+A default example set of configuration variables can be found in `group_vars/default/`.
+
+A full explanation of all variables can be found in [the manual](https://parallelvirtualcluster.readthedocs.io/en/latest/manuals/ansible/).
 
 ## Using
+
+*NOTE:* These roles expect a Debian 10.X (Buster) system specifically. This is currently the
+        only operating environment supported for PVC.
 
 *NOTE:* All non-`default` directories under `group_vars/` and `files/`, and the `hosts` file,
         are ignored by this Git repository. It is advisable to manage these files securely
         in a separate repository and use symlinks to place them in the expected locations in
         this repository. Note that the `files/` data is created during cluster bootstrap.
 
+For full details, please see the general [PVC install documentation](https://parallelvirtualcluster.readthedocs.io/en/latest/installing/).
+
 0. Deploy a set of 3 or 5 initial PVC nodes using the PVC install ISO.
-0. Configure the networking on the hosts via `ssh deploy@<host>` and editing the
-   `/etc/network/interfaces` file to match your network layout, including and bonding and
-   vlans. Remember to remove the static or DHCP configuration from the primary (`upstream`,
-   usually) network interface that was set by the installer to allow bootstrapping. Use the
-   `manual` mode for all interfaces that PVC will manage. Bring up all configured interfaces
-   via `ifup`.
 0. Create a new cluster group in the `hosts` file, using `hosts.default` as an example. For
    the initial bootstrap run, it is recommended to only include the initial coordinators
    to ensure a smooth bootstrapping.
