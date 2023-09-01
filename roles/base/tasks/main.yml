@@ -197,6 +197,8 @@
       - tshark
       - acl
       - bzip2
+      - lzop
+      - xz-utils
       - haveged
       - linux-image-amd64
       - linux-headers-amd64
