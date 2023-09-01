@@ -1,5 +1,7 @@
 # PVC Ansible `group_vars`
 
+Use this "default" set of variables as a template for your own clusters.
+
 1. There should always be at least two (2) files here, with an optional third (3rd):
 
    * `base.yml`: Specifies basic cluster information.
