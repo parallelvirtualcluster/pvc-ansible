@@ -1,4 +1,10 @@
 ---
+- name: initial deployment check
+  shell: "echo 'bootstrapped' > /etc/ceph-install"
+  register: newhost
+  args:
+    creates: "/etc/ceph-install"
+
 - name: install packages
   apt:
     name:
@@ -33,10 +39,5 @@
     dest: /etc/ceph
     state: directory
 
-- name: install ceph cluster configurations
-  template:
-    src: ceph/{{ item }}.j2
-    dest: /etc/ceph/{{ item }}
-  with_items:
-    - ceph.conf
-    - ceph.client.admin.keyring
+- include: bootstrap_ceph.yml
+  when: newhost.changed
