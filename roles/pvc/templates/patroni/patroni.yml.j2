@@ -73,6 +73,12 @@ postgresql:
         max_wal_senders: 8
         max_replication_slots: 8
     pg_hba:
+      - local   all             all                                     trust
+      - host    all             all             127.0.0.1/32            trust
+      - host    all             all             ::1/128                 trust
+      - local   replication     all                                     trust
+      - host    replication     all             127.0.0.1/32            trust
+      - host    replication     all             ::1/128                 trust
       - local all all peer
       - host replication replicator 127.0.0.1/32 trust
 {% for node in pvc_nodes if node.is_coordinator %}
