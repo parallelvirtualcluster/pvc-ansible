@@ -57,12 +57,7 @@
   command: ceph-authtool /tmp/ceph-bootstrap/ceph.mon.keyring --import-keyring /tmp/ceph-bootstrap/ceph.osd.bootstrap.keyring
 
 - name: create monmap
-  command: monmaptool --create --fsid {{ fsid }} /tmp/ceph-bootstrap/monmap
-
-- name: add monitors to monmap
-  command: monmaptool --add {{ item.hostname }} {{ item.cluster_ip }} --fsid {{ fsid }} /tmp/ceph-bootstrap/monmap
-  with_items:
-    - "{{ pvc_nodes }}"
+  command: monmaptool --create --fsid {{ fsid }} {% for node in pvc_nodes if node.is_coordinator %}--add {{ node.hostname }} {{ node.cluster_ip }} {% endfor %} /tmp/ceph-bootstrap/monmap
 
 - name: copy initial ceph.conf to the boostrap directory
   copy:

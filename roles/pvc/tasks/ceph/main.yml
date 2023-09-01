@@ -61,7 +61,7 @@
   when: newhost is defined and newhost
 
 - name: populate monitor with map and keys
-  command: ceph-mon --mkfs -i {{ ansible_hostname }} --monmap /etc/ceph/monmap --keyring /etc/ceph/ceph.mon.keyring
+  command: ceph-mon --cluster ceph --mkfs -i {{ ansible_hostname }} --monmap /etc/ceph/monmap --keyring /etc/ceph/ceph.mon.keyring
   become_user: ceph
   when: newhost is defined and newhost
 

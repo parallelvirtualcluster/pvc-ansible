@@ -6,14 +6,17 @@
   args:
     creates: /etc/pvc-install
   register: newhost_check
+  tags: always
 
 - name: set newhost fact
   set_fact:
     newhost: yes
   when: newhost_check.changed
+  tags: always
 
 - include: common/add_cluster_ips.yml
   when: newhost is defined and newhost
+  tags: always
 
 # General blacklisting of modules
 - name: add module blacklist
@@ -38,12 +41,13 @@
 - include: frr/main.yml
   tags: pvc-frr
 
-- include: remove_cluster_ips.yml
+- include: common/remove_cluster_ips.yml
   when: newhost is defined and newhost
+#  tags: always
 
 # Install PVC sequentially
 - include: pvc/main.yml
-  tags: pvc-pvc
+  tags: pvc-daemon
   run_once: true
   delegate_to: "{{ play_host }}"
   with_items: "{{ play_hosts }}"
