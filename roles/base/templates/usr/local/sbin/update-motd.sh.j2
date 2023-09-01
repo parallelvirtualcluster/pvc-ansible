@@ -26,7 +26,7 @@ HARDWARE_SERIAL="$( grep 'Serial Number:' <<<"${HARDWARE_DETAIL}" | sed 's/Seria
 if [[ -z ${HARDWARE_SERIAL} ]]; then
     HARDWARE_SERIAL="Unknown"
 fi
-echo -e "> Hardware Vendor: \033[1;36m${HARDWARE_VENDOR}\033[0m Model: \033[1;36m${HARDWARE_MODEL}\033[0m Serial: \033[1;36m${HARDWARE_SERIAL}\033[0m" >> $TMPFILE
+echo -e "> Hardware Vendor: \033[1;36m${HARDWARE_VENDOR}\033[0m  Model: \033[1;36m${HARDWARE_MODEL}\033[0m  Serial: \033[1;36m${HARDWARE_SERIAL}\033[0m" >> $TMPFILE
 echo -e "> $(/bin/uname -srvmo)" >> $TMPFILE
 
 mv $TMPFILE $TGTFILE || rm $TMPFILE
