@@ -18,17 +18,17 @@ pvc:
     networks:
       cluster:
         domain: {{ pvc_cluster_domain }}
-        network: {{ pvc_cluster_subnet }}
-        floating_ip: {{ pvc_cluster_floatingip }}
+        network: {{ pvc_cluster_subnet }}/{{ pvc_cluster_netmask }}
+        floating_ip: {{ pvc_cluster_floatingip }}/{{ pvc_cluster_netmask }}
       storage:
         domain: {{ pvc_storage_domain }}
-        network: {{ pvc_storage_subnet }}
-        floating_ip: {{ pvc_storage_floatingip }}
+        network: {{ pvc_storage_subnet }}/{{ pvc_storage_netmask }}
+        floating_ip: {{ pvc_storage_floatingip }}/{{ pvc_storage_netmask }}
       upstream:
         domain: {{ pvc_upstream_domain }}
         network: {{ pvc_upstream_subnet }}
-        floating_ip: {{ pvc_upstream_floatingip }}
-        gateway: {{ pvc_upstream_gatewayip }}
+        floating_ip: {{ pvc_upstream_floatingip }}/{{ pvc_upstream_netmask }}
+        gateway: {{ pvc_upstream_gatewayip }}/{{ pvc_upstream_netmask }}
   coordinator:
     dns:
       database:
@@ -73,15 +73,15 @@ pvc:
         cluster:
           device: {{ pvc_cluster_device }}
           mtu: {{ pvc_cluster_mtu }}
-          address: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.cluster_ip }}/{{ node.cluster_cidr }}{% endfor %}
+          address: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.cluster_ip }}/{{ pvc_cluster_netmask }}{% endfor %}
 
         storage:
           device: {{ pvc_storage_device }}
           mtu: {{ pvc_storage_mtu }}
-          address: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.storage_ip }}/{{ node.storage_cidr }}{% endfor %}
+          address: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.storage_ip }}/{{ pvc_storage_netmask }}{% endfor %}
 
         upstream:
           device: {{ pvc_upstream_device }}
           mtu: {{ pvc_upstream_mtu }}
-          address: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.upstream_ip }}/{{ node.upstream_cidr }}{% endfor %}
+          address: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.upstream_ip }}/{{ pvc_upstream_netmask }}{% endfor %}
 
