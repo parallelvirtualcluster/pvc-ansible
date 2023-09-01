@@ -1,5 +1,7 @@
 ---
 # Logging configuration (uncomment to override defaults)
+#   These default options are generally best for most clusters; override these if you want more granular
+#   control over the logging output of the PVC system.
 #pvc_log_to_file: False                  # Log to a file in /var/log/pvc
 #pvc_log_to_stdout: True                 # Log to stdout (i.e. journald)
 #pvc_log_colours: True                   # Log colourful prompts for states instead of text
@@ -10,6 +12,8 @@
 #pvc_log_console_lines: 1000             # The number of VM console log lines to store in Zookeeper for 'vm log' commands.
 
 # Timing and fencing configuration (uncomment to override defaults)
+#   These default options are generally best for most clusters; override these if you want more granular
+#   control over the timings of various areas of the cluster, for instance if your hardware is slow or error-prone.
 #pvc_vm_shutdown_timeout: 180            # Number of seconds before a 'shutdown' VM is forced off
 #pvc_keepalive_interval: 5               # Number of seconds between keepalive ticks
 #pvc_fence_intervals: 6                  # Number of keepalive ticks before a node is considered dead
