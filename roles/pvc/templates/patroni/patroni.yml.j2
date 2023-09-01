@@ -7,7 +7,7 @@ restapi:
     connect_address: '{{ ansible_hostname }}.{{ pvc_cluster_domain }}:8008'
 
 zookeeper:
-    hosts: [ {% for host in groups[hostvars[inventory_hostname].group_names[0]] %}'{{ host }}.{{ pvc_cluster_domain }}:2181',{% endfor %} ]
+    hosts: [ {% for node in pvc_nodes if node.is_coordinator %}{{ node.hostname }}.{{ pvc_cluster_domain }}:2181,{% endfor %} ]
 
 bootstrap:
     dcs:
