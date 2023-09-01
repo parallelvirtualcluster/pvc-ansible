@@ -2,7 +2,7 @@
 # pvcnoded configuration
 # {{ ansible_managed }}
 pvc:
-  node: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.hostname }}{% endfor %}
+  node: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.hostname }}{% endfor %}
 
   debug: False
   functions:
@@ -54,11 +54,11 @@ pvc:
         successful_fence: migrate
         failed_fence: None
       ipmi:
-        host: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.ipmi_host }}{% endfor %}
+        host: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.ipmi_host }}{% endfor %}
 
-        user: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.ipmi_user }}{% endfor %}
+        user: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.ipmi_user }}{% endfor %}
 
-        pass: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.ipmi_password }}{% endfor %}
+        pass: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.ipmi_password }}{% endfor %}
 
     migration:
       target_selector: mem
@@ -81,15 +81,15 @@ pvc:
         upstream:
           device: {{ pvc_upstream_device }}
           mtu: {{ pvc_upstream_mtu }}
-          address: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.upstream_ip }}/{{ pvc_upstream_netmask }}{% endfor %}
+          address: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.upstream_ip }}/{{ pvc_upstream_netmask }}{% endfor %}
 
         cluster:
           device: {{ pvc_cluster_device }}
           mtu: {{ pvc_cluster_mtu }}
-          address: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.cluster_ip }}/{{ pvc_cluster_netmask }}{% endfor %}
+          address: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.cluster_ip }}/{{ pvc_cluster_netmask }}{% endfor %}
 
         storage:
           device: {{ pvc_storage_device }}
           mtu: {{ pvc_storage_mtu }}
-          address: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.storage_ip }}/{{ pvc_storage_netmask }}{% endfor %}
+          address: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.storage_ip }}/{{ pvc_storage_netmask }}{% endfor %}
 

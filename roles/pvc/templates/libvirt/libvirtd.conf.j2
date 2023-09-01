@@ -3,6 +3,6 @@
 
 listen_tls = 0
 listen_tcp = 1
-listen_addr = "{% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.cluster_ip }}{% endfor %}"
+listen_addr = "{% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.cluster_ip }}{% endfor %}"
 tcp_port = "16509"
 auth_tcp = "none"
