@@ -56,6 +56,14 @@
           retries: 60
           delay: 10
 
+        - name: make sure all VMs have migrated
+          shell: "pvc node info {{ ansible_hostname }} | grep '^Domain State' | awk '{ print $NF }'"
+          register: pvcflush
+          failed_when: pvcflush.stdout != 'flushed'
+          until: pvcflush.stdout == 'flushed'
+          retries: 60
+          delay: 10
+
         - name: wait 30 seconds for system to stabilize
           pause:
             seconds: "30"
@@ -137,7 +145,15 @@
 
         - name: unflush node
           command: "pvc node ready {{ ansible_hostname }} --wait"
-  
+ 
+        - name: make sure all VMs have returned
+          shell: "pvc node info {{ ansible_hostname }} | grep '^Domain State' | awk '{ print $NF }'"
+          register: pvcunflush
+          failed_when: pvcunflush.stdout != 'ready'
+          until: pvcunflush.stdout == 'ready'
+          retries: 60
+          delay: 10
+
         - name: wait 30 seconds for system to stabilize
           pause:
             seconds: "30"
