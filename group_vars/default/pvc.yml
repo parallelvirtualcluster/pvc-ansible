@@ -10,13 +10,13 @@ pvc_log_keepalive_storage_details: True
 pvc_log_console_lines: 1000
 
 # Client API configuration
-pvc_api_listen_address: "0.0.0.0"
+pvc_api_listen_address: "{{ pvc_upstream_floatingip }}"
 pvc_api_listen_port: "7370"
-pvc_api_enable_authentication: False
+pvc_api_enable_authentication: True
 pvc_api_secret_key: ""
 pvc_api_tokens:
   - description: "myuser"
-    token: ""
+    token: "a3945326-d36c-4024-83b3-2a8931d7785a"
 pvc_api_enable_ssl: False
 pvc_api_ssl_cert: >
   # A RAW CERTIFICATE FILE, installed to /etc/pvc/api-cert.pem
