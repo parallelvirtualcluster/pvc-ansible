@@ -757,7 +757,7 @@
 - name: create vimdir
   file:
     state: directory
-   dest: /var/home/{{ item.name }}/.vim
+    dest: /var/home/{{ item.name }}/.vim
     owner: "{{ item.name }}"
     group: operator
     mode: 0700
