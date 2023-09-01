@@ -12,7 +12,7 @@ ff02::2		ip6-allrouters
 {{ node.upstream_ip }} {{ node.hostname.split('.')[0] }}.{{ local_domain }}
 {% endfor %}
 
-{% if hosts is defined %}
+{% if hosts is defined and hosts %}
 {% for host in hosts %}
 {{ host.ip }} {{ host.name }}
 {% endfor %}
