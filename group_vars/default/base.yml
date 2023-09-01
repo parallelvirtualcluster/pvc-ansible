@@ -9,20 +9,66 @@ timezone_location: Canada/Eastern
 # Cluster domain for node FQDNs
 local_domain: upstream.local
 
+# Cluster hardware model, used in pvc_user_configuration below
+cluster_hardware: default
+
 # Debian package repository URL
 debian_main_repository: http://ftp.debian.org/debian
 debian_security_repository: http://security.debian.org
 debian_pvc_repository: https://repo.bonifacelabs.net/debian
 
-# IPMI user and password
-# > For the password, use pwgen to generate.
-# > Set these in the IPMI configuration as a user with permissions to reboot the host.
-username_ipmi_host: pvc
-passwd_ipmi_host: ""
-
 # Root user password
 # > Use pwgen to generate
 root_password: ""
+
+# IPMI configuration
+# > For the "pvc" user password, use pwgen to generate.
+# > Set the "pvc"user with permissions in IPMI to reboot the host as this user will be use for
+#   any fencing operations.
+# > Set the IP networking to match your expected IPMI configuration.
+ipmi:
+  users:
+    admin:
+      username: "root"
+      password: "{{ root_password }}"
+    pvc:
+      username: "host"
+      password: ""
+  hosts:
+    "pvchv1":
+      hostname: pvchv1-lom
+      address: 192.168.100.101
+      netmask: 255.255.255.0
+      gateway: 192.168.100.1
+    "pvchv2":
+      hostname: pvchv2-lom
+      address: 192.168.100.102
+      netmask: 255.255.255.0
+      gateway: 192.168.100.1
+    "pvchv3":
+      hostname: pvchv3-lom
+      address: 192.168.100.103
+      netmask: 255.255.255.0
+      gateway: 192.168.100.1
+
+# IPMI user configuration
+# > Adjust this based on the specific hardware you are using; the cluster_hardware variable is
+#   used as the key in this dictionary.
+# > If you run multiple clusters with different hardware, it may be prudent to move this to an
+#   'all' group_vars file instead.
+ipmi_user_configuration:
+  "default":
+    channel: 1
+    admin:
+      id: 1
+      role: 0x4 # ADMINISTRATOR
+      username: "{{ ipmi['users']['admin']['username'] }}"
+      password: "{{ ipmi['users']['admin']['password'] }}"
+    pvc:
+      id: 2
+      role: 0x4 # ADMINISTRATOR
+      username: "{{ ipmi['users']['pvc']['username'] }}"
+      password: "{{ ipmi['users']['pvc']['password'] }}"
 
 # Log rotation configuration
 logrotate_keepcount: 7
