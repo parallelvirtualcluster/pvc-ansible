@@ -3,6 +3,8 @@
 # dpkg-cleanup.sh - Remove obsolete packages and config files
 # {{ ansible_managed }}
 
+export DEBIAN_FRONTEND=noninteractive
+
 # Phase 1 - purge `rc` packages
 PACKAGE_LIST=( $( dpkg --list | awk '/^rc/{ print $2 } /^ri/{ print $2 }' ) )
 apt purge -y ${PACKAGE_LIST[@]}
