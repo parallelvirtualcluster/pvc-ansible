@@ -598,6 +598,7 @@
   with_items:
     - "admin"
     - "pvc"
+  ignore_errors: yes
   tags: base-ipmi
 
 - name: configure IPMI password
@@ -605,6 +606,7 @@
   with_items:
     - "admin"
     - "pvc"
+  ignore_errors: yes
   tags: base-ipmi
 
 - name: configure IPMI role
@@ -612,6 +614,7 @@
   with_items:
     - "admin"
     - "pvc"
+  ignore_errors: yes
   tags: base-ipmi
 
 - name: enable IPMI user
@@ -619,6 +622,7 @@
   with_items:
     - "admin"
     - "pvc"
+  ignore_errors: yes
   tags: base-ipmi
 
 #
