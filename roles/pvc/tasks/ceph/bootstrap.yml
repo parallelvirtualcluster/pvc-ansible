@@ -72,6 +72,7 @@
     - "osd pool default pgp num = 256"
     - "osd crush chooseleaf type = 1"
     - "bluestore cache autotune = true"
+    - "rbd default features = 5"
 
 - name: add memory limit if requested
   lineinfile:
