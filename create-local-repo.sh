@@ -40,7 +40,13 @@ set -o errexit
 pushd pvc-ansible
 git pull --rebase
 popd
-git add pvc-ansible && git commit -m "Update pvc-ansible from upstream"
+
+pushd pvc-installer
+git pull --rebase
+popd
+
+git add pvc-ansible pvc-installer
+git commit -m "Update submodules from upstream"
 EOF
 chmod +x update-remote.sh
 
@@ -56,6 +62,7 @@ echo -e "* You no longer need this copy of the repository and may delete it."
 echo -e "* You may edit the initial commit message and author details with the command:"
 echo -e "    git commit --amend"
 echo -e "  inside the new repository."
+echo -e "* You will need to add a 'git remote' in order to push the new repository."
 echo -e "* A copy of the file 'pvc.yml' has been made there, as well as your own 'roles/'"
 echo -e "  directory, so you may add your own roles and customizations to these files"
 echo -e "  if you so desire."
