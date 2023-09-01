@@ -109,7 +109,7 @@
   register: apt_config
   tags: base-apt
 
-- name: add key for bonilan repo
+- name: add key for PVC repo
   apt_key:
     url: "{{ debian_pvc_signing_key_path }}"
     id: "{{ debian_pvc_signing_key_id }}"
