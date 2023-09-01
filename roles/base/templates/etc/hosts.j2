@@ -1,6 +1,12 @@
 # Local system hosts file
 # {{ ansible_managed }}
 
-::1		localhost ip6-localhost ip6-loopback
+127.0.0.1   localhost
+::1		    ip6-localhost ip6-loopback
 ff02::1 	ip6-allmodes
 ff02::2		ip6-allrouters
+
+{% for node in pvc_nodes %}
+{{ node.cluster_ip }} {{ node.hostname }}.{{ pvc_cluster_domain }} {{ node.hostname }}
+{{ node.storage_ip }} {{ node.hostname }}.{{ pvc_storage_domain }}
+{% endfor %}
