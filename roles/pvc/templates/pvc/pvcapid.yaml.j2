@@ -30,9 +30,17 @@ pvc:
             # enabled: Enabled or disable SSL operation (True/False)
             enabled: {{ pvc_api_enable_ssl }}
             # cert_file: SSL certificate file
+{% if pvc_api_ssl_cert_path is defined and pvc_api_ssl_cert_path %}
+            cert_file: "{{ pvc_api_ssl_cert_path }}"
+{% else %}
             cert_file: "/etc/pvc/api-cert.pem"
+{% endif %}
             # key_file: SSL certificate key file
+{% if pvc_api_ssl_key_path is defined and pvc_api_ssl_key_path %}
+            key_file: "{{ pvc_api_ssl_key_path }}"
+{% else %}
             key_file: "/etc/pvc/api-key.pem"
+{% endif %}
     # provisioner: Configuration of the Provisioner API listener
     provisioner:
         # database: Backend database configuration

@@ -22,17 +22,30 @@
 #pvc_fence_failed_action: None           # What to do with VMs when a fence is failed (migrate, None) - migrate is DANGEROUS without pvc_suicide_intervals set to < pvc_fence_intervals
 #pvc_fence_migrate_target_selector: mem  # The selector to use for migrating VMs after a fence
 
-# Client API configuration
+# Client API basic configuration
 pvc_api_listen_address: "{{ pvc_upstream_floatingip }}"
 pvc_api_listen_port: "7370"
+pvc_api_secret_key: ""                      # Use pwgen to generate
+
+# Client API user tokens
+# Create a token (random UUID or password) for each user you wish to have access to the PVC API.
+# The first token will always be used for the "local" connection, and thus at least one token MUST be defined.
 pvc_api_enable_authentication: True
-pvc_api_secret_key: ""
 pvc_api_tokens:
   - description: "myuser"
     token: "a3945326-d36c-4024-83b3-2a8931d7785a"
+
+# PVC API SSL configuration
+# Use these options to enable SSL for the API listener, providing security over WAN connections.
+# There are two options for defining the SSL certificate and key to use:
+#   a) Set both pvc_api_ssl_cert_path and pvc_api_ssl_key_path to paths to an existing SSL combined (CA + cert) certificate and key, respectively, on the system.
+#   b) Set both pvc_api_ssl_cert and pvc_api_ssl_key to the raw PEM-encoded contents of an SSL combined (CA + cert) certificate and key, respectively, which will be installed under /etc/pvc.
+# If the _path options are non-empty, the raw entries are ignored and will not be used.
 pvc_api_enable_ssl: False
+pvc_api_ssl_cert_path:
 pvc_api_ssl_cert: >
   # A RAW CERTIFICATE FILE, installed to /etc/pvc/api-cert.pem
+pvc_api_ssl_key_path:
 pvc_api_ssl_key: >
   # A RAW KEY FILE, installed to /etc/pvc/api-key.pem
 
