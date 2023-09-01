@@ -89,6 +89,7 @@
     name: "{{ item }}"
     state: started
     enabled: yes
+  ignore_errors: yes
   with_items:
     - vhostmd
 
