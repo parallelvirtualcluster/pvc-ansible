@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Lights-out management reachability check for Check_MK
+# Installed by PVC ansible
+
+# We need a defined IPMI interface to continue
+if [[ ! -f /etc/network/interfaces.d/ipmi ]]; then
+    exit
+fi
+
+# We need ipmitool and fping to continue
+if ! which ipmitool >/dev/null 2>&1 || ! which fping >/dev/null 2>&1 ; then
+    exit
+fi
+
+echo "<<<ipmi>>>"
+
+# Grab IPMI IP from interfaces file
+IPMIIP_INTERFACES=$(grep 'ipmitool' /etc/network/interfaces.d/ipmi | grep -v 'defgw' | grep 'ipaddr' | awk '{ print $NF }')
+if [[ -z ${IPMIIP_INTERFACES} ]]; then
+	echo "No IPMI IP defined in interfaces file"
+	exit
+fi
+
+# Grab IPMI IP from ipmitool
+IPMIIP_IPMITOOL="$( ipmitool lan print 2>/dev/null | grep 'IP Address' | grep -v 'Source' | awk '{ print $NF }' )"
+
+if [[ -z ${IPMIIP_IPMITOOL} ]]; then
+	echo "No IPMI IP returned by ipmitool"
+	exit
+fi
+if [[ ${IPMIIP_INTERFACES} != ${IPMIIP_IPMITOOL} ]]; then
+	echo "IPMI IP defined in interfaces file (${IPMIIP_INTERFACES}) is different from ipmitool (${IPMIIP_IPMITOOL})"
+	exit
+fi
+
+# Try pinging the IPMI IP; this should work and be quick
+fping -q -t 200 ${IPMIIP_INTERFACES}
+RESULT=$?
+
+if [[ ${RESULT} -eq 0 ]]; then
+	echo "IPMI IP (${IPMIIP_INTERFACES}) is correct and reachable"
+	exit
+else
+	echo "IPMI IP (${IPMIIP_INTERFACES}) is unreachable"
+	exit
+fi	

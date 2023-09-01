@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Entropy availability check for Check_MK
-# Installed by BLSE 2.0 ansible
+# Installed by PVC ansible
 
 if [ -e /proc/sys/kernel/random/entropy_avail ]; then
 
