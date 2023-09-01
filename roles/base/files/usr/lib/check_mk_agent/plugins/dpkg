@@ -23,7 +23,7 @@ DEBIAN_VERSION="$( cat /etc/debian_version )"
 TOTAL_PACKAGES=$( head --lines=1 <<<"${TMP_AWK}" )
 UPGRADABLE_PACKAGES=( $( apt list --upgradable 2>/dev/null | grep -v '^Listing' | awk '{ gsub(/\]/,"",$NF); print $1 "[" $NF "<>" $2 "]" }' ) )
 INCONSISTENT_PACKAGES=( $( tail --lines=+2 <<<"${TMP_AWK}" ) )
-OLD_CONFIG_FILES=( $( ionice -c3 find /etc -type f -a \( -name '*.dpkg-*' -o -name '*.ucf-*' \) 2>/dev/null ) )
+OLD_CONFIG_FILES=( $( ionice -c3 find /etc -type f -a \( -name '*.dpkg-*' -o -name '*.ucf-*' -o -name '*.update-*' \) 2>/dev/null ) )
 
 echo "<<<dpkg>>>"
 echo "debian_version ${DEBIAN_VERSION}"

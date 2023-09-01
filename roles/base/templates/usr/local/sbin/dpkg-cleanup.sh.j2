@@ -16,5 +16,5 @@ apt autoremove --purge -y
 apt clean
 
 # Phase 4 - find and remove obsolete config files
-OLD_FILES_LIST=( $( find /etc -type f -a \( -name '*.dpkg-*' -o -name '*.ucf-*' \) 2>/dev/null ) )
+OLD_FILES_LIST=( $( find /etc -type f -a \( -name '*.dpkg-*' -o -name '*.ucf-*' -o -name '*.update-*' \) 2>/dev/null ) )
 rm -f ${OLD_FILES_LIST[@]}
