@@ -76,7 +76,7 @@
         debian_version: "{{ ansible_distribution_major_version }}"
         debian_codename: "{{ ansible_distribution_release }}"
       when: ansible_distribution_release is defined
-    
+
     - name: set Debian details (with ansible_lsb)
       set_fact:
         debian_version: "{{ ansible_lsb.major_release }}"
@@ -86,17 +86,17 @@
     - name: secondary node
       command: "pvc node secondary {{ ansible_hostname }}"
       ignore_errors: yes
-  
+
     - name: wait 30 seconds for system to stabilize
       pause:
         seconds: 30
       become: no
       connection: local
-  
+
     - name: flush node
       command: "pvc node flush {{ ansible_hostname }} --wait"
       ignore_errors: yes
-  
+
     - name: ensure VMs are migrated away
       shell: "virsh list | grep running | wc -l"
       register: virshcount
@@ -234,7 +234,7 @@
               apt-get --no-install-recommends --option Dpkg::Options::="--force-confnew" upgrade
               apt-get --no-install-recommends --option Dpkg::Options::="--force-confnew" dist-upgrade
               systemctl restart ssh
-  
+
         - name: run script to perform safe d10->d12 upgrade (will take a long time)
           shell: /tmp/upgrade-d10.sh
 
@@ -333,7 +333,7 @@
 
     - name: unflush node
       command: "pvc node ready {{ ansible_hostname }} --wait"
- 
+
     - name: make sure all VMs have returned
       shell: "pvc node info {{ ansible_hostname }} | grep '^Domain State' | awk '{ print $NF }'"
       register: pvcunflush
