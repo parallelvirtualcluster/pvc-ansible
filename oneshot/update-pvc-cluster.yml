@@ -4,11 +4,18 @@
   become: yes
   become_user: root
   gather_facts: yes
-  serial: 1
   tasks:
     - name: set PVC maintenance mode
       command: pvc maintenance on
+      run_once: yes
 
+- hosts: all
+  remote_user: deploy
+  become: yes
+  become_user: root
+  gather_facts: yes
+  serial: 1
+  tasks:
     - name: temporarily set norestart policy
       copy:
         dest: "/usr/sbin/policy-rc.d"
@@ -199,11 +206,18 @@
           command: systemctl reset-failed
       when: freshness.changed or kernelversion.changed
 
-    - name: unset PVC maintenance mode
-      command: pvc maintenance off
-
     - name: wait 30 seconds for system to stabilize
       pause:
         seconds: 30
       become: no
       connection: local
+
+- hosts: all
+  remote_user: deploy
+  become: yes
+  become_user: root
+  gather_facts: yes
+  tasks:
+    - name: unset PVC maintenance mode
+      command: pvc maintenance off
+      run_once: yes
