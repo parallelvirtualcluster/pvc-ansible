@@ -196,6 +196,22 @@
 # System configuration
 #
 
+# networking
+- name: install base interfaces file
+  template:
+    src: etc/network/interfaces.j2
+    dest: /etc/network/interfaces
+  tags: network
+
+- name: install per-interface files
+  template:
+    src: etc/network/interfaces-perif.j2
+    dest: /etc/network/interfaces.d/{{ network.key }}
+  with_dict: "{{ networks }}"
+  loop_control:
+    loop_var: network
+  tags: network
+
 # capabilities
 - name: set ping capabilities
   capabilities:

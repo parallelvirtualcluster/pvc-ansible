@@ -1,0 +1,10 @@
+# PVC node interfaces file
+# {{ ansible_managed }}
+
+# Loopback interface
+auto lo
+iface lo inet loopback
+iface lo inet6 loopback
+
+# Include directory
+source-directory /etc/network/interfaces.d
