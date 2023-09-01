@@ -58,7 +58,7 @@ done
 echo "<<<file_ownership>>>"
 
 if ! test ${#FILEs[*]} -eq 0; then
-    echo -n "${#FILEs[*]} file(s) found with invalid ownership (must be UID <299): "
+    echo -n "${#FILEs[*]} file(s) found with invalid ownership (must be UID outside of ${ADMIN_UID_MIN}-${ADMIN_UID_MAX}): "
     echo "${FILEs[*]}"
     exit $WARNING
 else
