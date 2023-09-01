@@ -21,7 +21,7 @@
     - "[global]"
     - "fsid = {{ fsid }}"
     - "mon initial members = {% for host in pvc_nodes if host.is_coordinator %}{{ host.hostname }}{% if not loop.last %},{% endif %}{% endfor %}"
-    - "mon host = {% for host in pvc_nodes if host.is_coordinator %}{{ host.cluster_ip }}{% if not loop.last %},{% endif %}{% endfor %}"
+    - "mon host = {% for host in pvc_nodes if host.is_coordinator %}{{ host.storage_ip }}{% if not loop.last %},{% endif %}{% endfor %}"
 
 - name: create temporary directory
   file:
@@ -44,7 +44,7 @@
   command: ceph-authtool /tmp/ceph-bootstrap/ceph.mon.keyring --import-keyring /tmp/ceph-bootstrap/ceph.osd.bootstrap.keyring
 
 - name: create monmap
-  command: monmaptool --create --fsid {{ fsid }} {% for node in pvc_nodes if node.is_coordinator %}--add {{ node.hostname }} {{ node.cluster_ip }} {% endfor %} /tmp/ceph-bootstrap/monmap
+  command: monmaptool --create --fsid {{ fsid }} {% for node in pvc_nodes if node.is_coordinator %}--add {{ node.hostname }} {{ node.storage_ip }} {% endfor %} /tmp/ceph-bootstrap/monmap
 
 - name: copy initial ceph.conf to the boostrap directory
   copy:
@@ -58,7 +58,7 @@
     line: "{{ item }}"
     state: present
   with_items:
-    - "public network = {{ pvc_cluster_subnet }}"
+    - "public network = {{ pvc_storage_subnet }}"
     - "cluster network = {{ pvc_storage_subnet }}"
     - "auth cluster required = cephx"
     - "auth service required = cephx"
