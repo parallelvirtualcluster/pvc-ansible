@@ -41,21 +41,17 @@
 - include: frr/main.yml
   tags: pvc-frr
 
-# Install PVC sequentially
+# Install PVC daemon
 - include: pvc/main.yml
   tags: pvc-daemon
-  run_once: true
-  delegate_to: "{{ play_host }}"
-  with_items: "{{ play_hosts }}"
-  loop_control:
-    loop_var: play_host
-
-- include: common/remove_cluster_ips.yml
-  when: newhost is defined and newhost
-  tags: always
+#  run_once: true
+#  delegate_to: "{{ play_host }}"
+#  with_items: "{{ play_hosts }}"
+#  loop_control:
+#    loop_var: play_host
 
 - name: restart server on first install
-  shell: 'sleep 1 && shutdown -r now "Ansible updates triggered"'
+  shell: 'sleep 3 && shutdown -r now "Ansible updates triggered"'
   async: 1
   poll: 0
   ignore_errors: yes 

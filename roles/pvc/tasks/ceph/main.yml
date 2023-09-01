@@ -51,13 +51,16 @@
     - ceph.osd.bootstrap.keyring
     - monmap
 
-- name: create monitor data directory
+- name: create monitor and manager data directories
   file:
-    dest: /var/lib/ceph/mon/ceph-{{ ansible_hostname }}
+    dest: /var/lib/ceph/{{ item }}/ceph-{{ ansible_hostname }}
     state: directory
     owner: ceph
     group: ceph
     mode: 0750
+  with_items:
+    - mon
+    - mgr
   when: newhost is defined and newhost
 
 - name: populate monitor with map and keys
@@ -65,11 +68,14 @@
   become_user: ceph
   when: newhost is defined and newhost
 
-- name: touch monitor done file
+- name: touch monitor and manager done files
   file:
-    dest: /var/lib/ceph/mon/ceph-{{ ansible_hostname }}/done
+    dest: /var/lib/ceph/{{ item }}/ceph-{{ ansible_hostname }}/done
     state: touch
   become_user: ceph
+  with_items:
+    - mon
+    - mgr
   when: newhost is defined and newhost
 
 - name: start and enable daemons

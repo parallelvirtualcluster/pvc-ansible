@@ -1,16 +1,20 @@
 ---
-- name: add IP addresses to cluster interfaces
-  command: ip address add {{ item.cluster_ip }}/{{ item.cluster_cidr }} dev {{ pvc_cluster_device }}
-  delegate_to: "{{ item.hostname }}"
-  run_once: yes
+- name: create cluster bridge interface
+  command: brctl addbr brcluster
   ignore_errors: yes
-  with_items:
-    - "{{ pvc_nodes }}"
+
+- name: add underlying interface to bridge
+  command: brctl addif brcluster {{ pvc_cluster_device }}
+  ignore_errors: yes
+
+- name: set brcluster up
+  command: ip link set brcluster up
+  ignore_errors: yes
+
+- name: add IP addresses to cluster interfaces
+  command: ip address add {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.cluster_ip }}/{{ node.cluster_cidr }}{% endfor %} dev brcluster
+  ignore_errors: yes
 
 - name: add IP addresses to storage interfaces
-  command: ip address add {{ item.storage_ip }}/{{ item.storage_cidr }} dev {{ pvc_storage_device }}
-  delegate_to: "{{ item.hostname }}"
-  run_once: yes
+  command: ip address add {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.storage_ip }}/{{ node.storage_cidr }}{% endfor %} dev {{ pvc_storage_device }}
   ignore_errors: yes
-  with_items:
-    - "{{ pvc_nodes }}"
