@@ -138,7 +138,7 @@ bootstrap:
       SecureBoot: "Disabled"
   disks:                            # Disk definitions (see explanations above)
     system:                         # List of system disk(s)
-      - "/dev/disk/by-path/pci-0000:41:00.0-ata-1"
+      - "detect:Internal SD-CARD:0:64GB"
     data:                           # List of data disks for OSDs
       - "/dev/disk/by-path/pci-0000:01:00.0-sas-phy0-lun-0"
       - "/dev/disk/by-path/pci-0000:01:00.0-sas-phy4-lun-0"
