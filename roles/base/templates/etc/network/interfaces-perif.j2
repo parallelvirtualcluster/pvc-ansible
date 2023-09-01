@@ -2,7 +2,7 @@
 # {{ ansible_managed }}
 
 auto {{ network.value['device'] }}
-iface {{ network.value['device'] }} inet manual
+iface {{ network.value['device'] }} inet {{ network.value['mode']|default('manual') }}
     post-up ip link set $IFACE mtu {{ network.value['mtu'] }}
 {% if network.value['type'] == 'bond' %}
     bond-mode {{ network.value['bond_mode'] }}
