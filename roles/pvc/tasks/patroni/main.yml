@@ -74,11 +74,11 @@
   run_once: yes
   when: bootstrap is defined and bootstrap
 
-- name: ensure patroni services are enabled and started
+- name: start but disable services (managed by PVC)
   service:
-    name: "{{ item }}.service"
+    name: "{{ item }}"
     state: started
-    enabled: yes
+    enabled: no
   with_items:
     - patroni
 

@@ -11,11 +11,10 @@
   command: /usr/share/zookeeper/bin/zkCli.sh rmr /patroni
   ignore_errors: true
 
-- name: ensure patroni services are enabled and started
+- name: start Patroni
   service:
-    name: "{{ item }}.service"
+    name: "{{ item }}"
     state: started
-    enabled: yes
   with_items:
     - patroni
 
