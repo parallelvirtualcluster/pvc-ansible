@@ -78,11 +78,11 @@
     - mgr
   when: newhost is defined and newhost
 
-- name: start and enable daemons
+- name: start but disable daemons
   service:
     name: "{{ item }}"
     state: started
-    enabled: yes
+    enabled: no
   with_items:
     - ceph-mon@{{ ansible_hostname }}
     - ceph-mgr@{{ ansible_hostname }}
