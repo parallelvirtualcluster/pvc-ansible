@@ -1,5 +1,17 @@
 ---
-- name: ensure patroni services are enabled and started on this host so it becomes header
+- name: stop patroni services
+  service:
+    name: "{{ item }}.service"
+    state: stopped
+    enabled: no
+  with_items:
+    - patroni
+
+- name: remove any existing patroni keys in Zookeeper
+  command: /usr/share/zookeeper/bin/zkCli.sh rmr /patroni
+  ignore_errors: true
+
+- name: ensure patroni services are enabled and started on this host so it becomes leader
   service:
     name: "{{ item }}.service"
     state: started
