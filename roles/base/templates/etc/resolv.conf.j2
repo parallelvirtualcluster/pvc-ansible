@@ -1,6 +1,7 @@
 # DNS resolver configuration
 # {{ ansible_managed }}
 
+domain {{ local_domain }}
 options timeout:1 attempts:3 rotate
 nameserver 8.8.8.8
 nameserver 8.8.4.4
