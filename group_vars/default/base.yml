@@ -15,9 +15,9 @@ local_domain: upstream.local
 username_ipmi_host: pvc
 passwd_ipmi_host: ""
 
-# Root user password (as /etc/shadow hash)
-# > Use pwgen to generate and openssl passwd -1 -salt xyz <pw> to hash.
-passwdhash_root: ""
+# Root user password
+# > Use pwgen to generate
+root_password: ""
 
 # Log rotation configuration
 logrotate_keepcount: 7
