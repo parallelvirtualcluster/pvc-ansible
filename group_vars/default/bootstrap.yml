@@ -144,6 +144,11 @@ bootstrap:
                                         # password will be set later by the Ansible roles.
         redfish: yes                    # Can system BMC support Redfish?
                                         # NOTE: This is optional; Redfish will be probed if missing.
+        bios_settings:                  # Optional: Adjust the system BIOS settings, settings must exist to apply
+          BootMode: Uefi                # Set BootMode to Uefi
+          SecureBoot: Disabled          # Disable SecureBoot
+        manager_settings:               # Optional: Adjust manager (iDRAC, etc.) settings
+          IPMILan.1.Enable: Enabled     # Enable IPMI-over-LAN (Dell R6515 naming)
   # Second node
   "68:b5:99:12:34:78":                  # BMC MAC Address (from asset tag, etc.)
     node:                               # Node information
@@ -166,6 +171,11 @@ bootstrap:
                                         # will be set later by the Ansible roles.
         redfish: yes                    # Can system BMC support Redfish?
                                         # NOTE: This is optional; Redfish will be probed if missing.
+        bios_settings:                  # Optional: Adjust the system BIOS settings, settings must exist to apply
+          BootMode: Uefi                # Set BootMode to Uefi
+          SecureBoot: Disabled          # Disable SecureBoot
+        manager_settings:               # Optional: Adjust manager (iDRAC, etc.) settings
+          IPMILan.1.Enable: Enabled     # Enable IPMI-over-LAN (Dell R6515 naming)
   # Third node
   "18:a9:05:12:45:90":                  # BMC MAC Address (from asset tag, etc.)
     node:                               # Node information
@@ -187,6 +197,11 @@ bootstrap:
                                         # will be set later by the Ansible roles.
         redfish: yes                    # Can system BMC support Redfish?
                                         # NOTE: This is optional; Redfish will be probed if missing.
+        bios_settings:                  # Optional: Adjust the system BIOS settings, settings must exist to apply
+          BootMode: Uefi                # Set BootMode to Uefi
+          SecureBoot: Disabled          # Disable SecureBoot
+        manager_settings:               # Optional: Adjust manager (iDRAC, etc.) settings
+          IPMILan.1.Enable: Enabled     # Enable IPMI-over-LAN (Dell R6515 naming)
 
 # Bootstrap hooks (post-configuration)
 hooks:
