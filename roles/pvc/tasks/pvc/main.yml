@@ -46,13 +46,14 @@
     - pdns.service
     - dnsmasq.service
 
-- name: prepare Patroni database migrations (on all hosts)
-  command: /usr/share/pvc/pvc-api-db-init
-  when: bootstrap is defined and bootstrap and is_coordinator
-
 - include: pvc/bootstrap.yml
   run_once: yes
   when: bootstrap is defined and bootstrap and is_coordinator
+
+- name: install bootstrap database migrations across all hosts
+  copy:
+    src: pvc/{{ hostvars[inventory_hostname].group_names[0] }}/migrations
+    dest: /usr/share/pvc/
 
 - name: enable daemon services but don't start them
   service:
