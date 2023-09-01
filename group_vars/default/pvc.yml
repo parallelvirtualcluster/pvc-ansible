@@ -153,6 +153,7 @@ pvc_sriov_enable: False
 # > ADVANCED TUNING: These options are strongly recommended due to the performance gains possible, but
 #   most users would be able to use the default without too much issue. Read the following notes
 #   carefully to determine if this setting should be enabled in your cluster.
+# > NOTE: CPU tuning is only supported on Debian Bullseye (11) or newer
 # > Defines CPU tuning/affinity options for various subsystems within PVC. This is useful to
 #   help limit the impact that noisy elements may have on other elements, e.g. busy VMs on
 #   OSDs, or system processes on latency-sensitive VMs.
