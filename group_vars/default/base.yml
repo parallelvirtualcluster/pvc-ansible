@@ -35,19 +35,19 @@ ipmi:
       username: "host"
       password: ""
   hosts:
-    "pvchv1":
+    "pvchv1":                   # Use the inventory hostname here
       hostname: pvchv1-lom      # A valid short name (e.g. from /etc/hosts) or an FQDN must be
                                 # used here; PVC connects to this *hostname* for fencing.
       address: 192.168.100.101
       netmask: 255.255.255.0
       gateway: 192.168.100.1
-    "pvchv2":
+    "pvchv2":                   # Use the inventory hostname here
       hostname: pvchv2-lom      # A valid short name (e.g. from /etc/hosts) or an FQDN must be
                                 # used here; PVC connects to this *hostname* for fencing.
       address: 192.168.100.102
       netmask: 255.255.255.0
       gateway: 192.168.100.1
-    "pvchv3":
+    "pvchv3":                   # Use the inventory hostname here
       hostname: pvchv3-lom      # A valid short name (e.g. from /etc/hosts) or an FQDN must be
                                 # used here; PVC connects to this *hostname* for fencing.
       address: 192.168.100.103
