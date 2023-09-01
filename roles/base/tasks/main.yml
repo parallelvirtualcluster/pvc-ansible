@@ -18,10 +18,12 @@
 #
 # Remove obsolete issue-gen
 #
-- name: remove obsolete issue-gen script
+- name: remove obsolete issue-gen script from PVC installer
   file:
     dest: /etc/network/if-up.d/issue-gen
     state: absent
+  when: newhost is defined and newhost
+  tags: always
 
 #
 # Install custom fact scripts
@@ -31,6 +33,7 @@
     dest: "/etc/ansible/facts.d"
     state: directory
     recurse: yes
+  tags: base-ansible
 
 - name: install custom facts
   template:
@@ -42,22 +45,27 @@
     - host_id
     - host_group
     - dhcp_status
+  tags: base-ansible
 
 - name: regather facts
   setup:
   when: installed_facts.changed
+  tags: base-ansible
 
 - debug:
     var: ansible_local.host_group
     verbosity: 1
+  tags: always
   
 - debug:
     var: ansible_local.host_id
     verbosity: 1
+  tags: always
   
 - debug:
     var: ansible_local.dhcp_status
     verbosity: 1
+  tags: always
 
 #
 # Configure APT
@@ -71,14 +79,14 @@
     - { src: "etc/apt/apt.conf.d/10norecommends.j2", dest: "/etc/apt/apt.conf.d/10norecommends" }
     - { src: "etc/apt/preferences.d/pins.j2", dest: "/etc/apt/preferences.d/pins" }
     - { src: "etc/apt/sources.list.{{ ansible_machine }}.j2", dest: "/etc/apt/sources.list" }
-  tags: apt
+  tags: base-apt
 
 - name: add key for bonilan repo
   apt_key:
     url: "https://repo.bonifacelabs.net/debian/bonifacelabs_signing_key.pub"
     id: "83D07192314835D4"
     state: present
-  tags: apt
+  tags: base-apt
 
 #
 # Safe apt upgrades (on first install only)
@@ -87,6 +95,8 @@
 - name: apt update
   apt:
     update-cache: yes
+  when: newhost is defined and newhost
+  tags: base-apt
 
 - name: aptitude safe upgrade with autoremove
   apt:
@@ -94,6 +104,7 @@
     autoremove: yes
     upgrade: safe
   when: newhost is defined and newhost
+  tags: base-apt
 
 - name: install dbus
   apt:
@@ -101,12 +112,14 @@
       - dbus
     state: latest
   when: newhost is defined and newhost
+  tags: base-apt
 
 - name: clean out apt cache
   file:
     path: "/var/cache/apt/archives"
     state: absent
   when: newhost is defined and newhost
+  tags: base-apt
 
 #
 # Purge unneeded packages
@@ -123,15 +136,13 @@
     state: absent
     purge: yes
     autoremove: yes
-
-#
-# Install common packages
-#
+  tags: base-packages
 
 - name: set override debconf selections
   shell: 'echo "{{ item }}" | debconf-set-selections'
   with_items:
     - "wireshark-common wireshark-common/install-setuid boolean true"
+  tags: base-packages
 
 - name: install common packages (all arch)
   apt:
@@ -202,6 +213,17 @@
       - haveged
       - linux-image-amd64
       - linux-headers-amd64
+  tags: base-packages
+
+- name: install cleanup scripts
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: 0755
+  with_items:
+    - { src: "usr/local/sbin/kernel-cleanup.sh.j2", dest: "/usr/local/sbin/kernel-cleanup.sh" }
+    - { src: "usr/local/sbin/dpkg-cleanup.sh.j2", dest: "/usr/local/sbin/dpkg-cleanup.sh" }
+  tags: base-packages
 
 #
 # System configuration
@@ -212,7 +234,7 @@
   template:
     src: etc/network/interfaces.j2
     dest: /etc/network/interfaces
-  tags: network
+  tags: base-network
 
 - name: install per-interface files
   template:
@@ -221,13 +243,14 @@
   with_dict: "{{ networks }}"
   loop_control:
     loop_var: network
-  tags: network
+  tags: base-network
 
 # capabilities
 - name: set ping capabilities
   capabilities:
     path: /bin/ping
     capability: cap_net_raw=ep
+  tags: base-system
 
 # locale
 - name: install locale config files
@@ -239,6 +262,7 @@
   with_items:
     - { src: "etc/default/locale.j2", dest: "/etc/default/locale" }
     - { src: "etc/locale.gen.j2", dest: "/etc/locale.gen" }
+  tags: base-system
 
 - name: set timezone
   file:
@@ -246,6 +270,30 @@
     dest: /etc/localtime
     state: link
     force: yes
+  tags: base-system
+
+# sysctl
+- name: install sysctl tweaks
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: "etc/sysctl.d/pvc.conf.j2", dest: "/etc/sysctl.d/pvc.conf" }
+  tags: base-system
+
+- name: activate sysctl tweaks
+  shell: "sysctl -p {{ item }}"
+  with_items:
+    - /etc/sysctl.d/pvc.conf
+  tags: base-system
+
+# sudo
+- name: write the sudoers file
+  template:
+    src: "etc/sudoers.j2"
+    dest: "/etc/sudoers"
+    mode: 0440
+  tags: base-system
 
 # dns
 - name: write the hosts config
@@ -254,29 +302,16 @@
     dest: "{{ item.dest }}"
   with_items:
     - { src: "etc/hosts.j2", dest: "/etc/hosts" }
-  tags: dns
+  tags: base-dns
 
 - name: write the resolver configs
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
-    - { src: "etc/dhcp/dhclient-enter-hooks.d/noresolv.j2", dest: "/etc/dhcp/dhclient-enter-hooks.d/noresolv" }
     - { src: "etc/resolv.conf.j2", dest: "/etc/resolv.conf" }
-  tags: dns
-
-# acpi
-- name: install sysctl tweaks
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-  with_items:
-    - { src: "etc/sysctl.d/pvc.conf.j2", dest: "/etc/sysctl.d/pvc.conf" }
-
-- name: activate sysctl tweaks
-  shell: "sysctl -p {{ item }}"
-  with_items:
-    - /etc/sysctl.d/pvc.conf
+    - { src: "etc/dhcp/dhclient-enter-hooks.d/noresolv.j2", dest: "/etc/dhcp/dhclient-enter-hooks.d/noresolv" }
+  tags: base-dns
 
 # syslog
 - name: install rsyslog and logrotate configs
@@ -288,7 +323,7 @@
   with_items:
     - { src: "etc/rsyslog.conf.j2", dest: "/etc/rsyslog.conf" }
     - { src: "etc/logrotate.d/rsyslog.j2", dest: "/etc/logrotate.d/rsyslog" }
-  tags: rsyslog
+  tags: base-syslog
 
 - name: set journalctl persistence
   template:
@@ -297,7 +332,7 @@
     mode: 0644
   with_items:
     - { src: "etc/systemd/journald.conf.j2", dest: "/etc/systemd/journald.conf" }
-  tags: rsyslog
+  tags: base-syslog
 
 # cron
 - name: install crontab
@@ -307,6 +342,7 @@
     mode: 0755
   with_items:
     - { src: "etc/crontab.j2", dest: "/etc/crontab" }
+  tags: base-cron
 
 # mta
 - name: install postfix generic config
@@ -315,15 +351,14 @@
     dest: "/etc/postfix/main.cf"
   notify:
     - restart postfix
+  tags: base-mta
 
 - name: touch the postfix aliases file
   file:
     dest: /etc/postfix/aliases
     state: touch
+  tags: base-mta
 
-#
-# Local alias maps
-#
 - name: install local alias maps for various users
   lineinfile:
     dest: "/etc/aliases"
@@ -337,6 +372,7 @@
     - clamav
   notify:
     - newaliases
+  tags: base-mta
 
 # ntp
 - name: write the NTP config file
@@ -347,23 +383,26 @@
     - restart ntp
   with_items:
     - { src: "etc/ntp.conf.j2", dest: "/etc/ntp.conf" }
-  tags: ntp
+  tags: base-time
 
 # ssl
 - name: ensure haveged is running
   service:
     name: haveged
     state: started
+  tags: base-ssl
 
 - name: generate diffie-hellman parameters
   command: openssl dhparam -out /etc/ssl/dhparams.pem 2048
   args:
     creates: /etc/ssl/dhparams.pem
+  tags: base-ssl
 
 - name: correct permissions on dhparams
   file:
     dest: /etc/ssl/dhparams.pem
     mode: 0440
+  tags: base-ssl
 
 # ssh
 - name: write the sshd_config files
@@ -377,13 +416,13 @@
     - { src: 'etc/ssh/sshd_config.j2', dest: '/etc/ssh/sshd_config' }
     - { src: 'etc/ssh/shosts.equiv.j2', dest: '/etc/ssh/shosts.equiv' }
     - { src: 'etc/ssh/ssh_known_hosts.j2', dest: '/etc/ssh/ssh_known_hosts' }
-  tags: ssh
+  tags: base-ssh
 
 - name: write sshd pam.d config
   template:
     src: "etc/pam.d/sshd.j2"
     dest: "/etc/pam.d/sshd"
-  tags: ssh
+  tags: base-ssh
 
 - name: remove unneeded SSH keys (leave only RSA and ED25519)
   file:
@@ -396,7 +435,7 @@
     - /etc/ssh/ssh_host_ecdsa_key.pub
   notify:
     - restart ssh
-  tags: ssh
+  tags: base-ssh
 
 - name: set permissions on rsa and ed25519 host keys (just in case they're wrong)
   file:
@@ -407,20 +446,14 @@
     - { name: 'ssh_host_rsa_key.pub', mode: '644' }
     - { name: 'ssh_host_ed25519_key', mode: '600' }
     - { name: 'ssh_host_ed25519_key.pub', mode: '644' }
-  tags: ssh
-
-# sudo
-- name: write the sudoers file
-  template:
-    src: "etc/sudoers.j2"
-    dest: "/etc/sudoers"
-    mode: 0440
+  tags: base-ssh
 
 # bash
 - name: write the bash.bashrc config file
   template:
     src: "etc/bash.bashrc.j2"
     dest: "/etc/bash.bashrc"
+  tags: base-shell
 
 # motd
 - name: ensure update-motd and profile.d scripts are present
@@ -432,7 +465,7 @@
     - { src: "usr/local/sbin/update-motd.sh.j2", dest: "/usr/local/sbin/update-motd.sh" }
     - { src: "etc/profile.d/w.sh.j2", dest: "/etc/profile.d/w.sh" }
     - { src: "etc/profile.d/pvc.sh.j2", dest: "/etc/profile.d/zzz_pvc.sh" }
-  tags: motd
+  tags: base-shell
 
 - name: install update-motd crontab
   template:
@@ -441,23 +474,13 @@
     mode: 0644
   with_items:
     - { src: "etc/cron.d/update-motd.j2", dest: "/etc/cron.d/update-motd" }
-  tags: motd
+  tags: base-shell
 
 - name: ensure /etc/motd is absent
   file:
     dest: "/etc/motd"
     state: absent
-  tags: motd
-
-# dpkg
-- name: install dpkg-cleanup script
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    mode: 0755
-  with_items:
-    - { src: "usr/local/sbin/dpkg-cleanup.sh.j2", dest: "/usr/local/sbin/dpkg-cleanup.sh" }
-  tags: dpkg
+  tags: base-shell
 
 # fail2ban
 - name: install fail2ban configurations
@@ -471,7 +494,7 @@
     - { src: "etc/fail2ban/filter.d/sshd.conf.j2", dest: "/etc/fail2ban/filter.d/sshd.conf" }
     - { src: "etc/fail2ban/jail.d/sshd.conf.j2", dest: "/etc/fail2ban/jail.d/sshd.conf" }
     - { src: "etc/fail2ban/jail.d/sshd.local.j2", dest: "/etc/fail2ban/jail.d/sshd.local" }
-  tags: fail2ban
+  tags: base-fail2ban
 
 # check-mk-agent
 - name: install check_mk agent plugins
@@ -487,7 +510,7 @@
     - freshness
     - kernelversion
     - ownership
-  tags: check-mk-agent
+  tags: base-cmkagent
 
 #
 # Configure users
@@ -734,7 +757,7 @@
 - name: create vimdir
   file:
     state: directory
-    dest: /var/home/{{ item.name }}/.vim
+   dest: /var/home/{{ item.name }}/.vim
     owner: "{{ item.name }}"
     group: operator
     mode: 0700
@@ -756,5 +779,6 @@
     - postfix
     - ntp
     - ssh
+  tags: base-services
 
 - meta: flush_handlers

@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# kernel-cleanup.sh - Remove obsolete packages and config files
+# {{ ansible_managed }}
+
+# Determine the active running kernel
+RUNNING_KERNEL="$( uname -v | awk '{ print $4 }' )"
+
+# Determine the list of installed kernels (latest is always last)
+INSTALLED_KERNELS=( $( dpkg -l | grep 'linux-image-[0-9]' | awk '{ print $3 }' ) )
+NUM_INSTALLED=${{ '{#' }}INSTALLED_KERNELS[@]}
+
+if [[ ${NUM_INSTALLED} -le 1 ]]; then
+    echo "A single kernel is installed, aborting cleanly."
+    exit 0
+fi
+
+LATEST_KERNEL="${INSTALLED_KERNELS[-1]}"
+if [[ ${LATEST_KERNEL} == ${RUNNING_KERNEL} ]]; then
+    force="--allow-remove-essential"
+else
+    force=""
+fi
+
+# Remove the latest kernel from the array
+NUM_REMOVABLE=$(( ${NUM_INSTALLED} - 1 ))
+REMOVABLE_KERNELS=( ${INSTALLED_KERNELS[@]:0:${NUM_REMOVABLE}} )
+
+PURGE_PACKAGES=()
+for KERNEL in ${REMOVABLE_KERNELS[@]}; do
+    PURGE_PACKAGES+=( $( dpkg -l | grep ${KERNEL} | awk '{ print $2 }' ) )
+done
+
+# Override the "linux-check-removal" script
+mv /usr/bin/linux-check-removal /usr/bin/linux-check-removal.orig
+echo -e '#!/bin/sh\necho "Overriding default linux-check-removal script!"\nexit 0' > /usr/bin/linux-check-removal
+chmod +x /usr/bin/linux-check-removal
+
+# Remove the packages
+echo "Removing: ${PURGE_PACKAGES[@]}"
+apt-get purge --yes ${force} ${PURGE_PACKAGES[@]}
+
+# Restore the "linux-check-removal" script
+mv /usr/bin/linux-check-removal.orig /usr/bin/linux-check-removal
+
+# Make sure there is still a valid kernel installed (just in case something broke)
+if [[ $( dpkg -l | grep 'linux-image-[0-9]' | wc -l ) -lt 1 ]]; then
+    echo "WARNING: NO KERNEL IS INSTALLED. THROWING ERROR AND ABORTING."
+    exit 1
+fi
+exit 0
