@@ -22,7 +22,7 @@
 #pvc_suicide_intervals: 0                # Number of keepalive ticks before a node consideres itself dead (0 to disable)
 #pvc_fence_successful_action: migrate    # What to do with VMs when a fence is successful (migrate, None)
 #pvc_fence_failed_action: None           # What to do with VMs when a fence is failed (migrate, None) - migrate is DANGEROUS without pvc_suicide_intervals set to < pvc_fence_intervals
-#pvc_migrate_target_selector: mem        # The selector to use for migrating VMs after a fence
+#pvc_migrate_target_selector: mem        # The selector to use for migrating VMs if not explicitly set; one of mem, memfree, load, vcpus, vms
 
 # Client API basic configuration
 pvc_api_listen_address: "{{ pvc_upstream_floatingip }}"
