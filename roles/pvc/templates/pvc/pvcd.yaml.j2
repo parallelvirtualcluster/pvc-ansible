@@ -8,6 +8,7 @@ pvc:
     enable_hypervisor: True
     enable_networking: True
     enable_storage: True
+    enable_api: True
   cluster:
     coordinators:
 {% for node in pvc_nodes if node.is_coordinator %}
