@@ -5,6 +5,7 @@
 Description = Zookeeper centralized coordination service
 After = remote-fs.target network.target
 AssertPathExists = /var/lib/zookeeper
+StartLimitIntervalSec = 0
 
 [Service]
 Type = simple
