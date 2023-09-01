@@ -49,7 +49,15 @@
     replace: 'libvirtd_opts="--listen"'
   notify: restart libvirtd
 
-- name: disable services
+- name: enable services
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  with_items:
+    - vhostmd
+
+- name: disable PVC-managed services
   service:
     name: "{{ item }}"
     enabled: no
