@@ -68,19 +68,19 @@
         - name: flush node
           command: "pvc node flush {{ ansible_hostname }} --wait"
   
+        - name: make sure node is in flushed state
+          shell: "pvc node info {{ ansible_hostname }} | grep '^Domain State' | awk '{ print $NF }'"
+          register: pvcflush
+          failed_when: pvcflush.stdout != 'flushed'
+          until: pvcflush.stdout == 'flushed'
+          retries: 60
+          delay: 10
+
         - name: ensure VMs are migrated away
           shell: "virsh list | grep running | wc -l"
           register: virshcount
           failed_when: virshcount.stdout != "0"
           until: virshcount.stdout == "0"
-          retries: 60
-          delay: 10
-
-        - name: make sure all VMs have migrated
-          shell: "pvc node info {{ ansible_hostname }} | grep '^Domain State' | awk '{ print $NF }'"
-          register: pvcflush
-          failed_when: pvcflush.stdout != 'flushed'
-          until: pvcflush.stdout == 'flushed'
           retries: 60
           delay: 10
 
