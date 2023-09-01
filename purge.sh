@@ -12,11 +12,14 @@ echo
 
 for host in $@; do
     echo -n "Purging host ${host}... "
-    ssh deploy@${host} "
+    ssh deploy@${host} '
     sudo systemctl stop pvcnoded;
     sudo systemctl stop ceph-mon@$(hostname -s);
     sudo systemctl stop ceph-mgr@$(hostname -s);
     sudo systemctl stop patroni;
+    for key in $( echo "ls /" | sudo /usr/share/zookeeper/bin/zkCli.sh | grep --color=none zookeeper | tr -d "[]," | tr " " "\n" | grep -v zookeeper ); do
+        echo "rmr /${key}" | sudo /usr/share/zookeeper/bin/zkCli.sh;
+    done
     sudo systemctl stop zookeeper;
     sudo rm -rf /etc/pvc-install.* /etc/ceph* /etc/patroni* /etc/postgres* /etc/zookeeper* /etc/libvirt*;
     sudo rm -rf /var/lib/postgresql /var/lib/zookeeper /var/lib/libvirt;
@@ -31,6 +34,7 @@ for host in $@; do
     sudo userdel ceph;
     sudo umount /var/lib/ceph;
     sudo mkfs.ext4 /dev/vgx/ceph;
-    sudo mount /var/lib/ceph" &>/dev/null
+    sudo mount /var/lib/ceph;
+    ' &>/dev/null
     echo "done."
 done
