@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Zookeeper cluster status check for Check_MK
+# {{ ansible_managed }}
+
+echo "<<<zookeeper>>>"
+zk_stat=$( /usr/share/zookeeper/bin/zkCli.sh -server $(hostname -s):2181 -q get /primary_node 2>/dev/null )
+zk_retcode=$?
+if [[ ${zk_retcode} -eq 0 ]]; then
+    echo "Connection succeeded"
+else
+    echo "Connection failed"
+fi

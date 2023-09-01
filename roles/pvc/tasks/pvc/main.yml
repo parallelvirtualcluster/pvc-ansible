@@ -45,6 +45,12 @@
   no_log: True
   when: pvc_api_enable_ssl and not pvc_api_ssl_key_path
 
+- name: install check_mk agent check
+  template:
+    src: pvc/pvc_status.j2
+    dest: /usr/lib/check_mk_agent/plugins/pvc_status
+    mode: 0755
+
 - include: pvc/bootstrap.yml
   run_once: yes
   when: bootstrap is defined and bootstrap and is_coordinator

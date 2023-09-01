@@ -24,6 +24,12 @@
     dest: /etc/cron.daily/zookeeper-vacuum
     mode: 0755
 
+- name: install check_mk agent check
+  template:
+    src: zookeeper/zk_status.j2
+    dest: /usr/lib/check_mk_agent/plugins/zk_status
+    mode: 0755
+
 - name: install systemd unit file
   template:
     src: zookeeper/zookeeper.service.j2
