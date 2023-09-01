@@ -62,17 +62,15 @@
   when: debian_version|int >= 11 and cpu_tuning is defined
 
 - name: restart server on first install
-  shell: 'sleep 3 && shutdown -r now "Ansible updates triggered"'
-  async: 1
-  poll: 0
-  ignore_errors: yes 
-  become: yes 
+  reboot:
+    post_reboot_delay: 30
+    reboot_timeout: 1800
   when: newhost is defined and newhost
   tags: always
 
-- name: wait 30 seconds for system to stabilize
+- name: wait 90 seconds for system to stabilize
   pause:
-    seconds: 30
+    seconds: 90
   become: no
   connection: local
   when: newhost is defined and newhost
