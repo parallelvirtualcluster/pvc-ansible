@@ -93,6 +93,11 @@
       become: no
       connection: local
 
+    - name: remove possible obsolete cset configuration
+      file:
+        dest: /etc/systemd/system/ceph-osd@.service.d
+        state: absent
+
     - name: replace sources.list entries will bullseye
       replace:
         dest: "{{ item }}"
