@@ -17,6 +17,11 @@ A default example set of configuration variables can be found in `group_vars/def
 
 ## Using
 
+*NOTE:* All non-`default` directories under `group_vars/` and `files/`, and the `hosts` file,
+        are ignored by this Git repository. It is advisable to manage these files securely
+        in a separate repository and use symlinks to place them in the expected locations in
+        this repository. Note that the `files/` data is created during cluster bootstrap.
+
 0. Deploy a set of 3 or 5 initial PVC nodes using the PVC install ISO.
 0. Configure the networking on the hosts via `ssh deploy@<host>` and editing the
    `/etc/network/interfaces` file to match your network layout, including and bonding and
