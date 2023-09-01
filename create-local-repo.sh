@@ -25,12 +25,15 @@ echo "Creating directories and symlinks..."
 mkdir files group_vars roles
 ln -s ../pvc-ansible/files/default files/default
 ln -s ../pvc-ansible/group_vars/default group_vars/default
-ln -s pvc-ansible/oneshot oneshot
 ln -s ../pvc-ansible/roles/base roles/base
 ln -s ../pvc-ansible/roles/pvc roles/pvc
 ln -s files ceph
+cp -r pvc-ansible/oneshot oneshot
 cp pvc-ansible/pvc.yml .
 cp pvc-ansible/clusters.yml .
+if [[ ! -d files/default ]]; then
+    cp -r pvc-ansible/files/default files/
+fi
 touch hosts
 cat <<EOF >update-remote.sh
 #!/usr/bin/env bash
