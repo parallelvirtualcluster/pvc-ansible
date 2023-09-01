@@ -18,11 +18,6 @@
         debian_codename: "{{ ansible_lsb.codename }}"
       when: ansible_lsb.codename is defined
 
-    - name: bail out if incorrect version
-      shell: echo "Can't upgrade from Debian < 11; run upgrade-pvc-cluster_deb11.yml against cluster first!" && /bin/false
-      delegate_to: localhost
-      when: debian_version|int < 11
-
     - name: set PVC maintenance mode
       command: pvc cluster maintenance on
 
@@ -134,17 +129,28 @@
       with_items:
         - /etc/apt/sources.list
 
+    - name: remove security entry if on Debian 10
+      lineinfile:
+        dest: /etc/apt/sources.list
+        regexp: "security.debian.org"
+        state: absent
+      when: debian_version < 11
+
+    - name: update apt cache
+      apt:
+        update_cache: yes
+
+    - name: install python-is-python3
+      apt:
+        name: python-is-python3
+        state: latest
+
     - name: aptitude dist upgrade and cleanup
       apt:
         update_cache: yes
         autoremove: yes
         autoclean: yes
         upgrade: dist
-
-    - name: install python-is-python3
-      apt:
-        name: python-is-python3
-        state: latest
 
     - name: clean up obsolete kernels
       command: /usr/local/sbin/kernel-cleanup.sh
