@@ -2,7 +2,7 @@
 - name: install patroni packages via apt
   apt:
     name:
-      - python-psycopg2
+      - python3-psycopg2
       - python3-kazoo
       - patroni
       - postgresql-11
