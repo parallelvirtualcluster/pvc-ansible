@@ -1,7 +1,8 @@
 ---
-- name: bring up interfaces interface
+- name: bring up interfaces
   command: ifup {{ item }}
   with_items: "{% for network in networks %}{{ networks[network].device }} {% endfor %}"
+  ignore_errors: yes
 
 - name: set bridges dictionary (cluster != storage)
   set_fact:
