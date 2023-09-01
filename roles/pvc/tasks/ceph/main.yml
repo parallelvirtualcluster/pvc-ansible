@@ -71,12 +71,6 @@
   become_user: ceph
   when: newhost is defined and newhost
 
-- name: create mgr auth keyring
-  command: ceph auth get-or-create mgr.{{ ansible_hostname }} mon 'allow profile mgr' osd 'allow *' mds 'allow *' --out-file /var/lib/ceph/mgr/ceph-{{ ansible_hostname }}/keyring
-  become_user: ceph
-  args:
-    creates: /var/lib/ceph/mgr/ceph-{{ ansible_hostname }}/keyring
-
 - name: touch monitor and manager done files
   file:
     dest: /var/lib/ceph/{{ item }}/ceph-{{ ansible_hostname }}/done
@@ -86,6 +80,20 @@
     - mon
     - mgr
   when: newhost is defined and newhost
+
+- name: start monitor daemon
+  service:
+    name: "{{ item }}"
+    state: started
+  with_items:
+    - ceph-mon@{{ ansible_hostname }}
+  when: newhost is defined and newhost
+
+- name: create mgr auth keyring
+  command: ceph auth get-or-create mgr.{{ ansible_hostname }} mon 'allow profile mgr' osd 'allow *' mds 'allow *' --out-file /var/lib/ceph/mgr/ceph-{{ ansible_hostname }}/keyring
+  become_user: ceph
+  args:
+    creates: /var/lib/ceph/mgr/ceph-{{ ansible_hostname }}/keyring
 
 - name: install OSD bootstrap keyring
   file:
