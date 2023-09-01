@@ -16,7 +16,7 @@
     seconds: 5
 
 - name: initialize a fresh PVC cluster
-  command: pvc -c local task init -y
+  command: pvc -c local cluster init -y
 
 - name: wait 5s for cluster to stabilize
   pause:
