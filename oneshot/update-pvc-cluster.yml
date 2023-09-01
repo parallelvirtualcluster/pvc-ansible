@@ -168,6 +168,7 @@
 
         - name: unset OSD noout
           command: pvc storage osd unset noout
+          ignore_errors: yes
 
         - name: unflush node
           command: "pvc node ready {{ ansible_hostname }} --wait"
