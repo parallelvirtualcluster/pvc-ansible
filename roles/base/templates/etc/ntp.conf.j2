@@ -16,7 +16,7 @@ server time.nrc.ca iburst
 server time.chu.nrc.ca iburst
 
 # Local PVC cluster
-{% for host in groups[hostvars[inventory_hostname].group_names[0]] %}
+{% for host in groups[cluster_group] %}
 server {{ host }} iburst
 {% endfor %}
 

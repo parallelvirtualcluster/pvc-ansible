@@ -1,4 +1,8 @@
 ---
+# The name of the Ansible cluster group, used to set file paths and determine hosts in the cluster
+# This should match the lowest-level group in the Ansible `hosts` file that defines this cluster
+cluster_group: default
+
 # Local timezone for the cluster
 timezone_location: Canada/Eastern
 

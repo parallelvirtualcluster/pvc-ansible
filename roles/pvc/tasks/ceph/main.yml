@@ -39,7 +39,7 @@
 
 - name: install configurations
   copy:
-    src: ceph/{{ hostvars[inventory_hostname].group_names[0] }}/ceph/{{ item }}
+    src: ceph/{{ cluster_group }}/ceph/{{ item }}
     dest: /etc/ceph/{{ item }}
     owner: ceph
     group: ceph

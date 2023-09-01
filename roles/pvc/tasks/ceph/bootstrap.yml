@@ -75,7 +75,7 @@
 - name: collect bootstrapped Ceph files into the role
   fetch:
     src: /tmp/ceph-bootstrap/{{ item }}
-    dest: roles/pvc/files/ceph/{{ hostvars[inventory_hostname].group_names[0] }}/ceph/
+    dest: roles/pvc/files/ceph/{{ cluster_group }}/ceph/
     flat: yes
   with_items:
     - ceph.conf
