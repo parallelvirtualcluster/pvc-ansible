@@ -3,6 +3,7 @@
   command: uuidgen
   register: fsid_raw
   delegate_to: localhost
+  become: no
 
 - set_fact:
     fsid: "{{ fsid_raw.stdout }}"
