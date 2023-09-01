@@ -6,16 +6,17 @@
 # Determine the active running kernel
 RUNNING_KERNEL="$( uname -v | awk '{ print $4 }' )"
 
-# Determine the list of installed kernels (latest is always last)
-INSTALLED_KERNELS=( $( dpkg -l | grep 'linux-image-[0-9]' | awk '{ print $3 }' | sort -n ) )
-NUM_INSTALLED=${{ '{#' }}INSTALLED_KERNELS[@]}
+# Determine the list of installed kernels (latest first)
+INSTALLED_KERNEL_PACKAGES=( $( dpkg -l | grep 'linux-image-[0-9]' | awk '{ print $2 }' | sort -Vr ) )
+NUM_INSTALLED=${{ '{#' }}INSTALLED_KERNEL_PACKAGES[@]}
 
 if [[ ${NUM_INSTALLED} -le 1 ]]; then
     echo "A single kernel is installed, aborting cleanly."
     exit 0
 fi
 
-LATEST_KERNEL="${INSTALLED_KERNELS[-1]}"
+LATEST_KERNEL_PACKAGE="${INSTALLED_KERNEL_PACKAGES[0]}"
+LATEST_KERNEL="$( dpkg -l | grep "${LATEST_KERNEL_PACKAGE}" | awk '{ print $3 }' )" 
 if [[ ${LATEST_KERNEL} == ${RUNNING_KERNEL} ]]; then
     force=""
 else
@@ -24,12 +25,7 @@ fi
 
 # Remove the latest kernel from the array
 NUM_REMOVABLE=$(( ${NUM_INSTALLED} - 1 ))
-REMOVABLE_KERNELS=( ${INSTALLED_KERNELS[@]:0:${NUM_REMOVABLE}} )
-
-PURGE_PACKAGES=()
-for KERNEL in ${REMOVABLE_KERNELS[@]}; do
-    PURGE_PACKAGES+=( $( dpkg -l | grep ${KERNEL} | grep -v 'linux-image-amd64\|linux-headers-amd64' | awk '{ print $2 }' ) )
-done
+REMOVABLE_KERNEL_PACKAGES=( ${INSTALLED_KERNEL_PACKAGES[@]:1} )
 
 # Override the "linux-check-removal" script
 mv /usr/bin/linux-check-removal /usr/bin/linux-check-removal.orig
@@ -37,8 +33,8 @@ echo -e '#!/bin/sh\necho "Overriding default linux-check-removal script!"\nexit 
 chmod +x /usr/bin/linux-check-removal
 
 # Remove the packages
-echo "Removing: ${PURGE_PACKAGES[@]}"
-apt-get purge --yes ${force} ${PURGE_PACKAGES[@]}
+echo "Removing: ${REMOVABLE_KERNEL_PACKAGES[@]}"
+apt-get purge --yes ${force} ${REMOVABLE_KERNEL_PACKAGES[@]}
 
 # Restore the "linux-check-removal" script
 mv /usr/bin/linux-check-removal.orig /usr/bin/linux-check-removal
