@@ -1,7 +1,7 @@
 # backup user authorized_keys
 # {{ ansible_managed }}
 
-{% if backup_keys is defined %}
+{% if backup_keys is defined and backup_keys %}
 {% for key in backup_keys %}
 {{ key }}
 {% endfor %}
