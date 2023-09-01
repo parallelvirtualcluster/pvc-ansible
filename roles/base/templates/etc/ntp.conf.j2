@@ -16,9 +16,10 @@ tos orphan 6
 server 127.0.0.1
 fudge  127.0.0.1 stratum 10
 
-# NRC public NTP masters
-server time.nrc.ca iburst
-server time.chu.nrc.ca iburst
+# NTP masters
+{% for server in ntp_servers %}
+server {{ server }} iburst
+{% endfor %}
 
 # Local PVC cluster
 {% for host in groups[cluster_group] %}

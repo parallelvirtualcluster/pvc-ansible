@@ -12,6 +12,10 @@ recursive_dns_servers:
 recursive_dns_search_domains:
   - "{{ local_domain }}"
 
+ntp_servers:
+  - time.nrc.ca
+  - time.chu.nrc.ca
+
 grub_cmdline: "console=tty0 console=ttyS{{ grub.serial_console[cluster_hardware].console }},115200 plymouth.ignore-serial-consoles splash"
 grub_serial: "serial --unit={{ grub.serial_console[cluster_hardware].console }} --speed=115200"
 
