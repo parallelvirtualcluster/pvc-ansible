@@ -470,6 +470,21 @@
     - { src: "etc/fail2ban/jail.d/sshd.local.j2", dest: "/etc/fail2ban/jail.d/sshd.local" }
   tags: fail2ban
 
+# check-mk-agent
+- name: install check_mk agent plugins
+  copy:
+    src: "usr/lib/check_mk_agent/plugins/{{ item }}"
+    dest: "/usr/lib/check_mk_agent/plugins/{{ item }}"
+  with_items:
+    - backup
+    - cephfsmounts
+    - dpkg
+    - entropy
+    - freshness
+    - kernelversion
+    - ownership
+  tags: check-mk-agent
+
 #
 # Configure users
 #
