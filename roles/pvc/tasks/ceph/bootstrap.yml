@@ -80,6 +80,16 @@
     - "bluestore cache autotune = true"
     - "rbd default features = 5"
 
+- name: add single-node cluster options
+  lineinfile:
+    dest: /tmp/ceph-bootstrap/ceph.conf
+    line: "{{ item }}"
+    state: present
+  with_items:
+    - "osd pool default size = 2"
+    - "osd pool default min size = 1"
+  when: "{{ pvc_nodes | length }} == 1"
+
 - name: add memory limit if requested
   lineinfile:
     dest: /tmp/ceph-bootstrap/ceph.conf

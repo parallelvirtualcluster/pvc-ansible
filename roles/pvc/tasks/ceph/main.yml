@@ -129,6 +129,15 @@
     - ceph-mon@{{ ansible_hostname }}
     - ceph-mgr@{{ ansible_hostname }}
 
+# Single-node cluster ruleset
+- name: remove default CRUSH replicated_rule ruleset
+  command: ceph osd crush rule rm replicated_rule
+  when: "{{ pvc_nodes | length }} == 1"
+
+- name: add single-node CRUSH replicated_rule ruleset
+  command: ceph osd crush rule create-replicated replicated_rule default osd
+  when: "{{ pvc_nodes | length }} == 1"
+
 # System OSD CPU shielding activation
 - block:
     - name: install packages
