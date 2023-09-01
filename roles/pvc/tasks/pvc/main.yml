@@ -8,6 +8,7 @@
       - pvc-client-api
       - debootstrap
       - ethtool
+      - jq
     state: latest
 
 - name: install pvc configurations
