@@ -9,19 +9,22 @@ filegen loopstats file loopstats type day enable
 filegen peerstats file peerstats type day enable
 filegen clockstats file clockstats type day enable
 
-{% if 'remote' in group_names or 'remote-jellyfin' in group_names %}
-server time.nrc.ca
-server time.chu.nrc.ca
-
-restrict -4 default kod notrap nomodify nopeer
-restrict -6 default kod notrap nomodify nopeer
-{% else %}
 disable auth
-multicastclient 224.0.0.1
-multicastclient ff05::101
+
+# NRC public NTP masters
+server time.nrc.ca iburst
+server time.chu.nrc.ca iburst
+
+# Local PVC cluster
+{% for host in groups[hostvars[inventory_hostname].group_names[0]] %}
+server {{ host }} iburst
+{% endfor %}
+
+# Provide NTP for others via multicast
+multicast 224.0.0.3
+multicast ff05::103
 
 restrict -4 default notrap nomodify
 restrict -6 default notrap nomodify
-{% endif %}
 restrict 127.0.0.1
 restrict ::1
