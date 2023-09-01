@@ -84,14 +84,12 @@ pvc_routers:
 #pvc_osd_memory_limit: 939524096
 # Zookeeper heap memory limit, sets Xms and Xmx values to the Java process; default is 512M.
 # > WARNING: Unless you have an extremely limited amount of RAM, changing this setting is NOT RECOMMENDED.
-#            Lowering the heap memory may cause extremely poor performance in Zookeeper during some tasks,
-#            including schema validation at node startup and node logging into Zookeeper, or even crashes.
-#pvc_zookeeper_heap_limit: 128M
+#            Lowering the heap limit may cause poor performance or crashes in Zookeeper during some tasks.
+#pvc_zookeeper_heap_limit: 128M   # 1/4 of default
 # Zookeeper stack memory limit, sets Xss value to the Java process; default is 1024M.
 # > WARNING: Unless you have an extremely limited amount of RAM, changing this setting is NOT RECOMMENDED.
-#            Lowering the heap memory may cause extremely poor performance in Zookeeper during some tasks,
-#            including schema validation at node startup and node logging into Zookeeper, or even crashes.
-#pvc_zookeeper_stack_limit: 256M
+#            Lowering the stack limit may cause poor performance or crashes in Zookeeper during some tasks.
+#pvc_zookeeper_stack_limit: 256M  # 1/4 of default
 
 # Node list
 # > Every node configured with this playbook must be specified in this list.
