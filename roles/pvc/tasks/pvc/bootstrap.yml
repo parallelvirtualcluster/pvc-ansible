@@ -18,6 +18,10 @@
 - name: initialize a fresh PVC cluster
   command: pvc -c local task init -y
 
+- name: wait 5s for cluster to stabilize
+  pause:
+    seconds: 5
+
 - name: stop the API daemon
   service:
     name: pvcapid.service

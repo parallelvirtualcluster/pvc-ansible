@@ -53,6 +53,7 @@
 - name: enable daemon services but don't start them
   service:
     name: "{{ item }}"
+    state: stopped
     enabled: yes
   with_items:
     - pvc-flush.service

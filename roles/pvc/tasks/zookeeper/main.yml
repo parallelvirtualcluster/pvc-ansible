@@ -42,4 +42,7 @@
   with_items:
     - zookeeper
 
+- include: zookeeper/bootstrap.yml
+  when: bootstrap is defined and bootstrap
+
 - meta: flush_handlers

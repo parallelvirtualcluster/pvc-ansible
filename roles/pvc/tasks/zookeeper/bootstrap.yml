@@ -1,0 +1,13 @@
+---
+- name: restart Zookeeper on all nodes
+  service:
+    name: zookeeper
+    state: restarted
+
+- name: wait 10s for cluster to stabilize
+  pause:
+    seconds: 10
+
+- name: ensure Zookeeper is running on node1
+  shell: echo "ls /" | /usr/share/zookeeper/bin/zkCli.sh
+  when: ansible_local.host_id == 1
