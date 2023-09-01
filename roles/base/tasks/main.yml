@@ -101,8 +101,8 @@
 
 - name: add key for bonilan repo
   apt_key:
-    url: "https://repo.bonifacelabs.net/debian/bonifacelabs_signing_key.pub"
-    id: "83D07192314835D4"
+    url: "{{ debian_pvc_signing_key_path }}"
+    id: "{{ debian_pvc_signing_key_id }}"
     state: present
   register: apt_key
   tags: base-apt
