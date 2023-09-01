@@ -23,6 +23,7 @@ for host in $@; do
     sudo systemctl stop zookeeper;
     sudo rm -rf /etc/pvc-install.* /etc/ceph* /etc/patroni* /etc/postgres* /etc/zookeeper* /etc/libvirt*;
     sudo rm -rf /var/lib/postgresql /var/lib/zookeeper /var/lib/libvirt;
+    suod rm -rf /var/log/postgresql /var/log/zookeeper /var/log/libvirt;
     sudo rm -rf /run/ceph;
     sudo rm -rf /etc/systemd/system/ceph-*.target.wants;
     sudo apt purge -y *ceph* *rbd* *rados*;
