@@ -6,6 +6,8 @@ initLimit=10
 syncLimit=5
 dataDir=/var/lib/zookeeper
 
+autopurge.purgeInterval=72
+
 clientPort=2181
 
 {% for node in pvc_nodes if node.is_coordinator %}
