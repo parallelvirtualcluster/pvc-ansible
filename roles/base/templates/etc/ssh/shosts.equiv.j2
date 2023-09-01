@@ -1,3 +1,8 @@
 # SSH remote allowed hosts
 # {{ ansible_managed }}
 
+{% for host in groups[cluster_group] %}
+{{ host }}
+{{ host.split('.')[0] }}.{{ networks['cluster']['domain'] }}
+{{ host.split('.')[0] }}
+{% endfor %}
