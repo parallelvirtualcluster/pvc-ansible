@@ -28,6 +28,7 @@ ln -s ../pvc-ansible/group_vars/default group_vars/default
 ln -s pvc-ansible/oneshot oneshot
 ln -s ../pvc-ansible/roles/base roles/base
 ln -s ../pvc-ansible/roles/pvc roles/pvc
+ln -s files ceph
 cp pvc-ansible/pvc.yml .
 touch hosts
 cat <<EOF >update-remote.sh
