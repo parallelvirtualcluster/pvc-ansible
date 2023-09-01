@@ -21,8 +21,8 @@ pvc:
             # tokens: a list of authentication tokens; leave as an empty list to disable authentication
             tokens:
 {% for token in pvc_api_tokens %}
-				- description: "{{ token.description }}"
-				  token: "{{ token.token }}"
+                - description: "{{ token.description }}"
+                  token: "{{ token.token }}"
 {% endfor %}
         # ssl: SSL configuration
         ssl:
