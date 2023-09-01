@@ -13,6 +13,6 @@ JMXLOCALONLY=false
 #   cluster is only ~5.2MB of raw JSON data and beyond 12x that seems like a cluster too large for PVC.
 # Xms/Xmx=128M
 #   Reduce the Java memory size to minimize RAM consumption by Zookeeper.
-JAVA_OPTS="-Djava.net.preferIPv4Stack=True -Djute.maxbuffer=67108864 -Xms128M -Xmx128M"
+JAVA_OPTS="-Djava.net.preferIPv4Stack=True -Djute.maxbuffer=67108864 -Xms{{ pvc_zookeeper_heap_limit }} -Xmx{{ pvc_zookeeper_heap_limit }} -Xss{{ pvc_zookeeper_stack_limit }}"
 JAVA=/usr/bin/java
 CLASSPATH="/etc/zookeeper/conf:/usr/share/java/jline.jar:/usr/share/java/log4j-1.2.jar:/usr/share/java/xercesImpl.jar:/usr/share/java/xmlParserAPIs.jar:/usr/share/java/netty.jar:/usr/share/java/slf4j-api.jar:/usr/share/java/slf4j-log4j12.jar:/usr/share/java/zookeeper.jar"

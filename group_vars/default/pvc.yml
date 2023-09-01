@@ -72,11 +72,16 @@ pvc_asn: "65500"
 pvc_routers:
   - "192.168.100.1"
 
-# Ceph OSD tuning
-# > Uncomment in low-memory situation (nodes with <32GB RAM).
-# > These options are *only* applied at cluster bootstrap and cannot be changed later.
+# Memory tuning
+# > Uncomment these options in low-memory situations (nodes with <32GB RAM).
 # OSD memory limit - 939524096 (~900MB) is the lowest possible value; default is 4GB.
+# > This option is *only* applied at cluster bootstrap and cannot be changed later
+#   here, only by editing the `files/ceph/<cluster>/ceph.conf` file directly.
 #pvc_osd_memory_limit: 939524096
+# Zookeeper heap memory limit, sets Xms and Xmx values to the Java process.
+#pvc_zookeeper_heap_limit: 32M
+# Zookeeper stack memory limit, sets Xss value to the Java process.
+#pvc_zookeeper_stack_limit: 32M
 
 # Node list
 # > Every node configured with this playbook must be specified in this list.
