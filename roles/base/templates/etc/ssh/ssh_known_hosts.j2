@@ -2,5 +2,7 @@
 # {{ ansible_managed }}
 
 {% for host in groups[cluster_group] %}
+{% if hostvars[host].ansible_ssh_host_key_ed25519_public is defined %}
 {{ host }},{{ host.split('.')[0] }}.{{ networks['cluster']['domain'] }},{{ host.split('.')[0] }} ssh-ed25519 {{ hostvars[host].ansible_ssh_host_key_ed25519_public }}
+{% endif %}
 {% endfor %}
