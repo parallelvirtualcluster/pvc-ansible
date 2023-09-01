@@ -31,7 +31,7 @@ bootstrap:
     - local all all peer
     - host replication replicator 127.0.0.1/32 trust
 {% for node in pvc_nodes if node.is_coordinator %}
-    - host replication replicator {{ node.cluster_ip }} trust
+    - host replication replicator {{ node.cluster_ip }}/32 trust
 {% endfor %}
     - host all all 0.0.0.0/0 md5
 
