@@ -3,6 +3,9 @@
 [sites:children]
 #default
 
+[sites:vars]
+ansible_python_interpreter=/usr/bin/python3
+
 #[default]
 #pvchv1
 #pvchv2
