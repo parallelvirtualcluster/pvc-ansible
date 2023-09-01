@@ -9,6 +9,13 @@ timezone_location: Canada/Eastern
 # Cluster domain for node FQDNs
 local_domain: upstream.local
 
+# DNS recursive servers and search domains for nodes
+recursive_dns_servers:
+  - 8.8.8.8
+  - 8.8.4.4
+recursive_dns_search_domains:
+  - "{{ local_domain }}"
+
 # Cluster hardware model, used in pvc_user_configuration and grub_configuration below
 cluster_hardware: default
 

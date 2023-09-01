@@ -6,6 +6,12 @@ debian_pvc_repository: https://repo.parallelvirtualcluster.org/debian
 debian_pvc_signing_key_path: https://repo.parallelvirtualcluster.org/debian/bonifacelabs_signing_key.pub
 debian_pvc_signing_key_id: 83D07192314835D4
 
+recursive_dns_servers:
+  - 8.8.8.8
+  - 8.8.4.4
+recursive_dns_search_domains:
+  - "{{ local_domain }}"
+
 grub_cmdline: "systemd.unified_cgroup_hierarchy=0 console=tty0 console=ttyS{{ grub.serial_console[cluster_hardware].console }},115200 plymouth.ignore-serial-consoles splash"
 grub_serial: "serial --unit={{ grub.serial_console[cluster_hardware].console }} --speed=115200"
 

@@ -2,6 +2,10 @@
 # {{ ansible_managed }}
 
 domain {{ local_domain }}
+{% if recursive_dns_search_domains is defined %}
+search {{ recursive_dns_search_domains | join (' ') }}
+{% endif %}
 options timeout:1 attempts:3 rotate
-nameserver 8.8.8.8
-nameserver 8.8.4.4
+{% for server in recursive_dns_servers %}
+nameserver {{ server }}
+{% endfor %}
