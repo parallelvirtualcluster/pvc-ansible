@@ -19,21 +19,25 @@ bootstrap:
         postgresql:
             use_pg_rewind: true
             parameters:
+{% if debian_version|int >= 12 %}
+                wal_keep_size: 64
+{% else %}
                 wal_keep_segments: 64
+{% endif %}
                 max_wal_senders: 8
                 max_replication_slots: 8
 
     initdb:
-    - encoding: UTF8
-    - data-checksums
+      - encoding: UTF8
+      - data-checksums
 
     pg_hba:
-    - local all all peer
-    - host replication replicator 127.0.0.1/32 trust
+      - local all all peer
+      - host replication replicator 127.0.0.1/32 trust
 {% for node in pvc_nodes if node.is_coordinator %}
-    - host replication replicator {{ node.cluster_ip }}/32 trust
+      - host replication replicator {{ node.cluster_ip }}/32 trust
 {% endfor %}
-    - host all all 0.0.0.0/0 md5
+      - host all all 0.0.0.0/0 md5
 
     users:
         admin:
@@ -61,9 +65,20 @@ postgresql:
             password: '{{ pvc_superuser_database_password }}'
     parameters:
         unix_socket_directories: '/run/postgresql'
+{% if debian_version|int >= 12 %}
+        wal_keep_size: 64
+{% else %}
         wal_keep_segments: 64
+{% endif %}
         max_wal_senders: 8
         max_replication_slots: 8
+    pg_hba:
+      - local all all peer
+      - host replication replicator 127.0.0.1/32 trust
+{% for node in pvc_nodes if node.is_coordinator %}
+      - host replication replicator {{ node.cluster_ip }}/32 trust
+{% endfor %}
+      - host all all 0.0.0.0/0 md5
 
 tags:
     nofailover: false
