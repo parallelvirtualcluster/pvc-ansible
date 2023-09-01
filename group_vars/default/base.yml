@@ -1,0 +1,17 @@
+---
+# Basic information
+local_domain: upstream.local
+username_ipmi_host: pvc
+passwd_ipmi_host: ""            # Use pwgen to generate (set in IPMI config)
+passwdhash_root: ""             # Use pwgen to generate and openssl passwd -1 -salt xyz <pw> to hash
+# Logrotate
+logrotate_keepcount: 7
+logrotate_interval: daily
+# Email
+username_email_root: root
+# Administrative users
+admin_users:
+  - name: "myuser"
+    uid: 500
+    keys:
+      - "ssh-ed25519 MyKey 2019-06"
