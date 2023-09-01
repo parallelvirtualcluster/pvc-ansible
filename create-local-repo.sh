@@ -4,9 +4,8 @@
 # project as a submodule.
 
 echo "This script will create a new repository for storing your local modifications"
-echo "and configurations. It will then include the pvc-ansible repository as a"
-echo "submodule for ease of updating and management. Please enter the requested"
-echo "details to proceed."
+echo "and configurations. It will then include the pvc-ansible and pvc-installer "
+echo "repositories as submodules for ease of updating and management."
 echo
 
 echo -n "Absolute path to new repository ('~', '\$HOME', etc. are NOT supported): "
@@ -18,8 +17,9 @@ mkdir -p ${target_path}
 pushd ${target_path}
 git init .
 
-echo "Adding submodule..."
+echo "Adding submodules..."
 git submodule add https://github.com/parallelvirtualcluster/pvc-ansible
+git submodule add https://github.com/parallelvirtualcluster/pvc-installer
 
 echo "Creating directories and symlinks..."
 mkdir files group_vars roles
