@@ -229,6 +229,7 @@
       - lzop
       - xz-utils
       - haveged
+      - ipmitool
       - linux-image-amd64
       - linux-headers-amd64
   tags: base-packages
