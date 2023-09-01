@@ -1,5 +1,5 @@
 ---
-# pvcd cluster configuration
+# pvcnoded configuration
 # {{ ansible_managed }}
 pvc:
   node: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.hostname }}{% endfor %}

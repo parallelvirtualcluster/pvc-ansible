@@ -3,9 +3,9 @@
   command: ip address add {{ pvc_upstream_floatingip }}/{{ pvc_upstream_netmask }} dev {{ pvc_upstream_device }}
   ignore_errors: yes
 
-- name: start the API client
+- name: start the API daemon
   service:
-    name: pvc-api.service
+    name: pvcapid.service
     state: started
 
 - name: use http as the API request scheme
@@ -28,9 +28,9 @@
     url: "{{ api_uri_scheme }}://{{ pvc_api_listen_address }}:{{ pvc_api_listen_port }}/api/v1/initialize"
     method: POST
 
-- name: stop the API client
+- name: stop the API daemon
   service:
-    name: pvc-api.service
+    name: pvcapid.service
     state: stopped
 
 - name: remove floating IP address to upstream interface
