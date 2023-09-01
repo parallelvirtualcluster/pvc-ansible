@@ -1,19 +1,29 @@
 # PVC Zookeeper configuration
 # {{ ansible_managed }}
 
-tickTime=1000
-initLimit=10
-syncLimit=5
+# Put all data in /var/lib/zookeeper
 dataDir=/var/lib/zookeeper
+# Set our tick time to 1 second
+tickTime=1000
+# Initialization can take up to 30 ticks
+initLimit=30
+# Syncing can take up to 15 ticks
+syncLimit=15
+# Lower snapshot count from 100k to 10k
+snapCount=10000
+# Halve the snapshot size to 2GB
+snapSizeLimitInKb=2097152
+# Configure a max of 200 client connections
+maxClientCnxns=200
+# Auto purge: keep 3 snapshots and evaluate every 4 hours
+autopurge.snapRetainCount=3
+autopurge.purgeInterval=4
 
-autopurge.purgeInterval=72
-
+# Listen on port 2181 on the cluster IP
 clientPort=2181
 clientPortAddress={% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.cluster_ip }}{% endfor %}
 
-# Increase client connections to 200 to prevent connection overloads
-maxClientCnxns=200
-
+# Node list - all coordinators
 {% for node in pvc_nodes if node.is_coordinator %}
 server.{{ node.node_id }}={{ node.cluster_ip }}:2888:3888
 {% endfor %}
