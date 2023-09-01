@@ -49,17 +49,28 @@
     replace: 'libvirtd_opts="--listen"'
   notify: restart libvirtd
 
-- name: enable services
+- name: install systemd unit file (override default on Bullseye)
+  template:
+    src: libvirt/libvirtd.service.j2
+    dest: /etc/systemd/system/libvirtd.service
+  register: systemd
+
+- name: reload systemd to apply changes
+  command: systemctl daemon-reload
+  when: systemd.changed
+
+- name: start and enable services (not managed by PVC)
   service:
     name: "{{ item }}"
-    enabled: yes
     state: started
+    enabled: yes
   with_items:
     - vhostmd
 
-- name: disable PVC-managed services
+- name: start but disable services (managed by PVC)
   service:
     name: "{{ item }}"
+    state: started
     enabled: no
   with_items:
     - libvirtd
