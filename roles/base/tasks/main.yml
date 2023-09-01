@@ -168,14 +168,14 @@
     name:
       - python
   when: debian_codename == 'buster'
-  tag: base-packages
+  tags: base-packages
 
 - name: install common packages (bullseye)
   apt:
     name:
       - python-is-python3
   when: debian_codename == 'bullseye'
-  tag: base-packages
+  tags: base-packages
 
 - name: install common packages (all versions)
   apt:
