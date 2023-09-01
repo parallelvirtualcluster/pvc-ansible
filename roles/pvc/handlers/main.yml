@@ -8,6 +8,7 @@
   service:
     name: libvirtd
     state: restarted
+  ignore_errors: true  # Ansible sometimes inexplicably fails to restart
 
 - name: restart frr
   service:
