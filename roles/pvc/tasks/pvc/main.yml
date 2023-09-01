@@ -3,19 +3,22 @@
   apt:
     name:
       - pvc-daemon
-      - pvc-client-cli
       - pvc-client-common
+      - pvc-client-cli
+      - pvc-client-api
       - debootstrap
       - ethtool
     state: latest
 
-- name: install pvc configuration
+- name: install pvc configurations
   template:
-    src: pvc/{{ item }}.j2
-    dest: /etc/pvc/{{ item }}
+    src: pvc/{{ item }}.yaml.j2
+    dest: /etc/pvc/{{ item }}.yaml
+  notify:
+    - restart {{ item }}
   with_items:
-    - pvcd.yaml
-  notify: restart pvcd
+    - pvcd
+    - pvc-api
 
 - name: stop and disable unneccessary services
   service:
@@ -29,7 +32,7 @@
   when: bootstrap is defined and bootstrap
   run_once: yes
 
-- name: enable services but don't start them
+- name: enable daemon services but don't start them
   service:
     name: "{{ item }}"
     enabled: yes
