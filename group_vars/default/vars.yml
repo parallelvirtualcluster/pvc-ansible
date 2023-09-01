@@ -63,3 +63,8 @@ pvc_upstream_domain: "{{ blsedomains_pvc_upstreamdomain }}"
 pvc_upstream_subnet: "{{ blsecluster_pvc_upstreamsubnetv4 }}"
 pvc_upstream_floatingip: "{{ blsecluster_pvc_upstreamsubnetsnip }}.252/24"
 pvc_upstream_gatewayip: "{{ blsecluster_pvc_upstreamsubnetsnip }}.1"
+# Logging
+pvc_log_to_file: True
+pvc_log_to_stdout: True
+pvc_log_keepalives: True
+pvc_log_console_lines: 1000
