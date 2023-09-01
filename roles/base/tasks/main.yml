@@ -15,6 +15,13 @@
   when: newhost_check.changed
   tags: always
 
+#
+# Remove obsolete issue-gen
+#
+- name: remove obsolete issue-gen script
+  file:
+    dest: /etc/network/if-up.d/issue-gen
+    state: absent
 
 #
 # Install custom fact scripts
