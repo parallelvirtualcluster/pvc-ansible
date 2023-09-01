@@ -276,6 +276,7 @@
       - bzip2
       - lzop
       - xz-utils
+      - zstd
       - haveged
       - cpufrequtils
       - lm-sensors
