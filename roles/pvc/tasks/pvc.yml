@@ -19,10 +19,12 @@
   shell: "/usr/share/zookeeper/bin/zkCli.sh stat /nodes 2>&1 | grep -q 'Node does not exist'"
   register: cluster_init
   failed_when: no
+  run_once: yes
 
 - name: bootstrap a fresh cluster
   shell: /usr/bin/pvc init
-  when: cluster_init.rc == 0 and ansible_local.host_id == 1
+  when: cluster_init.rc == 0
+  run_once: yes
 
 - name: stop and disable unneccessary services
   service:
@@ -31,6 +33,9 @@
     enabled: no
   with_items:
     - pdns.service
+
+- include: remove_cluster_ips.yml
+  when: newhost.changed
 
 - name: start and enable services
   service:

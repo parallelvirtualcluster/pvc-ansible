@@ -1,19 +1,12 @@
 ---
-- name: add IP addresses to cluster interfaces
-  command: ip address add {{ item.cluster_ip }}/{{ item.cluster_cidr }} dev {{ pvc_cluster_device }}
-  delegate_to: "{{ item.hostname }}"
-  run_once: yes
+- name: stop the monitor daemon
+  service:
+    name: ceph-mon@{{ ansible_hostname }}
+    state: stopped
   ignore_errors: yes
-  with_items:
-    - "{{ pvc_nodes }}"
 
-- name: add IP addresses to storage interfaces
-  command: ip address add {{ item.storage_ip }}/{{ item.storage_cidr }} dev {{ pvc_storage_device }}
-  delegate_to: "{{ item.hostname }}"
-  run_once: yes
-  ignore_errors: yes
-  with_items:
-    - "{{ pvc_nodes }}"
+- name: reset any systemd failures
+  command: systemctl reset-failed
 
 - block:
     - name: generate cluster FSID
@@ -102,7 +95,7 @@
     - name: collect bootstrapped Ceph files into the role
       fetch:
         src: /tmp/ceph-bootstrap/{{ item }}
-        dest: roles/pvc/files/ceph/
+        dest: roles/pvc/files/ceph/{{ hostvars[inventory_hostname].group_names[0] }}/ceph/
         flat: yes
       with_items:
         - ceph.conf
@@ -120,7 +113,7 @@
 
 - name: deploy out configurations to all nodes
   copy:
-    src: ceph/{{ item }}
+    src: ceph/{{ hostvars[inventory_hostname].group_names[0] }}/ceph/{{ item }}
     dest: /etc/ceph/{{ item }}
     owner: ceph
     group: ceph

@@ -39,5 +39,8 @@
     dest: /etc/ceph
     state: directory
 
+- include: add_cluster_ips.yml
+  when: newhost.changed
+
 - include: bootstrap_ceph.yml
   when: newhost.changed

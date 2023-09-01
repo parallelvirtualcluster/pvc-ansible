@@ -1,0 +1,16 @@
+---
+- name: add IP addresses to cluster interfaces
+  command: ip address add {{ item.cluster_ip }}/{{ item.cluster_cidr }} dev {{ pvc_cluster_device }}
+  delegate_to: "{{ item.hostname }}"
+  run_once: yes
+  ignore_errors: yes
+  with_items:
+    - "{{ pvc_nodes }}"
+
+- name: add IP addresses to storage interfaces
+  command: ip address add {{ item.storage_ip }}/{{ item.storage_cidr }} dev {{ pvc_storage_device }}
+  delegate_to: "{{ item.hostname }}"
+  run_once: yes
+  ignore_errors: yes
+  with_items:
+    - "{{ pvc_nodes }}"
