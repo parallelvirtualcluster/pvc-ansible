@@ -154,3 +154,7 @@
     name: ceph-mon@{{ ansible_hostname }}
     state: started
     enabled: yes
+
+- name: create Libvirt keyring
+  command: ceph auth get-or-create client.libvirt mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=pvc*'
+  run_once: yes
