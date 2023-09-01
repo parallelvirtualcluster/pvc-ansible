@@ -30,7 +30,7 @@
 
 - name: regather local facts
   setup:
-    gather_subset: "local"
+    gather_subset: "all"
   when: installed_facts.changed
 
 - debug:
@@ -731,3 +731,5 @@
     - postfix
     - ntp
     - ssh
+
+- meta: flush_handlers
