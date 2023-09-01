@@ -7,8 +7,9 @@ ff02::1 	ip6-allmodes
 ff02::2		ip6-allrouters
 
 {% for node in pvc_nodes %}
-{{ node.cluster_ip }} {{ node.hostname }}.{{ pvc_cluster_domain }} {{ node.hostname }}
-{{ node.storage_ip }} {{ node.hostname }}.{{ pvc_storage_domain }}
+{{ node.cluster_ip }} {{ node.hostname.split('.')[0] }}.{{ pvc_cluster_domain }} {{ node.hostname.split('.')[0] }}
+{{ node.storage_ip }} {{ node.hostname.split('.')[0] }}.{{ pvc_storage_domain }}
+{{ node.upstream_ip }} {{ node.hostname.split('.')[0] }}.{{ local_domain }}
 {% endfor %}
 
 {% if hosts is defined %}
