@@ -29,9 +29,6 @@
     name: fail2ban
     state: restarted
 
-- name: generate locales
-  command: locale-gen
-
 - name: newaliases
   command: newaliases
 

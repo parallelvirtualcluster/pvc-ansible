@@ -11,9 +11,6 @@
   shell: "/usr/share/zookeeper/bin/zkCli.sh -server $(hostname -s):2181 rmr /patroni"
   ignore_errors: true
 
-- name: regenerate locales to ensure compliance
-  command: locale-gen
-
 - name: start Patroni
   service:
     name: "{{ item }}"

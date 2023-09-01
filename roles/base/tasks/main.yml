@@ -300,8 +300,6 @@
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
-  notify:
-    - generate locales
   with_items:
     - { src: "etc/default/locale.j2", dest: "/etc/default/locale" }
     - { src: "etc/locale.gen.j2", dest: "/etc/locale.gen" }
@@ -313,6 +311,10 @@
     dest: /etc/localtime
     state: link
     force: yes
+  tags: base-system
+
+- name: generate locales
+  command: locale-gen
   tags: base-system
 
 # sysctl
