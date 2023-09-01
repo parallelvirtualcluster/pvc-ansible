@@ -638,11 +638,14 @@
     state: directory
   tags: base-backups
 
-- name: install daily backup script
+- name: install daily backup scripts
   template:
-    src: etc/cron.daily/pvc-backup.j2
-    dest: /etc/cron.daily/pvc-backup
+    src: "etc/cron.daily/{{ item }}.j2"
+    dest: "/etc/cron.daily/{{ item }}"
     mode: 0755
+  with_items:
+    - pvc-backup
+    - mon-backup
   tags: base-backups
 
 - name: install IPMI network interfaces fragment
