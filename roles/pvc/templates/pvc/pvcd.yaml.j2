@@ -34,9 +34,9 @@ pvc:
       database:
         host: localhost
         port: 5432
-        name: pvcdns
-        user: pvcdns
-        pass: PVCdnsPassw0rd
+        name: {{ pvc_dns_database_name }}
+        user: {{ pvc_dns_database_user }}
+        pass: {{ pvc_dns_database_password }}
   system:
     intervals:
       keepalive_interval: 5

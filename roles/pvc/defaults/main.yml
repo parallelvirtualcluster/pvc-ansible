@@ -6,6 +6,9 @@ ceph_storage_secret_uuid: ""
 pvc_dns_database_name: "pvcdns"
 pvc_dns_database_user: "pvcdns"
 pvc_dns_database_password: "PVCdnsPassw0rd"
+pvc_prov_database_name: "pvcprov"
+pvc_prov_database_user: "pvcprov"
+pvc_prov_database_password: "PVCprovPassw0rd"
 # Coordinators
 pvc_nodes:
   - hostname: "pvc1"
