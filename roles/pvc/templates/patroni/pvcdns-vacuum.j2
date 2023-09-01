@@ -1,16 +1,17 @@
 #!/bin/bash
-# Daily vaccuum script for PVCDNS database
+# Daily vaccuum script for PostgreSQL databases
 # {{ ansible_managed }}
 
-# Don't run if we aren't primary
+# Don't run if we aren't the Patroni primary
 HOSTNAME="$( hostname -s )"
-PRIMARY="$( pvc node list | grep primary | awk '{ print $1 }' )"
+PRIMARY="$( patronictl -c /etc/patroni/config.yml -d zookeeper://localhost:2181 list --format json \
+              | jq -r '.[] | select(.Role == "Leader") | .Member' )"
 if [[ $HOSTNAME != $PRIMARY ]]; then
     exit 0
 fi
 
 # Analyze the database
-echo -e "----------------------------"                       &>>/var/log/pvc/pdns/vacuum.log
-echo -e "$( date )"                                          &>>/var/log/pvc/pdns/vacuum.log
-echo -e "----------------------------"                       &>>/var/log/pvc/pdns/vacuum.log
-su postgres -c 'psql pvcdns -c "VACUUM (VERBOSE, ANALYZE);"' &>>/var/log/pvc/pdns/vacuum.log
+echo -e "----------------------------"              &>>/var/log/pvc/pdns/vacuum.log
+echo -e "$( date )"                                 &>>/var/log/pvc/pdns/vacuum.log
+echo -e "----------------------------"              &>>/var/log/pvc/pdns/vacuum.log
+su postgres -c 'vacuumdb --verbose --analyze --all' &>>/var/log/pvc/pdns/vacuum.log
