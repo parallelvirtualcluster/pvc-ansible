@@ -28,10 +28,9 @@
   when: bootstrap is defined and bootstrap
   run_once: yes
 
-- name: start and enable services
+- name: enable services but don't start them
   service:
     name: "{{ item }}"
-    state: started
     enabled: yes
   with_items:
     - pvc-flush.service
