@@ -5,6 +5,7 @@
       - pvc-daemon
       - pvc-client-cli
       - pvc-client-common
+      - debootstrap
     state: latest
 
 - name: install pvc configuration
