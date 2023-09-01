@@ -570,54 +570,69 @@
   file:
     state: directory
     dest: /var/home
-  tags: users
+  tags:
+    - users
 
 # root
 - name: generate Root password hash
   command: "mkpasswd --method=sha512crypt {{ root_password }}"
   no_log: true
   register: mkpasswd
-  tags: users
+  tags:
+    - users
+    - user-root
 
 - name: set Root password
   user:
     name: root
     password: "{{ mkpasswd.stdout }}"
-  tags: users
+  tags:
+    - users
+    - user-root
 
 - name: remove Root known_hosts
   file:
     state: absent
     dest: /root/.ssh/known_hosts
-  tags: users
+  tags:
+    - users
+    - user-root
 
 - name: write vimrc to root homedir
   template:
     src: var/home/user/vimrc.j2
     dest: /root/.vimrc
     mode: 0600
-  tags: users
+  tags:
+    - users
+    - user-root
 
 - name: create vimdir
   file:
     state: directory
     dest: /root/.vim
     mode: 0700
-  tags: users
+  tags:
+    - users
+    - user-root
 
 - name: write htoprc to homedir
   template:
     src: var/home/user/config/htop/htoprc.j2
     dest: /root/.htoprc
     mode: 0600
-  tags: users
+  tags:
+    - users
+    - user-root
 
 # backup
 - name: ensure backup user has shell
   user:
     name: backup
     shell: /bin/sh
-  tags: users
+  tags:
+    - users
+    - user-backup
 
 - name: create backup .ssh directory
   file:
@@ -626,7 +641,9 @@
     owner: backup
     group: root
     mode: 0700
-  tags: users
+  tags:
+    - users
+    - user-backup
 
 - name: create backup authorized_keys file
   template:
@@ -635,27 +652,35 @@
     owner: backup
     group: root
     mode: 0640
-  tags: users
+  tags:
+    - users
+    - user-backup
 
 - name: write the sudoers file
   template:
     src: etc/sudoers.d/sudoers-backup.j2
     dest: /etc/sudoers.d/backup
-  tags: users
+  tags:
+    - users
+    - user-backup
 
 - name: install the post-backup timestamp script
   template:
     src: var/backups/timestamp.sh.j2
     dest: /var/backups/timestamp.sh
     mode: 0755
-  tags: users
+  tags:
+    - users
+    - user-backup
 
 - name: touch shares file
   file:
     dest: /var/backups/shares
     state: touch
     owner: backup
-  tags: users
+  tags:
+    - users
+    - user-backup
 
 # deploy
 - name: ensure user deploy exists
@@ -669,7 +694,9 @@
     move_home: yes
     state: present
     append: yes
-  tags: users
+  tags:
+    - users
+    - user-deploy
 
 - name: ensure homedir has right permissions
   file:
@@ -678,7 +705,9 @@
     owner: "{{ deploy_username }}"
     group: operator
     mode: 0700
-  tags: users
+  tags:
+    - users
+    - user-deploy
 
 - name: ensure .ssh directory exists
   file:
@@ -687,7 +716,9 @@
     owner: "{{ deploy_username }}"
     group: operator
     mode: 0700
-  tags: users
+  tags:
+    - users
+    - user-deploy
 
 - name: add authorized keys
   authorized_key:
@@ -696,7 +727,9 @@
   with_subelements:
     - "{{ admin_users }}"
     - keys
-  tags: users
+  tags:
+    - users
+    - user-deploy
 
 # admin_users
 - name: ensure user exists
@@ -711,7 +744,9 @@
     state: present
     append: yes
   with_items: "{{ admin_users }}"
-  tags: users
+  tags:
+    - users
+    - user-admin
 
 - name: ensure homedir has right permissions
   file:
@@ -721,7 +756,9 @@
     group: operator
     mode: 0700
   with_items: "{{ admin_users }}"
-  tags: users
+  tags:
+    - users
+    - user-admin
 
 - name: ensure .ssh directory exists
   file:
@@ -731,7 +768,9 @@
     group: operator
     mode: 0700
   with_items: "{{ admin_users }}"
-  tags: users
+  tags:
+    - users
+    - user-admin
 
 - name: add authorized keys
   authorized_key:
@@ -740,7 +779,9 @@
   with_subelements:
     - "{{ admin_users }}"
     - keys
-  tags: users
+  tags:
+    - users
+    - user-admin
 
 - name: write bashrc to homedir
   template:
@@ -750,7 +791,9 @@
     group: operator
     mode: 0700
   with_items: "{{ admin_users }}"
-  tags: users
+  tags:
+    - users
+    - user-admin
 
 - name: write bash_logout to homedir
   template:
@@ -760,7 +803,9 @@
     group: operator
     mode: 0700
   with_items: "{{ admin_users }}"
-  tags: users
+  tags:
+    - users
+    - user-admin
 
 - name: ensure htop config directory exists
   file:
@@ -770,7 +815,9 @@
     group: operator
     mode: 0755
   with_items: "{{ admin_users }}"
-  tags: users
+  tags:
+    - users
+    - user-admin
 
 - name: write htoprc to homedir
   template:
@@ -780,7 +827,9 @@
     group: operator
     mode: 0644
   with_items: "{{ admin_users }}"
-  tags: users
+  tags:
+    - users
+    - user-admin
 
 - name: write profile to homedir
   template:
@@ -790,7 +839,9 @@
     group: operator
     mode: 0700
   with_items: "{{ admin_users }}"
-  tags: users
+  tags:
+    - users
+    - user-admin
 
 - name: write vimrc to homedir
   template:
@@ -800,7 +851,9 @@
     group: operator
     mode: 0600
   with_items: "{{ admin_users }}"
-  tags: users
+  tags:
+    - users
+    - user-admin
 
 - name: create vimdir
   file:
@@ -810,7 +863,9 @@
     group: operator
     mode: 0700
   with_items: "{{ admin_users }}"
-  tags: users
+  tags:
+    - users
+    - user-admin
 
 #
 # Verify and enable services
