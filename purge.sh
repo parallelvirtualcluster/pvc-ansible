@@ -14,6 +14,7 @@ for host in $@; do
     echo -n "Purging host ${host}... "
     ssh deploy@${host} '
     sudo systemctl stop pvcnoded;
+    sudo systemctl stop pvcapid;
     sudo systemctl stop ceph-mon@$(hostname -s);
     sudo systemctl stop ceph-mgr@$(hostname -s);
     sudo systemctl stop patroni;
@@ -26,6 +27,7 @@ for host in $@; do
     suod rm -rf /var/log/postgresql /var/log/zookeeper /var/log/libvirt;
     sudo rm -rf /run/ceph;
     sudo rm -rf /etc/systemd/system/ceph-*.target.wants;
+    sudo apt purge -y *pvc*;
     sudo apt purge -y *ceph* *rbd* *rados*;
     sudo apt purge -y patroni* postgres* zookeeper* libvirt*
     sudo apt purge -y ca-certificates-java fontconfig-config libjemalloc2 libpq5 python-psycopg2 python3-eventlet python3-greenlet python3-jinja2 python3-kazoo python3-markupsafe python3-pkg-resources python3-pygments python3-six uuid-runtime
@@ -36,6 +38,12 @@ for host in $@; do
     sudo umount /var/lib/ceph;
     sudo mkfs.ext4 /dev/vgx/ceph;
     sudo mount /var/lib/ceph;
+    ' &>/dev/null
+    echo "done."
+done
+for host in $@; do
+    echo -n "Rebooting host ${host}... "
+    ssh deploy@${host} '
     sudo reboot;
     ' &>/dev/null
     echo "done."
