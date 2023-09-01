@@ -1,0 +1,25 @@
+title-text: ""
+desktop-image: "/usr/share/grub-pvc/background.png"
+terminal-border: "360"
+terminal-left: "360"
+terminal-top: "300"
+terminal-width: "256"
+terminal-height: "192"
++ boot_menu {
+		top = 40%
+        left = 24%
+        width = 60%
+		height = 20%
+		item_color = "#AAAAAA"
+		selected_item_color = "#FFFFFF"
+        item_spacing = 1
+}
++ progress_bar {
+        id = "__timeout__"
+        top = 90%
+        left = 30%
+        width = 40%
+        height = 1
+        bg_color = "#000000"
+        fg_color = "#4444DD"
+}

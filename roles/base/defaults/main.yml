@@ -1,5 +1,5 @@
 ---
-grub_cmdline: "console=tty0 console=ttyS{{ grub.serial_console[cluster_hardware].console }},115200"
+grub_cmdline: "console=tty0 console=ttyS{{ grub.serial_console[cluster_hardware].console }},115200 plymouth.ignore-serial-consoles splash"
 grub_serial: "serial --unit={{ grub.serial_console[cluster_hardware].console }} --speed=115200"
 
 deploy_username: "deploy"

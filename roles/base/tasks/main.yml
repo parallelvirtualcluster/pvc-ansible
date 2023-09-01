@@ -16,16 +16,18 @@
   tags: always
 
 #
-# Set codename
+# Set Debian details
 #
-- name: set release codename (with ansible_distribution_release)
+- name: set Debian details (with ansible_distribution_*)
   set_fact:
+    debian_version: "{{ ansible_distribution_major_version }}"
     debian_codename: "{{ ansible_distribution_release }}"
   when: ansible_distribution_release is defined
   tags: always
 
-- name: set release codename (with ansible_lsb)
+- name: set Debian details (with ansible_lsb)
   set_fact:
+    debian_version: "{{ ansible_lsb.major_version }}"
     debian_codename: "{{ ansible_lsb.codename }}"
   when: ansible_lsb.codename is defined
   tags: always
@@ -231,6 +233,8 @@
       - haveged
       - ipmitool
       - grub-efi
+      - plymouth
+      - plymouth-themes
       - linux-image-amd64
       - linux-headers-amd64
   tags: base-packages
@@ -325,6 +329,50 @@
     - { src: "etc/resolv.conf.j2", dest: "/etc/resolv.conf" }
     - { src: "etc/dhcp/dhclient-enter-hooks.d/noresolv.j2", dest: "/etc/dhcp/dhclient-enter-hooks.d/noresolv" }
   tags: base-dns
+
+# GRUB bootloader
+- name: create PVC grub directory
+  file:
+    state: directory
+    dest: "/usr/share/grub-pvc"
+
+- name: install PVC grub style
+  copy:
+    src: "usr/share/grub-pvc/{{ item }}"
+    dest: "/usr/share/grub-pvc/{{ item }}"
+  with_items:
+    - background.png
+    - theme.txt
+
+- name: install GRUB configuration
+  template:
+    src: etc/default/grub.j2
+    dest: /etc/default/grub
+  notify:
+    - update grub
+
+# Plymouth theme
+- name: install PVC Plymouth theme archive
+  unarchive:
+    src: "usr/share/plymouth/themes/pvc.tar"
+    dest: "/usr/share/plymouth/themes/"
+    creates: "/usr/share/plymouth/themes/pvc"
+    owner: root
+    group: root
+
+- name: install PVC Plymouth background file
+  copy:
+    src: "usr/share/grub-pvc/background.png"
+    dest: "/usr/share/plymouth/themes/pvc/background-tile.png"
+
+- name: set PVC Plymouth theme as the default
+  command: plymouth-set-default-theme -R pvc
+
+# issue prompt
+- name: install PVC /etc/issue file
+  template:
+    src: etc/issue.j2
+    dest: /etc/issue
 
 # syslog
 - name: install rsyslog and logrotate configs
@@ -572,14 +620,6 @@
     - "admin"
     - "pvc"
   tags: base-ipmi
-
-# GRUB bootloader
-- name: install GRUB configuration
-  template:
-    src: etc/default/grub.j2
-    dest: /etc/default/grub
-  notify:
-    - update grub
 
 #
 # Configure users
