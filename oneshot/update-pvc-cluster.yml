@@ -56,12 +56,12 @@
     - name: restart system cleanly
       block:
         - name: secondary node
-          command: 'pvc node secondary {{ ansible_hostname }}'
+          command: 'pvc node secondary --wait {{ ansible_hostname }}'
           ignore_errors: true
   
-        - name: wait 30 seconds for system to stabilize
+        - name: wait 15 seconds for system to stabilize
           pause:
-            seconds: 30
+            seconds: 15
           become: no
           connection: local
   
