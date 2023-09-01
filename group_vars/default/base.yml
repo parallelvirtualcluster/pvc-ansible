@@ -89,6 +89,11 @@ admin_users:
     keys:
       - "ssh-ed25519 MyKey 2019-06"
 
+# Backup user SSH user keys, for remote backups separate from administrative users (e.g. rsync)
+# > Uncomment to activate this functionality.
+#backup_keys:
+#  - "ssh-ed25519 MyKey 2019-06"
+
 # Node network definitions (used by /etc/network/interfaces and PVC)
 # > The "type" can be one of three NIC types: "nic" for raw NIC devices, "bond" for ifenslave bonds,
 #   or "vlan" for vLAN interfaces. The PVC role will write out an interfaces file matching these specs.
