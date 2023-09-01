@@ -166,6 +166,14 @@
           command: pvc storage osd unset noout
           ignore_errors: yes
 
+        - name: make sure node daemon is in run state
+          shell: "pvc node info {{ ansible_hostname }} | grep '^Daemon State' | awk '{ print $NF }'"
+          register: pvcdaemon
+          failed_when: pvcdaemon.stdout != 'run'
+          until: pvcdaemon.stdout == 'run'
+          retries: 180
+          delay: 10
+
         - name: unflush node
           command: "pvc node ready {{ ansible_hostname }} --wait"
           ignore_errors: yes
