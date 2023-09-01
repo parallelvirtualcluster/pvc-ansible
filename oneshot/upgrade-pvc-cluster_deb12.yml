@@ -525,6 +525,9 @@
       service:
         name: pvcnoded
         state: restarted
+      run_once: yes
+      delegate_to: "{{ item }}"
+      loop: "{{ ansible_play_hosts }}"
 
     - name: wait 30 seconds for system to stabilize
       pause:
