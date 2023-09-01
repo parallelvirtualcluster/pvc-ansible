@@ -1,7 +1,9 @@
 ---
 # Logging configuration
-pvc_log_to_file: True
+pvc_log_to_file: False
 pvc_log_to_stdout: True
+pvc_log_colours: False
+pvc_log_dates: False
 pvc_log_keepalives: True
 pvc_log_keepalive_cluster_details: True
 pvc_log_keepalive_storage_details: True
