@@ -115,6 +115,7 @@ pvc_nodes:
 # upstream/cluster/storage networks (especially if the upstream network device is not a vLAN itself),
 # or a different device separate from the other 3 main networks.
 pvc_bridge_device: bondU        # Replace based on your network configuration
+pvc_bridge_mtu: 1500            # Replace based on your network configuration
 
 # SR-IOV device configuration
 # SR-IOV enables the passing of hardware-virtualized network devices (VFs), created on top of SR-IOV-enabled
