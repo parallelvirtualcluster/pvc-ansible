@@ -1,0 +1,107 @@
+---
+- hosts: all
+  remote_user: deploy
+  become: yes
+  become_user: root
+  gather_facts: yes
+  serial: 1
+  tasks:
+    - name: set PVC maintenance mode
+      command: pvc maintenance on
+
+    - name: aptitude full upgrade and cleanup
+      apt:
+        update_cache: "yes"
+        autoremove: "yes"
+        autoclean: "yes"
+        upgrade: "full"
+  
+    - name: clean apt archives
+      file:
+        dest: "/var/cache/apt/archives"
+        state: "absent"
+  
+    - name: check library freshness
+      command: /usr/lib/check_mk_agent/plugins/freshness
+      register: freshness
+      changed_when: freshness.rc == 1
+      failed_when: false
+    
+    - name: check kernel version
+      command: /usr/lib/check_mk_agent/plugins/kernelversion
+      register: kernelversion
+      changed_when: kernelversion.rc == 1
+      failed_when: false
+   
+    - name: restart system cleanly
+      block:
+        - name: secondary node
+          command: 'pvc node secondary {{ ansible_hostname }}'
+          ignore_errors: true
+  
+        - name: wait 15 seconds for system to stabilize
+          pause:
+            seconds: "15"
+          become: no
+          connection: local
+  
+        - name: flush node
+          command: 'pvc node flush {{ ansible_hostname }} --wait'
+  
+        - name: ensure VMs are migrated away
+          shell: "virsh list | grep running | wc -l"
+          register: virshcount
+          failed_when: virshcount.stdout != "0"
+          until: virshcount.stdout == "0"
+          retries: 60
+          delay: 10
+          become: yes
+
+        - name: wait 15 seconds for system to stabilize
+          pause:
+            seconds: "15"
+          become: no
+          connection: local
+
+        - name: set OSD noout
+          command: pvc storage osd set noout
+
+        - name: stop PVC flush daemon cleanly
+          service:
+            name: pvc-flush
+            state: stopped
+
+        - name: stop PVC daemon cleanly
+          service:
+            name: pvcnoded
+            state: stopped
+
+        - name: restart system
+          reboot:
+            post_reboot_delay: 15
+            reboot_timeout: 1800
+  
+        - name: unset OSD noout
+          command: pvc storage osd unset noout
+
+        - name: unflush node
+          command: 'pvc node ready {{ ansible_hostname }} --wait'
+  
+        - name: wait 5 minutes for system to stabilize
+          pause:
+            seconds: "300"
+          become: no
+          connection: local
+  
+        - name: reset any systemd failures
+          command: systemctl reset-failed
+      when: freshness.changed or kernelversion.changed
+
+    - name: set PVC maintenance mode
+      command: pvc maintenance off
+
+    - name: wait 5 seconds for system to stabilize
+      pause:
+        seconds: "5"
+      become: no
+      connection: local
