@@ -11,7 +11,7 @@
   command: /usr/share/zookeeper/bin/zkCli.sh rmr /patroni
   ignore_errors: true
 
-- name: ensure patroni services are enabled and started on this host so it becomes leader
+- name: ensure patroni services are enabled and started
   service:
     name: "{{ item }}.service"
     state: started
@@ -22,6 +22,13 @@
 - name: wait 15s for cluster to initialize
   pause:
     seconds: 15
+
+- name: test connecting to cluster
+  shell: sudo -u postgres psql postgres -c 'select * from pg_stat_activity' || ( service patroni restart && exit 1 )
+  register: result
+  retries: 6
+  delay: 5
+  until: result.rc == 0
 
 - block:
     - name: create user for DNS role
