@@ -15,7 +15,13 @@
         autoremove: "yes"
         autoclean: "yes"
         upgrade: "full"
-  
+
+    - name: clean up obsolete kernels
+      command: "/usr/local/sbin/kernel-cleanup.sh"
+
+    - name: clean up obsolete packages
+      command: "/usr/local/sbin/dpkg-cleanup.sh"
+
     - name: clean apt archives
       file:
         dest: "/var/cache/apt/archives"
