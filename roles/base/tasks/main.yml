@@ -421,7 +421,7 @@
     dest: "/etc/bash.bashrc"
 
 # motd
-- name: ensure update-motd and w scripts are present
+- name: ensure update-motd and profile.d scripts are present
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -429,6 +429,7 @@
   with_items:
     - { src: "usr/local/sbin/update-motd.sh.j2", dest: "/usr/local/sbin/update-motd.sh" }
     - { src: "etc/profile.d/w.sh.j2", dest: "/etc/profile.d/w.sh" }
+    - { src: "etc/profile.d/pvc.sh.j2", dest: "/etc/profile.d/zzz_pvc.sh" }
   tags: motd
 
 - name: install update-motd crontab
