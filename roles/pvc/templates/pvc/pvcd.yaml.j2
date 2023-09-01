@@ -68,8 +68,9 @@ pvc:
           storage: {{ pvc_storage_device }}
           upstream: {{ pvc_upstream_device }}
         addresses:
-          cluster: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.cluster_ip }}{% endfor %}
+          cluster: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.cluster_ip }}/{{ node.cluster_cidr }}{% endfor %}
 
-          storage: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.storage_ip }}{% endfor %}
+          storage: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.storage_ip }}/{{ node.storage_cidr }}{% endfor %}
 
-          upstream: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.upstream_ip }}{% endfor %}
+          upstream: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.upstream_ip }}/{{ node.upstream_cidr }}{% endfor %}
+

@@ -26,5 +26,7 @@
 - include: pvc.yml
   tags: pvc-pvc
   run_once: true
-  delegate_to: "{{ item }}"
+  delegate_to: "{{ play_host }}"
   with_items: "{{ play_hosts }}"
+  loop_control:
+    loop_var: play_host
