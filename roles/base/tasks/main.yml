@@ -228,6 +228,8 @@
       - bridge-utils
       - ifenslave
       - nmap
+      - traceroute
+      - mtr
       - netcat-openbsd
       - htop
       - psmisc
