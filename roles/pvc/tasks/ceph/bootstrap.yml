@@ -8,33 +8,15 @@
     fsid: "{{ fsid_raw.stdout }}"
 
 - name: initialize bootstrap ceph.conf
-  file:
-    dest: /etc/ceph/ceph.conf
-    state: touch
-
-- name: set global section in bootstrap ceph.conf
   lineinfile:
     dest: /etc/ceph/ceph.conf
-    line: "[global]"
+    line: "{{ item }}"
     state: present
-
-- name: set fsid in bootstrap ceph.conf
-  lineinfile:
-    dest: /etc/ceph/ceph.conf
-    line: "fsid = {{ fsid }}"
-    state: present
-
-- name: set mon initial members in bootstrap ceph.conf
-  lineinfile:
-    dest: /etc/ceph/ceph.conf
-    line: "mon initial members = {% for host in pvc_nodes if host.is_coordinator %}{{ host.hostname }}{% if not loop.last %},{% endif %}{% endfor %}"
-    state: present
-
-- name: set mon hosts in bootstrap ceph.conf
-  lineinfile:
-    dest: /etc/ceph/ceph.conf
-    line: "mon host = {% for host in pvc_nodes if host.is_coordinator %}{{ host.cluster_ip }}{% if not loop.last %},{% endif %}{% endfor %}"
-    state: present
+  with_items:
+    - "[global]"
+    - "fsid = {{ fsid }}"
+    - "mon initial members = {% for host in pvc_nodes if host.is_coordinator %}{{ host.hostname }}{% if not loop.last %},{% endif %}{% endfor %}"
+    - "mon host = {% for host in pvc_nodes if host.is_coordinator %}{{ host.cluster_ip }}{% if not loop.last %},{% endif %}{% endfor %}"
 
 - name: create temporary directory
   file:
