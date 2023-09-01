@@ -2,7 +2,7 @@
 - name: install zookeeper packages
   apt:
     name:
-      - zookeeperd
+      - zookeeper
       - zookeeper-bin
     state: latest
 
@@ -18,7 +18,17 @@
     - zoo.cfg
   notify: restart zookeeper
 
-- name: start but disable services
+- name: install systemd unit file
+  template:
+    src: zookeeper/zookeeper.service.j2
+    dest: /etc/systemd/system/zookeeper.service
+  register: systemd
+
+- name: reload systemd to apply changes
+  command: systemctl daemon-reload
+  when: systemd.changed
+
+- name: start but disable services (managed by PVC)
   service:
     name: "{{ item }}"
     state: started

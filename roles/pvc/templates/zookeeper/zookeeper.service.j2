@@ -1,0 +1,23 @@
+# Zookeeper unit - replaces zookeeperd package/initscript
+# {{ ansible_managed }}
+
+[Unit]
+Description = Zookeeper centralized coordination service
+After = remote-fs.target network.target
+AssertPathExists = /var/lib/zookeeper
+
+[Service]
+Type = simple
+User = zookeeper
+Group = zookeeper
+EnvironmentFile = -/etc/zookeeper/conf/environment
+EnvironmentFile = -/etc/default/zookeeper
+ExecStart = /usr/bin/java \
+              -cp $CLASSPATH \
+              $JAVA_OPTS \
+              -Dzookeeper.log.dir=${ZOO_LOG_DIR} \
+              -Dzookeeper.root.logger=${ZOO_LOG4J_PROP} \
+              $ZOOMAIN $ZOOCFG
+
+[Install]
+WantedBy = multi-user.target
