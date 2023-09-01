@@ -80,6 +80,14 @@ pvc_nodes:
     ipmi_user: "{{ username_ipmi_host }}"
     ipmi_password: "{{ passwd_ipmi_host }}"
 
+# Bridge device entry
+# This device is passed to PVC and is used when creating bridged networks. Normal managed networks are
+# created on top of the "cluster" interface defined below, however bridged networks must be created
+# directly on an underlying non-vLAN network device. This can be the same underlying device as the
+# upstream/cluster/storage networks (especially if the upstream network device is not a vLAN itself),
+# or a different device separate from the other 3 main networks.
+pvc_bridge_device: bondU        # Replace based on your network configuration
+
 # Configuration file networks
 # > Taken from base.yml's configuration; do not modify this section.
 pvc_upstream_device: "{{ networks['upstream']['device'] }}"
