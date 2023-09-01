@@ -19,6 +19,7 @@
   service:
     name: patroni
     state: restarted
+  ignore_errors: yes
 
 # Restart services one-at-a-time
 # Ideally, this would be accomplished by a serial=1, but Ansible doesn't support that and
