@@ -854,6 +854,7 @@
     name: "{{ deploy_username }}"
     uid: 200
     group: operator
+    groups: operator
     shell: /bin/bash
     home: "/var/home/{{ deploy_username }}"
     createhome: yes
