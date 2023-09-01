@@ -323,7 +323,11 @@ hooks:
       - hv1
     args:
       source: remote
-      path: "/usr/local/bin/dostuff"
+      path: "sudo /usr/local/bin/dostuff"
+      arguments:
+        - "-c look"
+        - "arg1"
+        - "arg2"
 
   - name: "Inform a Mattermost channel of completion"
     type: webhook
