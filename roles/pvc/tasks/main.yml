@@ -1,5 +1,10 @@
 ---
 
+# Set coordinator state
+- set_fact:
+    is_coordinator: "{% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.is_coordinator }}{% endfor %}"
+  tags: always
+
 # First-run check
 - name: check if this is a new instance
   shell: "echo 'bootstrapped' > /etc/pvc-install.pvc"
@@ -24,15 +29,18 @@
     src: system/blacklist.j2
     dest: /etc/modprobe.d/blacklist.conf
 
-# Install base databases
+# Install base databases (coordinators only)
 - include: ceph/main.yml
   tags: pvc-ceph
+  when: is_coordinator
 
 - include: zookeeper/main.yml
   tags: pvc-zookeeper
+  when: is_coordinator
 
 - include: patroni/main.yml
   tags: pvc-patroni
+  when: is_coordinator
 
 # Install core services
 - include: libvirt/main.yml
