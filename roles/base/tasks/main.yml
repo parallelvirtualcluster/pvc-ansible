@@ -612,11 +612,11 @@
 # deploy
 - name: ensure user deploy exists
   user:
-    name: deploy
+    name: "{{ deploy_username }}"
     uid: 200
     group: operator
     shell: /bin/bash
-    home: /var/home/deploy
+    home: "/var/home/{{ deploy_username }}"
     createhome: yes
     move_home: yes
     state: present
@@ -625,25 +625,25 @@
 
 - name: ensure homedir has right permissions
   file:
-    dest: /var/home/deploy
+    dest: "/var/home/{{ deploy_username }}"
     state: directory
-    owner: deploy
+    owner: "{{ deploy_username }}"
     group: operator
     mode: 0700
   tags: users
 
 - name: ensure .ssh directory exists
   file:
-    dest: /var/home/deploy/.ssh
+    dest: "/var/home/{{ deploy_username }}/.ssh"
     state: directory
-    owner: deploy
+    owner: "{{ deploy_username }}"
     group: operator
     mode: 0700
   tags: users
 
 - name: add authorized keys
   authorized_key:
-    user: "deploy"
+    user: "{{ deploy_username }}"
     key: "{{ item.1 }}"
   with_subelements:
     - "{{ admin_users }}"
