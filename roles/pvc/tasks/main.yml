@@ -59,7 +59,7 @@
 # Install CPU tuning
 - include: cputuning/main.yml
   tags: pvc-cputuning
-  when: ansible_distribution_major_version|int >= 11 and cpu_tuning is defined
+  when: debian_version|int >= 11 and cpu_tuning is defined
 
 - name: restart server on first install
   shell: 'sleep 3 && shutdown -r now "Ansible updates triggered"'

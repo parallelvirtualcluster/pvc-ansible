@@ -3,7 +3,7 @@
 GRUB_DEFAULT=0
 GRUB_TIMEOUT=5
 GRUB_DISTRIBUTOR="PVC Parallel Virtual Cluster - Debian"
-{% if ansible_distribution_major_version|int >= 11 %}
+{% if debian_version|int >= 11 %}
 GRUB_CMDLINE_LINUX="systemd.unified_cgroup_hierarchy=1 {{ grub_cmdline }}"
 {% else %}
 GRUB_CMDLINE_LINUX="{{ grub_cmdline }}"
