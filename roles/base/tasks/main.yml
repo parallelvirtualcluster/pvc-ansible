@@ -527,14 +527,6 @@
     mode: 0755
   tags: base-backups
 
-- name: install GRUB configuration
-  template:
-    src: etc/default/grub.j2
-    dest: /etc/default/grub
-  notify:
-    - update grub
-  tags: base-grub
-
 - name: install IPMI network interfaces fragment
   template:
     src: etc/network/interfaces.d/ipmi.j2
