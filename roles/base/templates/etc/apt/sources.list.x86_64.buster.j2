@@ -1,0 +1,14 @@
+# apt configuration: main sources list (buster)
+# {{ ansible_managed }}
+
+deb {{ debian_main_repository }} buster main contrib non-free
+deb-src {{ debian_main_repository }} buster main contrib
+
+deb {{ debian_security_repository }} buster/updates main contrib
+deb-src {{ debian_security_repository }} buster/updates main contrib
+
+deb {{ debian_main_repository }} buster-updates main contrib
+deb-src {{ debian_main_repository }} buster-updates main contrib
+
+deb {{ debian_pvc_repository }} buster pvc
+deb-src {{ debian_pvc_repository }} buster pvc

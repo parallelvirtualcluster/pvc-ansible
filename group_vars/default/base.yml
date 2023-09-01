@@ -9,6 +9,9 @@ timezone_location: Canada/Eastern
 # Cluster domain for node FQDNs
 local_domain: upstream.local
 
+# Debian package repository URL
+debian_repository: http://ftp.debian.org/debian
+
 # IPMI user and password
 # > For the password, use pwgen to generate.
 # > Set these in the IPMI configuration as a user with permissions to reboot the host.
