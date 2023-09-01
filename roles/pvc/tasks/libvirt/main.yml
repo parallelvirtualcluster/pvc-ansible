@@ -11,6 +11,12 @@
       - libjemalloc2
     state: latest
 
+- name: add libvirt user to ceph group
+  user:
+    name: libvirt-qemu
+    groups: ceph
+    append: yes
+
 - name: install libvirt configuration
   template:
     src: libvirt/{{ item }}.j2
