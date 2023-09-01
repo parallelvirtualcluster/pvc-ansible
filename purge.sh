@@ -1,5 +1,13 @@
 #!/bin/bash
 
+echo -e "DANGER: This script will PURGE ALL PVC data and configuration from the following host(s):"
+echo
+echo -e " $@"
+echo
+echo -e "Are you sure you want to continue?"
+echo
+echo -en "To abort, press <Ctrl+C> now. To continue, press <Enter>. "
+read
 
 for host in $@; do
     ssh deploy@${host} "
