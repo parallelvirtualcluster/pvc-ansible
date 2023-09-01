@@ -1,0 +1,4 @@
+---
+- name: initalize a fresh PVC cluster
+  shell: /usr/bin/pvc init --yes
+

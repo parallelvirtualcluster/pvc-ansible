@@ -23,8 +23,7 @@
   with_items:
     - pdns.service
 
-- name: bootstrap a fresh cluster
-  shell: /usr/bin/pvc init
+- include: pvc/bootstrap.yml
   when: bootstrap is defined and bootstrap
   run_once: yes
 
