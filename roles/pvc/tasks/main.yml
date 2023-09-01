@@ -61,26 +61,36 @@
   tags: pvc-cputuning
   when: debian_version|int >= 11 and cpu_tuning is defined
 
-- name: restart server on first install
-  reboot:
-    post_reboot_delay: 30
-    reboot_timeout: 1800
-  when: newhost is defined and newhost
-  tags: always
+- block:
+    - name: restart server on first install
+      reboot:
+        post_reboot_delay: 30
+        reboot_timeout: 1800
+    
+    - name: wait 90 seconds for system to stabilize
+      pause:
+        seconds: 90
+      become: no
+      connection: local
+      
+    - name: restart pvcnoded on first install
+      service:
+        name: pvcnoded
+        state: restarted
+      throttle: 1
+      ignore_errors: yes
+    
+    - name: wait 30 seconds for system to stabilize
+      pause:
+        seconds: 30
+      become: no
+      connection: local
+      
+    - name: set first node as primary coordinator on first install
+      command: "pvc node primary --wait"
+      run_once: yes
+      delegate_to: "{{ item }}"
+      loop: "{{ ansible_play_hosts[0] }}"
 
-- name: wait 90 seconds for system to stabilize
-  pause:
-    seconds: 90
-  become: no
-  connection: local
-  when: newhost is defined and newhost
-  tags: always
-  
-- name: restart pvcnoded on first install
-  service:
-    name: pvcnoded
-    state: restarted
-  throttle: 1
-  ignore_errors: yes
   when: newhost is defined and newhost
   tags: always
