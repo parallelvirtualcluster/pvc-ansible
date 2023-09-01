@@ -54,6 +54,7 @@
     src: libvirt/libvirtd.service.j2
     dest: /etc/systemd/system/libvirtd.service
   register: systemd
+  notify: restart libvirtd
 
 - name: reload systemd to apply changes
   command: systemctl daemon-reload
