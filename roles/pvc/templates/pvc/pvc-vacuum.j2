@@ -1,10 +1,14 @@
 #!/bin/bash
 # Daily vaccuum script for PVC daemons
-# Ansible managed - last modified on 2019-08-12 13:20:15
+# {{ ansible_managed }}
 
 # This script cleans up the PostgreSQL databases as well as the Zookeeper
 # database. This prevents filesystem growth balooning after loong running
 # periods.
+
+echo -e "----------------------------"              &>>/var/log/pvc/vacuum.log
+echo -e "$( date )"                                 &>>/var/log/pvc/vacuum.log
+echo -e "----------------------------"              &>>/var/log/pvc/vacuum.log
 
 #
 # PostgreSQL
@@ -14,15 +18,10 @@
 HOSTNAME="$( hostname -s )"
 PRIMARY="$( patronictl -c /etc/patroni/config.yml -d zookeeper://localhost:2181 list --format json \
               | jq -r '.[] | select(.Role == "Leader") | .Member' )"
-if [[ $HOSTNAME != $PRIMARY ]]; then
-    exit 0
+if [[ $HOSTNAME == $PRIMARY ]]; then
+    # Analyze the database
+    su postgres -c 'vacuumdb --verbose --analyze --all' &>>/var/log/pvc/vacuum.log
 fi
-
-# Analyze the database
-echo -e "----------------------------"              &>>/var/log/pvc/vacuum.log
-echo -e "$( date )"                                 &>>/var/log/pvc/vacuum.log
-echo -e "----------------------------"              &>>/var/log/pvc/vacuum.log
-su postgres -c 'vacuumdb --verbose --analyze --all' &>>/var/log/pvc/vacuum.log
 
 #
 # Zookeeper
