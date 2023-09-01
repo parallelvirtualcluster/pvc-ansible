@@ -158,6 +158,14 @@
         autoclean: yes
         upgrade: full
 
+    - name: remove obsolete database directories
+      file:
+        dest: "{{ item }}"
+        state: absent
+      with_items:
+        - "/etc/postgresql/13"
+        - "/var/lib/postgresql/13"
+
     - name: restart system
       reboot:
         post_reboot_delay: 15
