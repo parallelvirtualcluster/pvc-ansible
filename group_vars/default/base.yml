@@ -36,17 +36,20 @@ ipmi:
       password: ""
   hosts:
     "pvchv1":
-      hostname: pvchv1-lom
+      hostname: pvchv1-lom      # A valid short name (e.g. from /etc/hosts) or an FQDN must be
+                                # used here; PVC connects to this *hostname* for fencing.
       address: 192.168.100.101
       netmask: 255.255.255.0
       gateway: 192.168.100.1
     "pvchv2":
-      hostname: pvchv2-lom
+      hostname: pvchv2-lom      # A valid short name (e.g. from /etc/hosts) or an FQDN must be
+                                # used here; PVC connects to this *hostname* for fencing.
       address: 192.168.100.102
       netmask: 255.255.255.0
       gateway: 192.168.100.1
     "pvchv3":
-      hostname: pvchv3-lom
+      hostname: pvchv3-lom      # A valid short name (e.g. from /etc/hosts) or an FQDN must be
+                                # used here; PVC connects to this *hostname* for fencing.
       address: 192.168.100.103
       netmask: 255.255.255.0
       gateway: 192.168.100.1
