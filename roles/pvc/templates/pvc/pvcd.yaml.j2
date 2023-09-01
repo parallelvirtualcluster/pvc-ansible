@@ -62,6 +62,8 @@ pvc:
         file_logging: {{ pvc_log_to_file }}
         stdout_logging: {{ pvc_log_to_stdout }}
         log_keepalives: {{ pvc_log_keepalives }}
+        log_keepalive_cluster_details: {{ pvc_log_keepalive_cluster_details }}
+        log_keepalive_storage_details: {{ pvc_log_keepalive_storage_details }}
         console_log_lines: {{ pvc_log_console_lines }}
       networking:
         cluster:

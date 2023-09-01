@@ -74,4 +74,6 @@ pvc_storage_floatingip: "10.0.1.254/24"
 pvc_log_to_file: True
 pvc_log_to_stdout: True
 pvc_log_keepalives: True
+pvc_log_keepalive_cluster_details: True
+pvc_log_keepalive_storage_details: True
 pvc_log_console_lines: 1000
