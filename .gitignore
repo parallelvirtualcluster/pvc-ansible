@@ -1,0 +1,5 @@
+hosts
+files/*
+!files/default
+group_vars/*
+!group_vars/default
