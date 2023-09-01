@@ -38,6 +38,7 @@ A full explanation of all variables can be found in [the manual](https://paralle
         are ignored by this Git repository. It is advisable to manage these files securely
         in a separate repository and use symlinks to place them in the expected locations in
         this repository. Note that the `files/` data is created during cluster bootstrap.
+        You can leverage the `create-local-repo.sh` script to do so automatically.
 
 For full details, please see the general [PVC install documentation](https://parallelvirtualcluster.readthedocs.io/en/latest/installing/).
 
