@@ -30,7 +30,6 @@
 
 - name: regather local facts
   setup:
-    gather_subset: "all"
   when: installed_facts.changed
 
 - debug:
