@@ -29,6 +29,12 @@
     src: system/blacklist.j2
     dest: /etc/modprobe.d/blacklist.conf
 
+# Logrotate configuration
+- name: add logrotate configuration
+  template:
+    src: system/pvc.j2
+    dest: /etc/logrotate.d/pvc
+
 # Install base databases (coordinators only)
 - include: ceph/main.yml
   tags: pvc-ceph

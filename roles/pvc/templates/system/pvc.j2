@@ -1,0 +1,20 @@
+/var/log/pvc/*.log {
+       weekly
+       rotate 8
+       copytruncate
+       delaycompress
+       compress
+       notifempty
+       missingok
+       su root root
+}
+/var/log/pvc/*/*.log {
+       weekly
+       rotate 8
+       copytruncate
+       delaycompress
+       compress
+       notifempty
+       missingok
+       su root root
+}
