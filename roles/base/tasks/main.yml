@@ -80,7 +80,6 @@
 - name: apt update
   apt:
     update-cache: yes
-  when: newhost is defined and newhost
 
 - name: aptitude safe upgrade with autoremove
   apt:
