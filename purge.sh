@@ -38,10 +38,8 @@ for host in $@; do
     sudo umount /var/lib/ceph;
     sudo mkfs.ext4 /dev/vgx/ceph;
     sudo mount /var/lib/ceph;
-    ' &>/dev/null
+    ' &>/dev/null || continue
     echo "done."
-done
-for host in $@; do
     echo -n "Rebooting host ${host}... "
     ssh deploy@${host} '
     sudo reboot;
