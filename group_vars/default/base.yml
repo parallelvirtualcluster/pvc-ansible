@@ -10,7 +10,9 @@ timezone_location: Canada/Eastern
 local_domain: upstream.local
 
 # Debian package repository URL
-debian_repository: http://ftp.debian.org/debian
+debian_main_repository: http://ftp.debian.org/debian
+debian_security_repository: http://security.debian.org
+debian_pvc_repository: https://repo.bonifacelabs.net/debian
 
 # IPMI user and password
 # > For the password, use pwgen to generate.
