@@ -1,5 +1,9 @@
 # ceph-osd@.service overrides for cpuset
 # {{ ansible_managed }}
 [Service]
+# Empty the existing ExecStart value
 ExecStart =
+# Set ExecStart to launch ceph-osd via cset proc inside the osd CSET
 ExecStart = /usr/bin/cset proc --set=osd --exec /usr/bin/ceph-osd -- -f --cluster ${CLUSTER} --id %i --setuser ceph --setgroup ceph
+# Disable control group protection, as cset uses control groups
+ProtectControlGroups = false
