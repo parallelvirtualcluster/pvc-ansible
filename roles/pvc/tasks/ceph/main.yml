@@ -7,7 +7,6 @@
       - ceph-mon
       - ceph-mgr
       - radosgw
-      - libjemalloc2
     state: latest
 
 - name: install sysctl tweaks

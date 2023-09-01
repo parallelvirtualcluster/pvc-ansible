@@ -8,7 +8,6 @@
       - qemu-block-extra
       - vhostmd
       - ceph-common
-      - libjemalloc2
     state: latest
 
 - name: add libvirt user to ceph group
