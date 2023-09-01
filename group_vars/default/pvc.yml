@@ -1,13 +1,22 @@
 ---
-# Logging configuration
-pvc_log_to_file: False
-pvc_log_to_stdout: True
-pvc_log_colours: False
-pvc_log_dates: False
-pvc_log_keepalives: True
-pvc_log_keepalive_cluster_details: True
-pvc_log_keepalive_storage_details: True
-pvc_log_console_lines: 1000
+# Logging configuration (uncomment to override defaults)
+#pvc_log_to_file: False                  # Log to a file in /var/log/pvc
+#pvc_log_to_stdout: True                 # Log to stdout (i.e. journald)
+#pvc_log_colours: True                   # Log colourful prompts for states instead of text
+#pvc_log_dates: False                    # Log dates (useful with log_to_file, not useful with log_to_stdout as journald adds these)
+#pvc_log_keepalives: True                # Log keepalive event every pvc_keepalive_interval seconds
+#pvc_log_keepalive_cluster_details: True # Log cluster details (VMs, load, etc.) duing keepalive events
+#pvc_log_keepalive_storage_details: True # Log storage details (OSDs, pools, health) during keepalive events
+#pvc_log_console_lines: 1000             # The number of VM console log lines to store in Zookeeper for 'vm log' commands.
+
+# Timing and fencing configuration (uncomment to override defaults)
+#pvc_vm_shutdown_timeout: 180            # Number of seconds before a 'shutdown' VM is forced off
+#pvc_keepalive_interval: 5               # Number of seconds between keepalive ticks
+#pvc_fence_intervals: 6                  # Number of keepalive ticks before a node is considered dead
+#pvc_suicide_intervals: 0                # Number of keepalive ticks before a node consideres itself dead (0 to disable)
+#pvc_fence_successful_action: migrate    # What to do with VMs when a fence is successful (migrate, None)
+#pvc_fence_failed_action: None           # What to do with VMs when a fence is failed (migrate, None) - migrate is DANGEROUS without pvc_suicide_intervals set to < pvc_fence_intervals
+#pvc_fence_migrate_target_selector: mem  # The selector to use for migrating VMs after a fence
 
 # Client API configuration
 pvc_api_listen_address: "{{ pvc_upstream_floatingip }}"
@@ -49,7 +58,7 @@ pvc_routers:
 # Node list
 # > Every node configured with this playbook must be specified in this list.
 pvc_nodes:
-  - hostname: "pvchv1"
+  - hostname: "pvchv1" # This name MUST match the Ansible inventory_hostname
     is_coordinator: yes
     node_id: 1
     router_id: "192.168.100.11"

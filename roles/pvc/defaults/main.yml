@@ -1,4 +1,23 @@
 ---
+# Logging configuration (uncomment to override defaults)
+pvc_log_to_file: False
+pvc_log_to_stdout: True
+pvc_log_colours: True
+pvc_log_dates: False
+pvc_log_keepalives: True
+pvc_log_keepalive_cluster_details: True
+pvc_log_keepalive_storage_details: True
+pvc_log_console_lines: 1000
+
+# Timing and fencing configuration (uncomment to override defaults)
+pvc_vm_shutdown_timeout: 180            # Number of seconds before a 'shutdown' VM is forced off
+pvc_keepalive_interval: 5               # Number of seconds between keepalive ticks
+pvc_fence_intervals: 6                  # Number of keepalive ticks before a node is considered dead
+pvc_suicide_intervals: 0                # Number of keepalive ticks before a node consideres itself dead (0 to disable)
+pvc_fence_successful_action: migrate    # What to do with VMs when a fence is successful (migrate, None)
+pvc_fence_failed_action: None           # What to do with VMs when a fence is failed (migrate, None) - migrate is DANGEROUS without pvc_suicide_intervals set to < pvc_fence_intervals
+pvc_fence_migrate_target_selector: mem  # The selector to use for migrating VMs after a fence
+
 # Ceph storage
 ceph_storage_secret_key: ""
 ceph_storage_secret_uuid: ""

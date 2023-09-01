@@ -46,13 +46,14 @@ pvc:
         pass: {{ pvc_prov_database_password }}
   system:
     intervals:
-      keepalive_interval: 5
-      fence_intervals: 6
-      suicide_intervals: 0
+      vm_shutdown_timeout: {{ pvc_vm_shutdown_timeout }}
+      keepalive_interval: {{ pvc_keepalive_interval }}
+      fence_intervals: {{ pvc_fence_intervals }}
+      suicide_intervals: {{ pvc_suicide_intervals }}
     fencing:
       actions:
-        successful_fence: migrate
-        failed_fence: None
+        successful_fence: {{ pvc_fence_successful_action }}
+        failed_fence: {{ pvc_fence_failed_action }}
       ipmi:
         host: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.ipmi_host }}{% endfor %}
 
@@ -61,7 +62,7 @@ pvc:
         pass: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.ipmi_password }}{% endfor %}
 
     migration:
-      target_selector: mem
+      target_selector: {{ pvc_fence_migrate_target_selector }}
     configuration:
       directories:
         dynamic_directory: "/run/pvc"
