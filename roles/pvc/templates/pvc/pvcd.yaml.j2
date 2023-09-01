@@ -59,9 +59,10 @@ pvc:
         log_directory: "/var/log/pvc"
         console_log_directory: "/var/log/libvirt"
       logging:
-        file_logging: True
-        stdout_logging: True
-        console_log_lines: 1000
+        file_logging: {{ pvc_log_to_file }}
+        stdout_logging: {{ pvc_log_to_stdout }}
+        log_keepalives: {{ pvc_log_keepalives }}
+        console_log_lines: {{ pvc_log_console_lines }}
       networking:
         cluster:
           device: {{ pvc_cluster_device }}
