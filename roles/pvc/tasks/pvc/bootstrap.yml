@@ -16,7 +16,7 @@
     seconds: 5
 
 - name: initialize a fresh PVC cluster
-  command: pvc -c local init -y
+  command: pvc -c local task init -y
 
 - name: stop the API daemon
   service:
