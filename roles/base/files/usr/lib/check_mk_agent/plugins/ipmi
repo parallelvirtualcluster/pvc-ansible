@@ -13,7 +13,7 @@ if ! which ipmitool >/dev/null 2>&1 || ! which fping >/dev/null 2>&1 ; then
     exit
 fi
 
-echo "<<<ipmi-reachability>>>"
+echo "<<<ipmi_reachability>>>"
 
 # Grab IPMI IP from interfaces file
 IPMIIP_INTERFACES=$(grep 'ipmitool' /etc/network/interfaces.d/ipmi | grep -v 'defgw' | grep 'ipaddr' | awk '{ print $NF }')
