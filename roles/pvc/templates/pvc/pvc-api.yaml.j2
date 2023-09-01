@@ -2,6 +2,7 @@
 # pvc-api client configuration
 # {{ ansible_managed }}
 pvc:
+    debug: False
     coordinators:
 {% for node in pvc_nodes if node.is_coordinator %}
         - {{ node.hostname }}
