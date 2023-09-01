@@ -27,7 +27,7 @@
 
 - name: set Debian details (with ansible_lsb)
   set_fact:
-    debian_version: "{{ ansible_lsb.major_version }}"
+    debian_version: "{{ ansible_lsb.major_release }}"
     debian_codename: "{{ ansible_lsb.codename }}"
   when: ansible_lsb.codename is defined
   tags: always
