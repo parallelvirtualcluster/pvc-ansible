@@ -2,9 +2,9 @@
 
 # First-run check
 - name: check if this is a new instance
-  shell: "echo 'bootstrapped' > /etc/pvc-pvc-install"
+  shell: "echo 'bootstrapped' > /etc/pvc-install.pvc"
   args:
-    creates: /etc/pvc-pvc-install
+    creates: /etc/pvc-install.pvc
   register: newhost_check
   tags: always
 

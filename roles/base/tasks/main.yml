@@ -2,11 +2,19 @@
 #
 # First run check
 #
-- name: first run check
-  shell: "echo 'bootstrapped' > /etc/pvc-base-install"
-  register: newhost
+- name: check if this is a new instance
+  shell: "echo 'bootstrapped' > /etc/pvc-install.base"
   args:
-    creates: "/etc/pvc-base-install"
+    creates: /etc/pvc-install.base
+  register: newhost_check
+  tags: always
+
+- name: set newhost fact
+  set_fact:
+    newhost: yes
+  when: newhost_check.changed
+  tags: always
+
 
 #
 # Install custom fact scripts
@@ -73,27 +81,27 @@
 - name: apt update
   apt:
     update-cache: yes
-  when: newhost.changed
+  when: newhost is defined and newhost
 
 - name: aptitude safe upgrade with autoremove
   apt:
     update_cache: yes
     autoremove: yes
     upgrade: safe
-  when: newhost.changed
+  when: newhost is defined and newhost
 
 - name: install dbus
   apt:
     name:
       - dbus
     state: latest
-  when: newhost.changed
+  when: newhost is defined and newhost
 
 - name: clean out apt cache
   file:
     path: "/var/cache/apt/archives"
     state: absent
-  when: newhost.changed
+  when: newhost is defined and newhost
 
 #
 # Purge unneeded packages
