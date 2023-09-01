@@ -30,7 +30,7 @@
 
 - name: regather local facts
   setup:
-    gather_subset: "!all,!any,local"
+    gather_subset: "local"
   when: installed_facts.changed
 
 - debug:
@@ -82,6 +82,13 @@
     - { src: "etc/apt/apt.conf.d/50unattended-upgrades.j2", dest: "/etc/apt/apt.conf.d/50unattended-upgrades" }
     - { src: "etc/apt/preferences.d/pins.j2", dest: "/etc/apt/preferences.d/pins" }
     - { src: "etc/apt/sources.list.{{ ansible_machine }}.j2", dest: "/etc/apt/sources.list" }
+  tags: apt
+
+- name: add key for bonilan repo
+  apt_key:
+    url: "https://repo.bonifacelabs.net/debian/bonifacelabs_signing_key.pub"
+    id: "83D07192314835D4"
+    state: present
   tags: apt
 
 #
@@ -170,6 +177,9 @@
       - less
       - vim
       - git
+      - vlan
+      - bridge-utils
+      - ifenslave
       - nmap
       - netcat-openbsd
       - htop
@@ -586,8 +596,10 @@
 - name: add authorized keys
   authorized_key:
     user: "deploy"
-    key: "{{ item.key }}"
-  with_items: "{{ admin_users }}"
+    key: "{{ item.1 }}"
+  with_subelements:
+    - "{{ admin_users }}"
+    - keys
   tags: users
 
 # admin_users
@@ -627,9 +639,11 @@
 
 - name: add authorized keys
   authorized_key:
-    user: "{{ item.name }}"
-    key: "{{ item.key }}"
-  with_items: "{{ admin_users }}"
+    user: "{{ item.0.name }}"
+    key: "{{ item.1 }}"
+  with_subelements:
+    - "{{ admin_users }}"
+    - keys
   tags: users
 
 - name: write bashrc to homedir
