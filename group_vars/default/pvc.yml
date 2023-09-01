@@ -125,6 +125,16 @@ pvc_nodes:
 # or a different device separate from the other 3 main networks.
 pvc_bridge_device: bondU        # Replace based on your network configuration
 
+# SR-IOV device configuration
+# SR-IOV enables the passing of hardware-virtualized network devices (VFs), created on top of SR-IOV-enabled
+# physical NICs (PFs), into virtual machines. SR-IOV is a complex topic, and will not be discussed in detail
+# here. Instead, the SR-IOV mode is disabled by default and a commented out example configuration is shown.
+pvc_sriov_enable: False
+#pvc_sriov_device:
+#  - phy: ens1f0
+#    mtu: 9000
+#    vfcount: 6
+
 # Configuration file networks
 # > Taken from base.yml's configuration; do not modify this section.
 pvc_upstream_device: "{{ networks['upstream']['device'] }}"

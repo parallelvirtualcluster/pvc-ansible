@@ -79,6 +79,8 @@ pvc:
         console_log_lines: {{ pvc_log_console_lines }}
       networking:
         bridge_device: {{ pvc_bridge_device }}
+        sriov_enable: {{ pvc_sriov_enable }}
+        sriov_device: {{ pvc_sriov_device }}
         upstream:
           device: {{ pvc_upstream_device }}
           mtu: {{ pvc_upstream_mtu }}

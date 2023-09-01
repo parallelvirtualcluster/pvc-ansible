@@ -26,6 +26,7 @@ pvc_zookeeper_stack_limit: 512M
 # Ceph storage
 ceph_storage_secret_key: ""
 ceph_storage_secret_uuid: ""
+
 # Database
 pvc_dns_database_name: "pvcdns"
 pvc_dns_database_user: "pvcdns"
@@ -33,6 +34,7 @@ pvc_dns_database_password: "PVCdnsPassw0rd"
 pvc_api_database_name: "pvcapi"
 pvc_api_database_user: "pvcapi"
 pvc_api_database_password: "PVCprovPassw0rd"
+
 # Coordinators
 pvc_nodes:
   - hostname: "pvc1"
@@ -65,6 +67,7 @@ pvc_nodes:
     ipmi_host: "pvc3-lom"
     ipmi_user: ""
     ipmi_password: ""
+
 # Networks
 pvc_asn: "65001"
 pvc_routers:
@@ -82,3 +85,8 @@ pvc_upstream_domain: ""
 pvc_upstream_subnet: ""
 pvc_upstream_floatingip: ""
 pvc_upstream_gatewayip: ""
+
+# Devices
+pvc_bridge_device: bond0
+pvc_sriov_enable: False
+pvc_sriov_device:
