@@ -1,10 +1,4 @@
 ---
-- name: create ceph group
-  group:
-    name: ceph
-    gid: 64046
-    state: present
-
 - name: install packages
   apt:
     name:
