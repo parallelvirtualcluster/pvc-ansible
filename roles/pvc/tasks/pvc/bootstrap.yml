@@ -1,4 +1,8 @@
 ---
+- name: add floating IP address to upstream interface
+  command: ip address add {{ pvc_upstream_floatingip }}/{{ pvc_upstream_netmask }} dev {{ pvc_upstream_device }}
+  ignore_errors: yes
+
 - name: start the API client
   service:
     name: pvc-api.service
@@ -29,3 +33,6 @@
     name: pvc-api.service
     state: stopped
 
+- name: remove floating IP address to upstream interface
+  command: ip address delete {{ pvc_upstream_floatingip }}/{{ pvc_upstream_netmask }} dev {{ pvc_upstream_device }}
+  ignore_errors: yes
