@@ -18,6 +18,12 @@
     - zoo.cfg
   notify: restart zookeeper
 
+- name: install daily vacuum script
+  template:
+    src: zookeeper/zookeeper-vacuum.j2
+    dest: /etc/cron.daily/zookeeper-vacuum
+    mode: 0755
+
 - name: install systemd unit file
   template:
     src: zookeeper/zookeeper.service.j2
