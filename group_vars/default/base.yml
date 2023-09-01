@@ -15,7 +15,7 @@ cluster_hardware: default
 # Debian package repository URL
 debian_main_repository: http://ftp.debian.org/debian
 debian_security_repository: http://security.debian.org
-debian_pvc_repository: https://repo.bonifacelabs.net/debian
+debian_pvc_repository: https://repo.parallelvirtualcluster.org/debian
 
 # Root user password
 # > Use pwgen to generate
