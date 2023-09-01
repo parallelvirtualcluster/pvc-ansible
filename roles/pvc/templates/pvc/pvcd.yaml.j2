@@ -4,6 +4,7 @@
 pvc:
   node: {% for node in pvc_nodes if node.hostname == ansible_hostname %}{{ node.hostname }}{% endfor %}
 
+  debug: False
   functions:
     enable_hypervisor: True
     enable_networking: True
@@ -37,11 +38,11 @@ pvc:
         user: pvcdns
         pass: PVCdnsPassw0rd
   system:
+    intervals:
+      keepalive_interval: 5
+      fence_intervals: 6
+      suicide_intervals: 0
     fencing:
-      intervals:
-        keepalive_interval: 5
-        fence_intervals: 6
-        suicide_intervals: 0
       actions:
         successful_fence: migrate
         failed_fence: None
