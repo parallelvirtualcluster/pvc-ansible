@@ -33,20 +33,28 @@ done
 
 # Determine our CPU count
 CPU_COUNT="$( grep '^CPU(s)' <<<"${CPU_INFO}" | awk '{ print $NF }' )"
-echo "CPU count: ${CPU_COUNT}"
 
 # Loop through all the CPUs in the count; if they are not in OSD_CPUS, add them to the SYS_CPUS array
-for i in $( seq 0 $(( ${CPU_COUNT} - 1)) ); do
+for i in $( seq 0 $(( ${CPU_COUNT} - 1 )) ); do
     if [[ ! " ${A_OSD_CPUS[*]} " =~ " ${i} " ]]; then
         A_SYS_CPUS+=( $i )
     fi
 done
 
-# Convert arrays into CSV
-OSD_MEMS="$( IFS=, ; echo "${A_OSD_MEMS[*]}" )"
-OSD_CPUS="$( IFS=, ; echo "${A_OSD_CPUS[*]}" )"
-SYS_CPUS="$( IFS=, ; echo "${A_SYS_CPUS[*]}" )"
+if [[ $( cat /etc/default/ceph-osd-cpuset ) == "True" ]]; then
+    # Convert arrays into CSV
+    OSD_MEMS="$( IFS=, ; echo "${A_OSD_MEMS[*]}" )"
+    OSD_CPUS="$( IFS=, ; echo "${A_OSD_CPUS[*]}" )"
+    SYS_CPUS="$( IFS=, ; echo "${A_SYS_CPUS[*]}" )"
+else
+    # Configs installed but disabled, so use all CPUs for everything
+    OSD_MEMS="${SYS_MEMS}"
+    OSD_CPUS="0-$(( ${CPU_COUNT} - 1 ))"
+    SYS_CPUS="0-$(( ${CPU_COUNT} - 1 ))"
+fi
 
+echo "Enabled: $( cat /etc/default/ceph-osd-cpuset )"
+echo "CPU count: ${CPU_COUNT}"
 echo "OSD CPUs: ${OSD_CPUS}"
 echo "OSD Mems: ${OSD_MEMS}"
 echo "System/VM CPUs: ${SYS_CPUS}"

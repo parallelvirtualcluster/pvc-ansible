@@ -117,6 +117,14 @@
     - ceph-mon@{{ ansible_hostname }}
     - ceph-mgr@{{ ansible_hostname }}
 
+# This is separate from the block to allow *disabling* of the config without removing it
+- name: install ceph-osd-cpuset controller config
+  template:
+    src: ceph/ceph-osd-cpuset-enable.j2
+    dest: /etc/default/ceph-osd-cpuset
+  when:
+    - pvc_shield_osds_enable is defined
+
 # System OSD CPU shielding activation
 - block:
     - name: install packages
