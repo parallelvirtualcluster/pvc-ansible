@@ -44,12 +44,6 @@
       become: no
       connection: local
 
-    - name: stop and disable PVC flush daemon cleanly
-      service:
-        name: pvc-flush
-        state: stopped
-        enabled: no
-
     - name: stop PVC daemon cleanly
       service:
         name: pvcnoded
@@ -206,12 +200,6 @@
         seconds: 30
       become: no
       connection: local
-  
-    - name: start and enable PVC flush daemon cleanly
-      service:
-        name: pvc-flush
-        state: started
-        enabled: yes
 
     - name: reset any systemd failures
       command: systemctl reset-failed

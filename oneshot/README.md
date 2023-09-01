@@ -2,9 +2,11 @@
 
 This directory contains playbooks to assist in automating day-to-day maintenance of a PVC cluster. These playbooks can be used independent of the main `pvc.yml` and roles setup to automate tasks.
 
-## `update-pvc-cluster.yml`
+## `update-pvc-cluster.yml` and `reboot-pvc-cluster.yml`
 
 This playbook performs a sequential full upgrade on all nodes in a PVC cluster.
+
+The `reboot-pvc-cluster.yml` does the same shutdown and restart steps as `update-pvc-cluster.yml`, but forced for all hosts, and without the update part.
 
 ### Running the Playbook
 
@@ -36,7 +38,7 @@ For each host in the cluster sequentially, do:
 
 1. Flush the node, wait for all VMs to migrate, then wait 15 seconds
 
-1. Stop and disable the `pvc-flush` daemon, stop the `pvcnoded` and `zookeeper` daemons, then wait 15 seconds
+1. Stop the `pvcnoded` and `zookeeper` daemons, then wait 15 seconds
 
 1. Set Ceph OSD `noout` and stop all Ceph OSD, monitor, and manager processes, then wait 30 seconds
 
@@ -45,8 +47,6 @@ For each host in the cluster sequentially, do:
 1. Ensure all OSDs become active and all PGs recover, then unset Ceph OSD `noout`
 
 1. Unflush the node, wait for all VMs to migrate, then wait 30 seconds
-
-1. Start and enable the `pvc-flush` daemon
 
 1. Reset any systemd failures
 

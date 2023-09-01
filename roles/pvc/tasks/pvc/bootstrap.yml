@@ -46,6 +46,5 @@
     state: stopped
     enabled: yes
   with_items:
-    - pvc-flush.service
     - pvcnoded.service
     - pvc.target
