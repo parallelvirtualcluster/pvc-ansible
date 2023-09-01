@@ -87,7 +87,7 @@
       connection: local
 
     - name: set first node as primary coordinator on first install
-      command: "pvc node primary --wait"
+      command: "pvc node primary --wait {{ ansible_play_hosts[0].split('.')[0] }}"
       run_once: yes
       delegate_to: "{{ ansible_play_hosts[0] }}"
 
