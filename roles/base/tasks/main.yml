@@ -838,9 +838,22 @@
   authorized_key:
     user: "{{ deploy_username }}"
     key: "{{ item.1 }}"
+    state: present
   with_subelements:
     - "{{ admin_users }}"
     - keys
+  tags:
+    - users
+    - user-deploy
+
+- name: remove authorized keys
+  authorized_key:
+    user: "{{ deploy_username }}"
+    key: "{{ item.1 }}"
+    state: absent
+  with_subelements:
+    - "{{ admin_users }}"
+    - removed
   tags:
     - users
     - user-deploy
@@ -890,12 +903,25 @@
   authorized_key:
     user: "{{ item.0.name }}"
     key: "{{ item.1 }}"
+    state: present
   with_subelements:
     - "{{ admin_users }}"
     - keys
   tags:
     - users
     - user-admin
+
+- name: remove authorized keys
+  authorized_key:
+    user: "{{ item.0.name }}"
+    key: "{{ item.1 }}"
+    state: absent
+  with_subelements:
+    - "{{ admin_users }}"
+    - removed
+  tags:
+    - users
+    - user-deploy
 
 - name: write bashrc to homedir
   template:

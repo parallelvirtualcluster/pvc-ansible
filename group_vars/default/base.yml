@@ -110,6 +110,8 @@ admin_users:
     uid: 500
     keys:
       - "ssh-ed25519 MyKey 2019-06"
+    removed:
+      - "ssh-ed25519 ObsoleteKey 2017-01"
 
 # Backup user SSH user keys, for remote backups separate from administrative users (e.g. rsync)
 # > Uncomment to activate this functionality.
