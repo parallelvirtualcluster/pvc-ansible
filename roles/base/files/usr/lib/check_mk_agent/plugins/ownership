@@ -1,16 +1,18 @@
 #!/bin/bash
 
 # File ownership check for Check_MK
+# Ensures that no files outside of homedirs are owned by administrative users
 # Installed by PVC ansible
 
-UID_MAX=199
+ADMIN_UID_MIN=200
+ADMIN_UID_MAX=599
 # http://www.debian.org/doc/debian-policy/ch-opersys.html
 # 0-99: Globally allocated by the Debian project
-# 100-199: (PVC) Dynamically allocated system users and groups
+# 100-199: (PVC) Dynamically allocated system users
 # 200-299: (PVC) provisioning users
 # 300-499: (PVC) reserved
 # 500-599: (PVC) system administrators
-# 600-999: (PVC) reserved
+# 600-999: (PVC) Dynamically allocated service users
 # 64045:   (PVC) ceph
 
 function is_element_of {
@@ -43,7 +45,7 @@ for FILESYSTEM in ${FILESYSTEMs[@]}; do
             fi
         fi
         FILEs+=($FILE)
-    done < <( find ${FILESYSTEM} -xdev -uid +$UID_MAX -not -uid +64000 -not -uid 2000 \
+    done < <( find ${FILESYSTEM} -xdev -uid +${ADMIN_UID_MIN} -uid -${ADMIN_UID_MAX} \
         -not \( -type d -a \( -path /media -o -path /mnt \) \) \
         -not \( -name '.*.swp' -a -mtime -3 \) \
         -not \( -path '*/.git' -o -path '*/.git/*' \) \
