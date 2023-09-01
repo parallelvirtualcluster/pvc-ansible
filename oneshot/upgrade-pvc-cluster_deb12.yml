@@ -6,7 +6,7 @@
   become_user: root
   gather_facts: yes
   vars:
-    minimum_pvc_version: 0.9.68
+    minimum_pvc_version: 0.9.69
   tasks:
     - name: check that cluster is on the minimum PVC version or newer
       shell: "dpkg --compare-versions $(pvc --quiet cluster status -f json | jq '.pvc_version' | tr -d '\"') ge {{ minimum_pvc_version }}"
