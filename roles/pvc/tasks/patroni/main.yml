@@ -3,7 +3,9 @@
   apt:
     name:
       - python3-psycopg2
+      - python-psycopg2
       - python3-kazoo
+      - python-kazoo
       - patroni
       - postgresql-11
     state: latest
