@@ -1,0 +1,176 @@
+---
+- hosts: all
+  remote_user: deploy
+  become: yes
+  become_user: root
+  gather_facts: yes
+  tasks:
+    - name: set PVC maintenance mode
+      command: pvc maintenance on
+      run_once: yes
+
+- hosts: all
+  remote_user: deploy
+  become: yes
+  become_user: root
+  gather_facts: yes
+  serial: 1
+  tasks:
+    - name: secondary node
+      command: 'pvc node secondary --wait {{ ansible_hostname }}'
+      ignore_errors: true
+  
+    - name: wait 15 seconds for system to stabilize
+      pause:
+        seconds: 15
+      become: no
+      connection: local
+  
+    - name: flush node
+      command: "pvc node flush {{ ansible_hostname }} --wait"
+      ignore_errors: yes
+  
+    - name: make sure node is in flushed state
+      shell: "pvc node info {{ ansible_hostname }} | grep '^Domain State' | awk '{ print $NF }'"
+      register: pvcflush
+      failed_when: pvcflush.stdout != 'flushed'
+      until: pvcflush.stdout == 'flushed'
+      retries: 180
+      delay: 10
+
+    - name: ensure VMs are migrated away
+      shell: "virsh list | grep running | wc -l"
+      register: virshcount
+      failed_when: virshcount.stdout != "0"
+      until: virshcount.stdout == "0"
+      retries: 180
+      delay: 10
+
+    - name: wait 15 seconds for system to stabilize
+      pause:
+        seconds: 15
+      become: no
+      connection: local
+
+    - name: stop and disable PVC flush daemon cleanly
+      service:
+        name: pvc-flush
+        state: stopped
+        enabled: no
+
+    - name: stop PVC daemon cleanly
+      service:
+        name: pvcnoded
+        state: stopped
+
+    - name: stop Zookeeper daemon cleanly
+      service:
+        name: zookeeper
+        state: stopped
+
+    - name: wait 15 seconds for system to stabilize
+      pause:
+        seconds: 15
+      become: no
+      connection: local
+
+    - name: set OSD noout
+      command: pvc storage osd set noout
+
+    - name: get running OSD services
+      shell: "systemctl | awk '{ print $1 }' | grep 'ceph-osd@[0-9]*.service'"
+      ignore_errors: true
+      register: osd_services
+
+    - name: stop Ceph OSD daemons cleanly
+      service:
+        name: "{{ item }}"
+        state: stopped
+      ignore_errors: true
+      with_items: "{{ osd_services.stdout_lines }}"
+
+    - name: stop Ceph Monitor daemon cleanly
+      service:
+        name: "ceph-mon@{{ ansible_hostname }}"
+        state: stopped
+      ignore_errors: true
+
+    - name: stop Ceph Manager daemon cleanly
+      service:
+        name: "ceph-mgr@{{ ansible_hostname }}"
+        state: stopped
+      ignore_errors: true
+
+    - name: wait 30 seconds for system to stabilize
+      pause:
+        seconds: 30
+      become: no
+      connection: local
+
+    - name: restart system
+      reboot:
+        post_reboot_delay: 15
+        reboot_timeout: 1800
+
+    - name: make sure all OSDs are active
+      shell: "ceph osd stat | grep 'osds:' | awk '{ if ( $1 == $3 ) { print \"OK\" } else { print \"NOK\" } }'"
+      register: osdstat
+      failed_when: osdstat.stdout == "NOK"
+      until: osdstat.stdout == "OK"
+      retries: 60
+      delay: 10
+
+    - name: make sure all PGs have recovered
+      shell: "ceph health | grep -wo 'Degraded data redundancy'"
+      register: cephhealth
+      failed_when: cephhealth.stdout == "Degraded data redundancy'"
+      until: cephhealth.stdout == ""
+      retries: 60
+      delay: 10
+
+    - name: unset OSD noout
+      command: pvc storage osd unset noout
+      ignore_errors: yes
+
+    - name: unflush node
+      command: "pvc node ready {{ ansible_hostname }} --wait"
+      ignore_errors: yes
+ 
+    - name: make sure all VMs have returned
+      shell: "pvc node info {{ ansible_hostname }} | grep '^Domain State' | awk '{ print $NF }'"
+      register: pvcunflush
+      failed_when: pvcunflush.stdout != 'ready'
+      until: pvcunflush.stdout == 'ready'
+      retries: 180
+      delay: 10
+
+    - name: wait 30 seconds for system to stabilize
+      pause:
+        seconds: 30
+      become: no
+      connection: local
+  
+    - name: start and enable PVC flush daemon cleanly
+      service:
+        name: pvc-flush
+        state: started
+        enabled: yes
+
+    - name: reset any systemd failures
+      command: systemctl reset-failed
+
+    - name: wait 30 seconds for system to stabilize
+      pause:
+        seconds: 30
+      become: no
+      connection: local
+
+- hosts: all
+  remote_user: deploy
+  become: yes
+  become_user: root
+  gather_facts: yes
+  tasks:
+    - name: unset PVC maintenance mode
+      command: pvc maintenance off
+      run_once: yes
