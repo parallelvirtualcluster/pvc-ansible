@@ -36,6 +36,7 @@ for host in $@; do
     sudo umount /var/lib/ceph;
     sudo mkfs.ext4 /dev/vgx/ceph;
     sudo mount /var/lib/ceph;
+    sudo reboot;
     ' &>/dev/null
     echo "done."
 done
