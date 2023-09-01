@@ -58,4 +58,10 @@
     - pvcd.service
     - pvcd.target
 
+- name: install daily vacuum script
+  template:
+    src: pvc/pvc-vacuum.j2
+    dest: /etc/cron.daily/pvc-vacuum
+    mode: 0755
+
 - meta: flush_handlers

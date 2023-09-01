@@ -60,12 +60,6 @@
     dest: /usr/lib/check_mk_agent/plugins/postgres
     mode: 0755
 
-- name: install daily vacuum script
-  template:
-    src: patroni/pvcdns-vacuum.j2
-    dest: /etc/cron.daily/pvcdns-vacuum
-    mode: 0755
-
 - name: install initial schema files
   copy:
     src: "{{ item.src }}"
