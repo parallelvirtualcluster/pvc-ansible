@@ -1,7 +1,7 @@
 # apt configuration: main sources list
 # {{ ansible_managed }}
 
-deb {{ debian_main_repository }} bullseye main contrib non-free
+deb {{ debian_main_repository }} bullseye main contrib non-free-firmware
 deb-src {{ debian_main_repository }} bullseye main contrib
 
 deb {{ debian_security_repository }} bullseye-security main contrib
