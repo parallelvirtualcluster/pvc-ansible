@@ -34,3 +34,6 @@
 
 - name: update grub
   command: update-grub
+
+- name: regenerate uefi entries
+  shell: for entry in $(efibootmgr|awk '{print $1}'|grep -Eo '[0-9]+'); do efibootmgr -b ${entry} -B; done; grub-install /dev/$(lsblk -no pkname $(findmnt -n /boot/efi|awk '{print $2}'))

@@ -260,6 +260,7 @@
       - cpufrequtils
       - ipmitool
       - grub-efi
+      - efibootmgr
       - plymouth
       - plymouth-themes
       - linux-image-amd64
@@ -400,6 +401,7 @@
     dest: /etc/default/grub
   notify:
     - update grub
+    - regenerate uefi entries
 
 # Plymouth theme
 - name: install PVC Plymouth theme archive
