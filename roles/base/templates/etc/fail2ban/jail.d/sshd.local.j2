@@ -1,7 +1,7 @@
 [DEFAULT]
 maxretry    = 3
 bantime     = 14400
-ignoreip    = 127.0.0.0/8 10.0.0.0/8 198.55.48.48/28
+ignoreip    = 127.0.0.0/8 {% for ignore in fail2ban_ignorelist %}{{ ignore }} {% endfor %}
 
 [ssh]
 enabled     = true
