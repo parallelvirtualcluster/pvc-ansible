@@ -104,9 +104,13 @@
 #   Note: A script hook will run as the "deploy_user" on the remote system. If you require the
 #         command to have root privileges, use "sudo" in the script.
 #
+#   * webhook  Run an HTTP action against a URL with the given data (converted to JSON). Only
+#              runs once regardless of the "target" specified, and runs from the controller.
+#
 # A hook can "target" one or more nodes in the cluster. These are specified by their "node
 # hostname" as specified in the "bootstrap" section in a YAML list. The special value "all" can
 # be used to represent all nodes in the cluster; if "all" is specified it should be the only value.
+# If no target is specified, 'all' is assumed.
 #
 # The value of "target" is used slightly differently for the osddb, osd, pool, and network (PVC)
 # hook types above. For osddb and osd, the list of "target"s will be the nodes that the given
@@ -115,7 +119,7 @@
 # "all" for clarity.
 #
 # Each hook has a series of "args" which are unique to that particular hook type. These are
-# self-documented inline below for each hook type.
+# self-documented inline below with an example for each hook type.
 
 # Bootstrap elements
 bootstrap:
@@ -265,8 +269,6 @@ hooks:
 
   - name: "Run a quick Python script on all nodes"
     type: script
-    target:
-      - all
     args:
       script: |
         #!/usr/bin/env python
@@ -288,3 +290,13 @@ hooks:
     args:
       source: remote
       path: "/usr/local/bin/dostuff"
+
+  - name: "Inform a Mattermost channel of completion"
+    type: webhook
+    args:
+      uri: "https://mymattermost.company.tld/hooks/xxx-generatedkey-xxx"
+      action: post                      # One of "get", "post", "put", "patch", "delete", "options" (must be valid for Requests library)
+      body:                             # This body will be converted directly from YAML into JSON to send
+        channel: "deployments"
+        username: "pvcbootstrapd"
+        text: "Your cluster 'clusterX' is done :tada:"
