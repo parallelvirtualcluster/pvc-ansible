@@ -1,4 +1,13 @@
 ---
+- name: bring up upstream interface
+  command: ifup {{ pvc_upstream_device }}
+
+- name: bring up cluster interface
+  command: ifup {{ pvc_cluster_device }}
+
+- name: brindg up storage interface
+  command: ifup {{ pvc_storage_device }}
+
 - name: create cluster bridge interface
   command: brctl addbr brcluster
   ignore_errors: yes
