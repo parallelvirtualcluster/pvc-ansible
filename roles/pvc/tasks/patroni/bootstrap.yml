@@ -8,7 +8,7 @@
     - patroni
 
 - name: remove any existing patroni keys in Zookeeper
-  command: /usr/share/zookeeper/bin/zkCli.sh rmr /patroni
+  command: /usr/share/zookeeper/bin/zkCli.sh -server $(hostname -s):2181 rmr /patroni
   ignore_errors: true
 
 - name: start Patroni

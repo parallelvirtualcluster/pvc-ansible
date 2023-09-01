@@ -9,5 +9,5 @@
     seconds: 10
 
 - name: ensure Zookeeper is running on node1
-  shell: echo "ls /" | /usr/share/zookeeper/bin/zkCli.sh
+  shell: echo "ls /" | /usr/share/zookeeper/bin/zkCli.sh -server $(hostname -s):2181
   when: ansible_local.host_id == 1

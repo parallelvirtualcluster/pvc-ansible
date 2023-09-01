@@ -18,8 +18,8 @@ for host in $@; do
     sudo systemctl stop ceph-mon@$(hostname -s);
     sudo systemctl stop ceph-mgr@$(hostname -s);
     sudo systemctl stop patroni;
-    for key in $( echo "ls /" | sudo /usr/share/zookeeper/bin/zkCli.sh | grep --color=none zookeeper | tr -d "[]," | tr " " "\n" | grep -v zookeeper ); do
-        echo "rmr /${key}" | sudo /usr/share/zookeeper/bin/zkCli.sh;
+    for key in $( echo "ls /" | sudo /usr/share/zookeeper/bin/zkCli.sh -server $(hostname -s):2181 | grep --color=none zookeeper | tr -d "[]," | tr " " "\n" | grep -v zookeeper ); do
+        echo "rmr /${key}" | sudo /usr/share/zookeeper/bin/zkCli.sh -server $(hostname -s):2181;
     done
     sudo systemctl stop zookeeper;
     sudo rm -rf /etc/pvc-install.* /etc/ceph* /etc/patroni* /etc/postgres* /etc/zookeeper* /etc/libvirt*;
