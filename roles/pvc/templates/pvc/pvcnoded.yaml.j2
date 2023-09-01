@@ -2,7 +2,7 @@
 # pvcnoded configuration
 # {{ ansible_managed }}
 pvc:
-  node: {% for node in pvc_nodes if node.hostname == this_node %}{{ node.hostname.split('.')[0] }}{% endfor %}
+  node: {% for node in pvc_nodes if node.hostname == this_node %}{{ node.hostname }}{% endfor %}
 
   debug: False
   functions:
@@ -13,7 +13,7 @@ pvc:
   cluster:
     coordinators:
 {% for node in pvc_nodes if node.is_coordinator %}
-      - {{ node.hostname.split('.')[0] }}
+      - {{ node.hostname }}
 {% endfor %}
     networks:
       upstream:
