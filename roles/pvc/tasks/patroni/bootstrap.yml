@@ -8,8 +8,11 @@
     - patroni
 
 - name: remove any existing patroni keys in Zookeeper
-  command: /usr/share/zookeeper/bin/zkCli.sh -server $(hostname -s):2181 rmr /patroni
+  shell: "/usr/share/zookeeper/bin/zkCli.sh -server $(hostname -s):2181 rmr /patroni"
   ignore_errors: true
+
+- name: regenerate locales to ensure compliance
+  command: locale-gen
 
 - name: start Patroni
   service:
@@ -23,10 +26,10 @@
     seconds: 15
 
 - name: test connecting to cluster
-  shell: sudo -u postgres psql postgres -c 'select * from pg_stat_activity' || ( service patroni restart && exit 1 )
+  shell: "sudo -u postgres psql postgres -c 'select * from pg_stat_activity' || ( systemctl restart patroni && exit 1 )"
   register: result
-  retries: 6
-  delay: 5
+  retries: 8
+  delay: 15
   until: result.rc == 0
 
 - block:
