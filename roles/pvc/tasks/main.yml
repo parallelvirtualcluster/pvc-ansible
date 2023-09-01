@@ -89,8 +89,7 @@
     - name: set first node as primary coordinator on first install
       command: "pvc node primary --wait"
       run_once: yes
-      delegate_to: "{{ item }}"
-      loop: "{{ ansible_play_hosts[0] }}"
+      delegate_to: "{{ ansible_play_hosts[0] }}"
 
   when: newhost is defined and newhost
   tags: always
