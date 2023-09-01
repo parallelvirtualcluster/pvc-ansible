@@ -107,8 +107,11 @@
 
     - name: remove possible obsolete cset configuration
       file:
-        dest: /etc/systemd/system/ceph-osd@.service.d
+        dest: "/etc/systemd/system/{{ item }}"
         state: absent
+      with_items:
+        - ceph-osd@.service.d
+        - ceph-osd-cpuset.service
 
     - name: replace sources.list entries will bookworm
       replace:
