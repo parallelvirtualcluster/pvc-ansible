@@ -5,9 +5,15 @@
   become_user: root
   gather_facts: yes
   tasks:
-    - name: set PVC maintenance mode
+    - name: set PVC maintenance mode (legacy)
       command: pvc maintenance on
       run_once: yes
+      ignore_errors: yes
+
+    - name: set PVC maintenance mode
+      command: pvc cluster maintenance on
+      run_once: yes
+      ignore_errors: yes
 
 - hosts: all
   remote_user: deploy
@@ -160,5 +166,5 @@
   gather_facts: yes
   tasks:
     - name: unset PVC maintenance mode
-      command: pvc maintenance off
+      command: pvc cluster maintenance off
       run_once: yes

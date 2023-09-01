@@ -7,7 +7,7 @@
   serial: 1
   tasks:
     - name: set PVC maintenance mode
-      command: pvc maintenance on
+      command: pvc cluster maintenance on
 
     - name: secondary node
       command: "pvc node secondary {{ ansible_hostname }}"
@@ -216,7 +216,7 @@
       connection: local
 
     - name: unset PVC maintenance mode
-      command: pvc maintenance off
+      command: pvc cluster maintenance off
 
 - hosts: all
   remote_user: deploy
