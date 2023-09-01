@@ -60,18 +60,21 @@ ipmi:
       address: 192.168.100.101
       netmask: 255.255.255.0
       gateway: 192.168.100.1
+      channel: 1                # Optional: defaults to "1" if not set
     "pvchv2":                   # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
       hostname: pvchv2-lom      # A valid short name (e.g. from /etc/hosts) or an FQDN must be used here and it must resolve to address.
                                 # PVC connects to this *hostname* for fencing.
       address: 192.168.100.102
       netmask: 255.255.255.0
       gateway: 192.168.100.1
+      channel: 1                # Optional: defaults to "1" if not set
     "pvchv3":                   # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
       hostname: pvchv3-lom      # A valid short name (e.g. from /etc/hosts) or an FQDN must be used here and it must resolve to address.
                                 # PVC connects to this *hostname* for fencing.
       address: 192.168.100.103
       netmask: 255.255.255.0
       gateway: 192.168.100.1
+      channel: 1                # Optional: defaults to "1" if not set
 
 # IPMI user configuration
 # > Adjust this based on the specific hardware you are using; the cluster_hardware variable is
