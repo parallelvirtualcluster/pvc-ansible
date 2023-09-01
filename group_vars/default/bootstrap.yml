@@ -90,6 +90,10 @@
 #
 #   * network  Create a network on the PVC cluster with the specified parameters (see below).
 #
+#   * copy: Copy one or more files from the provisioner host to the destination node(s). The
+#           source path may be absolute, or relative to the Ansible repository directory. Each
+#           argument is a list of values; list values map one-to-one-to-one between the 3 args.
+#
 #   * script   Run a script on the given host(s). Can be used to run arbitrary commands or other
 #              scripts on the remote system.
 #              The script may be specified in one of 3 ways:
@@ -272,6 +276,21 @@ hooks:
       ip6: yes                          # Enable IPv6 networking
       ip6_network: 2001:1234:5678::/64  # The IPv6 network, required if ip6
       ip6_gateway: 2001:1234:5678::1    # The IPv6 gateway, required if ip6
+
+  - name: "Copy a configuration file and script to node 1"
+    type: copy
+    target:
+      - hv1
+    args:
+      source:
+        - scripts/example.conf
+        - scripts/example.sh
+      destination:
+        - /usr/local/etc/example.conf
+        - /usr/local/sbin/example.sh
+      mode:
+        - 0o600
+        - 0o755
 
   - name: "Run a quick storage benchmark leveraging node 1 as the runner"
     type: script
