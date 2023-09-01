@@ -1,13 +1,13 @@
 ---
 # Logging configuration (uncomment to override defaults)
-pvc_log_to_file: False
-pvc_log_to_stdout: True
-pvc_log_colours: True
-pvc_log_dates: False
-pvc_log_keepalives: True
-pvc_log_keepalive_cluster_details: True
-pvc_log_keepalive_storage_details: True
-pvc_log_console_lines: 1000
+pvc_log_to_file: False                  # Log to a file in /var/log/pvc
+pvc_log_to_stdout: True                 # Log to stdout (i.e. journald)
+pvc_log_colours: True                   # Log colourful prompts for states instead of text
+pvc_log_dates: False                    # Log dates (useful with log_to_file, not useful with log_to_stdout as journald adds these)
+pvc_log_keepalives: True                # Log keepalive event every pvc_keepalive_interval seconds
+pvc_log_keepalive_cluster_details: True # Log cluster details (VMs, load, etc.) duing keepalive events
+pvc_log_keepalive_storage_details: True # Log storage details (OSDs, pools, health) during keepalive events
+pvc_log_console_lines: 1000             # The number of VM console log lines to store in Zookeeper for 'vm log' commands.
 
 # Timing and fencing configuration (uncomment to override defaults)
 pvc_vm_shutdown_timeout: 180            # Number of seconds before a 'shutdown' VM is forced off
