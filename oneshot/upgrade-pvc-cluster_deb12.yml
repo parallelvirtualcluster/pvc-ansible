@@ -529,8 +529,7 @@
     - name: set first node as primary coordinator
       command: "pvc node primary --wait"
       run_once: yes
-      delegate_to: "{{ item }}"
-      loop: "{{ ansible_play_hosts[0] }}"
+      delegate_to: "{{ ansible_play_hosts[0] }}"
 
     - name: unset PVC maintenance mode
       command: pvc cluster maintenance off
