@@ -227,14 +227,24 @@
               exec 1>/tmp/upgrade-d10.log
               exec 2>&1
               export DEBIAN_FRONTEND=noninteractive
+              echo "Forcibly update libcrypt1 and libc6 to avoid conflicts"
               apt-get --download-only install --yes libcrypt1
               dpkg --force-all --install /var/cache/apt/archives/{libcrypt1,libpam0g,libc6}*.deb
+              echo "Fix broken packages"
               apt --fix-broken install --yes
+              echo "Upgrade core apt packages (forcing confold)"
               apt-get --no-install-recommends --option Dpkg::Options::="--force-confold" install --yes apt dpkg dpkg-dev base-files zstd
+              echo "Upgrade ca-certificates (forcing confold)"
               apt-get --no-install-recommends --option Dpkg::Options::="--force-confold" install --yes ca-certificates
+              echo "Upgrade sudo (forcing confold)"
               apt-get --no-install-recommends --option Dpkg::Options::="--force-confold" install --yes sudo
+              echo "Upgrade core PVC packages (forcing confold)"
+              apt-get --no-install-recommends --option Dpkg::Options::="--force-confold" install --yes ceph-osd ceph-mds ceph-mon ceph-mgr radosgw zookeeper zookeeper-bin patroni libvirt-daemon-system frr
+              echo "Perform main upgrade (forcing confnew)"
               apt-get --no-install-recommends --option Dpkg::Options::="--force-confnew" upgrade --yes
+              echo "Perform main dist-upgrade (forcing confnew)"
               apt-get --no-install-recommends --option Dpkg::Options::="--force-confnew" dist-upgrade --yes
+              echo "Restart SSH so Ansible can continue"
               systemctl restart ssh
 
         - name: run script to perform safe d10->d12 upgrade (will take a long time)
