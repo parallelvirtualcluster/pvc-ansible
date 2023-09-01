@@ -11,13 +11,18 @@ filegen clockstats file clockstats type day enable
 
 disable auth
 
+# Enable orphan mode if cluster cannot connect to the Internet
+tos orphan 6
+server 127.0.0.1
+fudge  127.0.0.1 stratum 10
+
 # NRC public NTP masters
 server time.nrc.ca iburst
 server time.chu.nrc.ca iburst
 
 # Local PVC cluster
 {% for host in groups[cluster_group] %}
-server {{ host }} iburst
+peer {{ host }}
 {% endfor %}
 
 # Provide NTP for others via multicast
