@@ -82,10 +82,10 @@ pvc_routers:
 # > This option is *only* applied at cluster bootstrap and cannot be changed later
 #   here, only by editing the `files/ceph/<cluster>/ceph.conf` file directly.
 #pvc_osd_memory_limit: 939524096
-# Zookeeper heap memory limit, sets Xms and Xmx values to the Java process; default is 256M.
-# WARNING: Do not set lower than 128MB when using pvc_log_to_zookeeper, or lower than 32MB otherwise!
-#pvc_zookeeper_heap_limit: 128M
-# Zookeeper stack memory limit, sets Xss value to the Java process; default is 512M.
+# Zookeeper heap memory limit, sets Xms and Xmx values to the Java process; default is 512M.
+# WARNING: Do not set lower than 256MB when using pvc_log_to_zookeeper, or lower than 64MB otherwise!
+#pvc_zookeeper_heap_limit: 256M
+# Zookeeper stack memory limit, sets Xss value to the Java process; default is 1024M.
 # WARNING: Do not set lower than 128MB when using pvc_log_to_zookeeper, or lower than 32MB otherwise!
 #pvc_zookeeper_stack_limit: 128M
 

@@ -22,8 +22,8 @@ pvc_fence_migrate_target_selector: mem  # The selector to use for migrating VMs 
 
 # Memory tuning
 pvc_osd_memory_limit: 4294967296
-pvc_zookeeper_heap_limit: 256M
-pvc_zookeeper_stack_limit: 512M
+pvc_zookeeper_heap_limit: 512M
+pvc_zookeeper_stack_limit: 1024M
 
 # Ceph storage
 ceph_storage_secret_key: ""
