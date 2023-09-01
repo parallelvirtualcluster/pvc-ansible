@@ -7,6 +7,7 @@
       - python-kazoo
       - patroni
       - postgresql-11
+    postgresql_version: 11
   when: debian_version|int <= 10
 
 - set_fact:
@@ -15,6 +16,7 @@
       - python3-kazoo
       - patroni
       - postgresql
+    postgresql_version: 13
   when: debian_version|int >= 11
 
 - name: install patroni packages via apt
@@ -29,8 +31,8 @@
     state: stopped
     enabled: no
   with_items:
-    - postgresql
-    - postgresql@11-main
+    - "postgresql"
+    - "postgresql@{{ postgresql_version }}-main"
   when: newhost is defined and newhost
 
 - name: remove obsolete database directories
@@ -38,8 +40,8 @@
     dest: "{{ item }}"
     state: absent
   with_items:
-    - /etc/postgresql/11
-    - /var/lib/postgresql/11
+    - "/etc/postgresql/{{ postgresql_version }}"
+    - "/var/lib/postgresql/{{ postgresql_version }}"
   when: newhost is defined and newhost
 
 - name: create patroni database directory
