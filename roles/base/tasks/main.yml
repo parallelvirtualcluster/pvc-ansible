@@ -305,12 +305,18 @@
     - { src: "etc/locale.gen.j2", dest: "/etc/locale.gen" }
   tags: base-system
 
-- name: set timezone
+- name: set timezone for /etc/localtime
   file:
     src: /usr/share/zoneinfo/{{ timezone_location }}
     dest: /etc/localtime
     state: link
     force: yes
+  tags: base-system
+
+- name: set timezone for /etc/timezone
+  copy:
+    content: "{{ timezone_location }}"
+    dest: /etc/timezone
   tags: base-system
 
 - name: generate locales
