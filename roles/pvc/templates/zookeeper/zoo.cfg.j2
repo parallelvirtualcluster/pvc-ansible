@@ -11,6 +11,9 @@ autopurge.purgeInterval=72
 clientPort=2181
 clientPortAddress={% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.cluster_ip }}{% endfor %}
 
+# Increase client connections to 200 to prevent connection overloads
+maxClientCnxns=200
+
 {% for node in pvc_nodes if node.is_coordinator %}
 server.{{ node.node_id }}={{ node.cluster_ip }}:2888:3888
 {% endfor %}
