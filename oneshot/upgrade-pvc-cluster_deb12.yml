@@ -387,8 +387,17 @@
         - name: disable default pg autoscaler
           command: ceph config set global osd_pool_default_pg_autoscale_mode off
 
-        - name: disable pg autoscaler
-          command: ceph osd pool set noautoscale
+        - name: get pools
+          shell: "ceph osd lspools | awk '{ $1=\"\"; print $0 }' | tr -d ' '"
+          register: pool_output
+
+        - name: set pools fact
+          set_fact:
+            ceph_pools: "{{ pool_output.stdout.split('\n') | list }}"
+
+        - name: disable pg autoscaler on each pool
+          command: "ceph osd pool set {{ item }} pg_autoscale_mode off"
+          loop: "{{ ceph_pools }}"
 
         - name: set OSDs to require pacific
           command: ceph osd require-osd-release pacific
