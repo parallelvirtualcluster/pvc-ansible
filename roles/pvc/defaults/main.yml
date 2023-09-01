@@ -18,6 +18,11 @@ pvc_fence_successful_action: migrate    # What to do with VMs when a fence is su
 pvc_fence_failed_action: None           # What to do with VMs when a fence is failed (migrate, None) - migrate is DANGEROUS without pvc_suicide_intervals set to < pvc_fence_intervals
 pvc_fence_migrate_target_selector: mem  # The selector to use for migrating VMs after a fence
 
+# Memory tuning
+pvc_osd_memory_limit: 4294967296
+pvc_zookeeper_heap_limit: 256M
+pvc_zookeeper_stack_limit: 512M
+
 # Ceph storage
 ceph_storage_secret_key: ""
 ceph_storage_secret_uuid: ""
