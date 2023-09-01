@@ -230,7 +230,7 @@
 
 - name: set timezone
   file:
-    src: /usr/share/zoneinfo/Canada/Eastern
+    src: /usr/share/zoneinfo/{{ timezone_location }}
     dest: /etc/localtime
     state: link
     force: yes
