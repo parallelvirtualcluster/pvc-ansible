@@ -7,7 +7,7 @@
 RUNNING_KERNEL="$( uname -v | awk '{ print $4 }' )"
 
 # Determine the list of installed kernels (latest is always last)
-INSTALLED_KERNELS=( $( dpkg -l | grep 'linux-image-[0-9]' | awk '{ print $3 }' ) )
+INSTALLED_KERNELS=( $( dpkg -l | grep 'linux-image-[0-9]' | awk '{ print $3 }' | sort -n ) )
 NUM_INSTALLED=${{ '{#' }}INSTALLED_KERNELS[@]}
 
 if [[ ${NUM_INSTALLED} -le 1 ]]; then
@@ -17,9 +17,9 @@ fi
 
 LATEST_KERNEL="${INSTALLED_KERNELS[-1]}"
 if [[ ${LATEST_KERNEL} == ${RUNNING_KERNEL} ]]; then
-    force="--allow-remove-essential"
-else
     force=""
+else
+    force="--allow-remove-essential"
 fi
 
 # Remove the latest kernel from the array
@@ -28,7 +28,7 @@ REMOVABLE_KERNELS=( ${INSTALLED_KERNELS[@]:0:${NUM_REMOVABLE}} )
 
 PURGE_PACKAGES=()
 for KERNEL in ${REMOVABLE_KERNELS[@]}; do
-    PURGE_PACKAGES+=( $( dpkg -l | grep ${KERNEL} | awk '{ print $2 }' ) )
+    PURGE_PACKAGES+=( $( dpkg -l | grep ${KERNEL} | grep -v 'linux-image-amd64\|linux-headers-amd64' | awk '{ print $2 }' ) )
 done
 
 # Override the "linux-check-removal" script
@@ -48,4 +48,7 @@ if [[ $( dpkg -l | grep 'linux-image-[0-9]' | wc -l ) -lt 1 ]]; then
     echo "WARNING: NO KERNEL IS INSTALLED. THROWING ERROR AND ABORTING."
     exit 1
 fi
+
+update-grub
+
 exit 0
