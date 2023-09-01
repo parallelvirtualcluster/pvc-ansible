@@ -145,6 +145,8 @@
       - bash
       - bash-completion
       - net-tools
+      - pciutils
+      - usbutils
       - check-mk-agent
       - dns-root-data
       - bind9-host
