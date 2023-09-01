@@ -20,12 +20,16 @@
     - ceph-secret.xml
   notify: restart libvirtd
 
+- name: get ceph libvirt secret key
+  command: ceph auth get-key client.libvirt
+  register: libvirt_key
+
 - name: define ceph secret
   command: virsh secret-define /etc/libvirt/ceph-secret.xml
   ignore_errors: true
 
-- name: set ceph secret value
-  command: virsh secret-set-value --secret {{ ceph_storage_secret_uuid }} --base64 {{ ceph_storage_secret_key }}
+- name: set ceph libvirt secret value
+  command: virsh secret-set-value --secret {{ ceph_storage_secret_uuid }} --base64 {{ libvirt_key.stdout }}
   ignore_errors: true
 
 - name: configure libvirt for listening
