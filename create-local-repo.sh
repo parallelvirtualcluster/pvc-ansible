@@ -30,6 +30,7 @@ ln -s ../pvc-ansible/roles/base roles/base
 ln -s ../pvc-ansible/roles/pvc roles/pvc
 ln -s files ceph
 cp pvc-ansible/pvc.yml .
+cp pvc-ansible/clusters.yml .
 touch hosts
 cat <<EOF >update-remote.sh
 #!/usr/bin/env bash
