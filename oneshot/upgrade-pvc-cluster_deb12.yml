@@ -226,12 +226,13 @@
               #!/usr/bin/env bash
               exec 1>/tmp/upgrade-d10.log
               exec 2>&1
+              set -o xtrace
               export DEBIAN_FRONTEND=noninteractive
               echo "Forcibly update libcrypt1 and libc6 to avoid conflicts"
               apt-get --download-only install --yes libcrypt1
               dpkg --force-all --install /var/cache/apt/archives/{libcrypt1,libpam0g,libc6}*.deb
               echo "Fix broken packages"
-              apt --fix-broken install --yes
+              apt --fix-broken --option Dpkg::Options::="--force-confold" install --yes
               echo "Upgrade core apt packages (forcing confold)"
               apt-get --no-install-recommends --option Dpkg::Options::="--force-confold" install --yes apt dpkg dpkg-dev base-files zstd
               echo "Upgrade ca-certificates (forcing confold)"
