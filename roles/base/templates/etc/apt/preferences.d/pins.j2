@@ -2,11 +2,11 @@
 # {{ ansible_managed }}
 
 Package: *
-Pin: release a={{ ansible_distribution_release }}
+Pin: release a={{ debian_codename }}
 Pin-Priority: 999
 
 {% if 'base' in group_names %}
 Package: *
-Pin: release a={{ ansible_distribution_release }}-backports
+Pin: release a={{ debian_codename }}-backports
 Pin-Priority: -1
 {% endif %}
