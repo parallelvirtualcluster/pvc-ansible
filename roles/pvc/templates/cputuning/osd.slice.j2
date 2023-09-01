@@ -1,0 +1,13 @@
+# PVC ceph-osd slice unit
+# {{ ansible_managed }}
+
+[Unit]
+Description=Ceph OSD Slice
+Documentation=man:systemd.special(7)
+Before=slices.target
+
+[Slice]
+CPUAccounting=true
+Delegate = true
+CPUAffinity = {{ cpuset_osd }}
+AllowedCPUs = {{ cpuset_osd }}

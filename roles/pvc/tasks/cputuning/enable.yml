@@ -1,0 +1,100 @@
+---
+
+# Calculate the correct per-node cpu sets
+- name: set global values
+  set_fact:
+    system_cpus: "{{ cpu_tuning.nodes.system_cpus }}"
+    osd_cpus: "{{ cpu_tuning.nodes.osd_cpus }}"
+
+- name: get per-node cpu tuning values
+  set_fact:
+    node_cpu_tuning: "{% for node in pvc_nodes if node.hostname == this_node %}{% if node.cpu_tuning is defined %}{{ node.cpu_tuning }}{% endif %}{% endfor %}"
+
+- name: override global system_cpus value if set
+  set_fact:
+    system_cpus: "{{ node_cpu_tuning.system_cpus }}"
+    osd_cpus: "{{ node_cpu_tuning.osd_cpus }}"
+  when: node_cpu_tuning is defined and node_cpu_tuning
+
+- name: get node CPU details
+  command: lscpu --json
+  register: lscpu
+
+- name: set sockets variable
+  set_fact:
+    sockets: "{{ (lscpu.stdout|from_json|json_query(query)|list)[0] }}"
+  vars:
+    query: "lscpu[?field == 'Socket(s):'].data"
+
+- name: set cores_per_socket variable
+  set_fact:
+    cores_per_socket: "{{ (lscpu.stdout|from_json|json_query(query)|list)[0] }}"
+  vars:
+    query: "lscpu[?field == 'Core(s) per socket:'].data"
+
+- name: set threads_per_core variable
+  set_fact:
+    threads_per_core: "{{ (lscpu.stdout|from_json|json_query(query)|list)[0] }}"
+  vars:
+    query: "lscpu[?field == 'Thread(s) per core:'].data"
+
+- name: set total_cores variable
+  set_fact:
+    total_cores: "{{ sockets|int * cores_per_socket|int }}"
+
+- name: craft the system cpuset (first <system_cpus> cores + any threads as applicable)
+  set_fact:
+    cpuset_system: "{%- set cores = [] -%}
+      {%- for rng in range(0, system_cpus|int) -%}
+        {%- for core in range(rng, total_cores|int * threads_per_core|int, total_cores|int) -%}
+          {{ cores.append(core) }}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{ cores|sort|join(',') }}"
+
+- name: craft the osd cpuset (next <osd_cpus> cores + any threads as applicable)
+  set_fact:
+    cpuset_osd: "{%- set cores = [] -%}
+      {%- for rng in range(system_cpus|int, system_cpus|int + osd_cpus|int) -%}
+        {%- for core in range(rng, total_cores|int * threads_per_core|int, total_cores|int) -%}
+          {{ cores.append(core) }}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{ cores|sort|join(',') }}"
+
+- name: craft the VM cpuset (remaining cores + any threads as applicable)
+  set_fact:
+    cpuset_vm: "{%- set cores = [] -%}
+      {%- for rng in range(system_cpus|int + osd_cpus|int, total_cores|int) -%}
+        {%- for core in range(rng, total_cores|int * threads_per_core|int, total_cores|int) -%}
+          {{ cores.append(core) }}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{ cores|sort|join(',') }}"
+
+# Actually install the required components
+- name: install slice tuning units
+  template:
+    src: "cputuning/{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+  loop:
+    - system.slice
+    - user.slice
+    - osd.slice
+    - machine.slice
+  register: systemd_slices
+
+- name: create osd unit override configuration directory
+  file:
+    dest: /etc/systemd/system/ceph-osd@.service.d
+    state: directory
+
+- name: install osd cputuning configuration
+  template:
+    src: cputuning/ceph-osd@.service.d-cputuning.conf
+    dest: /etc/systemd/system/ceph-osd@.service.d/cputuning.conf
+  register: systemd_osdtuning
+
+- name: reload systemd to apply changes
+  command: systemctl daemon-reload
+  when: systemd_slices.changed or systemd_osdtuning.changed

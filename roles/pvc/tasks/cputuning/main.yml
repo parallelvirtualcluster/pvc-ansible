@@ -1,0 +1,7 @@
+---
+
+- include: enable.yml
+  when: cpu_tuning.enabled
+
+- include: disable.yml
+  when: not cpu_tuning.enabled

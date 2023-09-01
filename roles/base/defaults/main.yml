@@ -12,7 +12,7 @@ recursive_dns_servers:
 recursive_dns_search_domains:
   - "{{ local_domain }}"
 
-grub_cmdline: "systemd.unified_cgroup_hierarchy=0 console=tty0 console=ttyS{{ grub.serial_console[cluster_hardware].console }},115200 plymouth.ignore-serial-consoles splash"
+grub_cmdline: "systemd.unified_cgroup_hierarchy=1 console=tty0 console=ttyS{{ grub.serial_console[cluster_hardware].console }},115200 plymouth.ignore-serial-consoles splash"
 grub_serial: "serial --unit={{ grub.serial_console[cluster_hardware].console }} --speed=115200"
 
 deploy_username: "deploy"

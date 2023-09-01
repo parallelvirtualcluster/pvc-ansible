@@ -56,6 +56,11 @@
 - include: pvc/main.yml
   tags: pvc-daemon
 
+# Install CPU tuning
+- include: cputuning/main.yml
+  tags: pvc-cputuning
+  when: cpu_tuning is defined
+
 - name: restart server on first install
   shell: 'sleep 3 && shutdown -r now "Ansible updates triggered"'
   async: 1

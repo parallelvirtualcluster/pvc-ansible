@@ -1,0 +1,13 @@
+# PVC VM slice unit
+# {{ ansible_managed }}
+
+[Unit]
+Description=Virtual Machine and Container Slice
+Documentation=man:systemd.special(7)
+Before=slices.target
+
+[Slice]
+CPUAccounting = true
+Delegate = true
+CPUAffinity = {{ cpuset_vm }}
+AllowedCPUs = {{ cpuset_vm }}
