@@ -14,7 +14,7 @@
       - python3-psycopg2
       - python3-kazoo
       - patroni
-      - postgresql-11
+      - postgresql
   when: debian_version|int >= 11
 
 - name: install patroni packages via apt
