@@ -91,6 +91,10 @@
 - name: set msgr2 enabled
   command: ceph mon enable-msgr2
   run_once: true
+  retries: 6
+  delay: 5
+  register: result
+  until: result.rc == 0
 
 - name: create mgr auth keyring
   command: ceph auth get-or-create mgr.{{ ansible_hostname }} mon 'allow profile mgr' osd 'allow *' mds 'allow *' --out-file /var/lib/ceph/mgr/ceph-{{ ansible_hostname }}/keyring
