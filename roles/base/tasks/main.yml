@@ -112,7 +112,6 @@
       - exim4-base
       - exim4-config
       - exim4-daemon-light
-      - nano
       - joe
     state: absent
     purge: yes
@@ -157,6 +156,7 @@
       - man
       - less
       - vim
+      - nano
       - git
       - vlan
       - bridge-utils
