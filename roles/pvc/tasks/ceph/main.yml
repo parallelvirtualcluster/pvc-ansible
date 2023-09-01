@@ -44,6 +44,9 @@
     owner: ceph
     group: ceph
     mode: 0640
+  notify:
+    - restart ceph-mon
+    - restart ceph-mgr
   with_items:
     - ceph.conf
     - ceph.mon.keyring

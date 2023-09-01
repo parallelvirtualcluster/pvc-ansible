@@ -19,6 +19,28 @@
     name: patroni
     state: restarted
 
+# Restart ceph-mon, but sequentially one-host-at-a-time with a 15s wait in between; this provides
+# plenty of time for the primary state to switch around without putting the cluster in a
+# no-primary state
+- name: restart ceph-mon
+  shell: systemctl restart ceph-mon@{{ play_host }} && sleep 15
+  run_once: true
+  delegate_to: "{{ play_host }}"
+  with_items: "{{ play_hosts }}"
+  loop_control:
+    loop_var: play_host
+
+# Restart ceph-mgr, but sequentially one-host-at-a-time with a 15s wait in between; this provides
+# plenty of time for the primary state to switch around without putting the cluster in a
+# no-primary state
+- name: restart ceph-mgr
+  shell: systemctl restart ceph-mgr@{{ play_host }} && sleep 15
+  run_once: true
+  delegate_to: "{{ play_host }}"
+  with_items: "{{ play_hosts }}"
+  loop_control:
+    loop_var: play_host
+
 # Restart pvcd, but sequentially one-host-at-a-time with a 15s wait in between; this provides
 # plenty of time for the primary state to switch around without putting the cluster in a
 # no-primary state
