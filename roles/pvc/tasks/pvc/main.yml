@@ -6,9 +6,11 @@
       - pvc-daemon-api
       - pvc-daemon-common
       - pvc-client-cli
-      - debootstrap
       - ethtool
       - jq
+      # default provisioner script helper programs
+      - debootstrap
+      - rinse
     state: latest
   when: newhost is defined and newhost
 
