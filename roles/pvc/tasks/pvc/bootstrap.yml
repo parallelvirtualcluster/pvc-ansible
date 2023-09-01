@@ -1,4 +1,31 @@
 ---
-- name: initalize a fresh PVC cluster
-  shell: /usr/bin/pvc init --yes
+- name: start the API client
+  service:
+    name: pvc-api.service
+    state: started
+
+- name: use http as the API request scheme
+  set_fact:
+    api_uri_scheme: http
+  when: not pvc_api_enable_ssl
+
+- name: use https as the API request scheme
+  set_fact:
+    api_uri_scheme: https
+  when: pvc_api_enable_ssl
+
+- name: use the first API token to initialize cluster
+  set_fact:
+    api_uri_token: "{{ pvc_api_tokens[0].token }}"
+  when: pvc_api_enable_authentication and pvc_api_tokens and pvc_api_tokens[0]
+
+- name: initialize a fresh PVC cluster
+  uri:
+    url: "{{ api_uri_scheme }}://{{ pvc_api_listen_address }}:{{ pvc_api_listen_port }}/api/v1/initialize"
+    method: POST
+
+- name: stop the API client
+  service:
+    name: pvc-api.service
+    state: stopped
 
