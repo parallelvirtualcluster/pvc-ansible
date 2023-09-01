@@ -30,3 +30,22 @@
 - name: remove floating IP address to upstream interface
   command: ip address delete {{ pvc_upstream_floatingip }}/{{ pvc_upstream_netmask }} dev {{ pvc_upstream_device }}
   ignore_errors: yes
+
+- name: stop and disable unneccessary services
+  service:
+    name: "{{item }}"
+    state: stopped
+    enabled: no
+  with_items:
+    - pdns.service
+    - dnsmasq.service
+
+- name: ensure services are enabled but stopped pending reboot
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: yes
+  with_items:
+    - pvc-flush.service
+    - pvcnoded.service
+    - pvc.target

@@ -11,7 +11,7 @@
       - jq
     state: latest
 
-- name: install pvc configurations
+- name: install pvc node daemon configuration
   template:
     src: pvc/{{ item }}.j2
     dest: /etc/pvc/{{ item }}
@@ -19,6 +19,14 @@
     - restart pvcnoded
   with_items:
     - pvcnoded.yaml
+
+- name: install pvc api daemon configuration
+  template:
+    src: pvc/{{ item }}.j2
+    dest: /etc/pvc/{{ item }}
+  notify:
+    - restart pvcapid
+  with_items:
     - pvcapid.yaml
 
 - name: install API SSL certificate file
@@ -37,28 +45,9 @@
   no_log: True
   when: pvc_api_enable_ssl and not pvc_api_ssl_key_path
 
-- name: stop and disable unneccessary services
-  service:
-    name: "{{item }}"
-    state: stopped
-    enabled: no
-  with_items:
-    - pdns.service
-    - dnsmasq.service
-
 - include: pvc/bootstrap.yml
   run_once: yes
   when: bootstrap is defined and bootstrap and is_coordinator
-
-- name: enable daemon services but don't start them
-  service:
-    name: "{{ item }}"
-    state: stopped
-    enabled: yes
-  with_items:
-    - pvc-flush.service
-    - pvcnoded.service
-    - pvc.target
 
 - name: install daily vacuum script
   template:
@@ -67,3 +56,12 @@
     mode: 0755
 
 - meta: flush_handlers
+
+- name: ensure services are started and running
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - pvcnoded
+  when: bootstrap is not defined or not bootstrap
