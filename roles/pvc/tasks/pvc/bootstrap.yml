@@ -3,8 +3,8 @@
   command: ip address add {{ pvc_upstream_floatingip }}/{{ pvc_upstream_netmask }} dev {{ pvc_upstream_device }}
   ignore_errors: yes
 
-- name: prepare database migrations
-  command: /usr/share/pvc/pvc-api-db-init
+- name: apply database migrations
+  command: /usr/share/pvc/pvc-api-db-upgrade
 
 - name: start the API daemon
   service:
@@ -39,9 +39,3 @@
 - name: remove floating IP address to upstream interface
   command: ip address delete {{ pvc_upstream_floatingip }}/{{ pvc_upstream_netmask }} dev {{ pvc_upstream_device }}
   ignore_errors: yes
-
-- name: collect bootstrapped database migration files into the role
-  fetch:
-    src: /usr/share/pvc/migrations
-    dest: roles/pvc/files/pvc/{{ hostvars[inventory_hostname].group_names[0] }}/
-    flat: no
