@@ -5,7 +5,7 @@ pvc:
     debug: False
     coordinators:
 {% for node in pvc_nodes if node.is_coordinator %}
-        - {{ node.hostname.split('.')[0] }}
+        - {{ node.hostname }}
 {% endfor %}
     # api: Configuration of the API listener
     api:
@@ -69,7 +69,7 @@ pvc:
             #                uses the list of coordinators
             storage_hosts:
 {% for node in pvc_nodes if node.is_coordinator %}
-              - {{ node.hostname.split('.')[0] }}
+              - {{ node.hostname }}
 {% endfor %}
             # storage_domain: The storage domain name, concatenated with the coordinators list names
             #                 to form monitor access strings
