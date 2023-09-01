@@ -125,6 +125,9 @@
   apt:
     update-cache: yes
   when: (newhost is defined and newhost) or apt_config.changed or apt_key.changed
+  register: apt_res
+  retries: 5
+  until: apt_res is success
   tags: base-apt
 
 - name: aptitude safe upgrade with autoremove
@@ -133,6 +136,9 @@
     autoremove: yes
     upgrade: safe
   when: newhost is defined and newhost
+  register: apt_res
+  retries: 5
+  until: apt_res is success
   tags: base-apt
 
 - name: install dbus
@@ -141,6 +147,9 @@
       - dbus
     state: latest
   when: newhost is defined and newhost
+  register: apt_res
+  retries: 5
+  until: apt_res is success
   tags: base-apt
 
 - name: clean out apt cache
@@ -165,6 +174,9 @@
     state: absent
     purge: yes
     autoremove: yes
+  register: apt_res
+  retries: 5
+  until: apt_res is success
   tags: base-packages
 
 - name: set override debconf selections
@@ -178,6 +190,9 @@
     name:
       - python
   when: debian_version|int <= 10
+  register: apt_res
+  retries: 5
+  until: apt_res is success
   tags: base-packages
 
 - name: install common packages (bullseye+)
@@ -185,6 +200,9 @@
     name:
       - python-is-python3
   when: debian_version|int >= 11
+  register: apt_res
+  retries: 5
+  until: apt_res is success
   tags: base-packages
 
 - name: install common packages (all versions)
@@ -269,6 +287,9 @@
       - plymouth-themes
       - linux-image-amd64
       - linux-headers-amd64
+  register: apt_res
+  retries: 5
+  until: apt_res is success
   tags: base-packages
 
 - name: install cleanup scripts

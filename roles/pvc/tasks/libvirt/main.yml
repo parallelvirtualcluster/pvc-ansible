@@ -10,6 +10,9 @@
       - ceph-common
       - libguestfs-tools
     state: latest
+  register: apt_res
+  retries: 5
+  until: apt_res is success
 
 - name: add libvirt user to ceph group
   user:
