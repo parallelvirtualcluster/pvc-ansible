@@ -162,6 +162,7 @@
       - dns-root-data
       - bind9-host
       - dnsutils
+      - whois
       - postfix
       - ntp
       - openssh-client
@@ -523,18 +524,17 @@
     dest: /var/home
   tags: users
 
-- name: ensure group media exists
-  group:
-    name: media
-    gid: 9000
-    state: present
+# root
+- name: generate Root password hash
+  command: "mkpasswd --method=sha512crypt {{ root_password }}"
+  no_log: true
+  register: mkpasswd
   tags: users
 
-# root
 - name: set Root password
   user:
     name: root
-    password: "{{ passwdhash_root }}"
+    password: "{{ mkpasswd.stdout }}"
   tags: users
 
 - name: remove Root known_hosts
@@ -656,7 +656,7 @@
     name: "{{ item.name }}"
     uid: "{{ item.uid }}"
     group: operator
-    groups: sudo,adm,media,wireshark
+    groups: sudo,adm,wireshark
     shell: /bin/bash
     home: "/var/home/{{ item.name }}"
     createhome: yes
