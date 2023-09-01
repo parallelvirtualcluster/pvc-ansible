@@ -4,7 +4,7 @@
 
 A set of Ansible roles to set up PVC nodes. Part of the [Parallel Virtual Cluster system](https://github.com/parallelvirtualcluster/pvc).
 
-Tested on Ansible 2.2 through 2.8; it is not guaranteed to work properly on older or newer versions.
+Tested on Ansible 2.2 through 2.10; it is not guaranteed to work properly on older or newer versions.
 
 ## Roles
 
@@ -31,8 +31,8 @@ A full explanation of all variables can be found in [the manual](https://paralle
 
 ## Using
 
-*NOTE:* These roles expect a Debian 10.X (Buster) system specifically. This is currently the
-        only operating environment supported for PVC.
+*NOTE:* These roles expect a Debian 10.X (Buster) or Debian 11.X (Bullseye) system specifically.
+        This is currently the only operating environment supported for PVC.
 
 *NOTE:* All non-`default` directories under `group_vars/` and `files/`, and the `hosts` file,
         are ignored by this Git repository. It is advisable to manage these files securely
