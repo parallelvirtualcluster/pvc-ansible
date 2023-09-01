@@ -258,6 +258,7 @@
       - xz-utils
       - haveged
       - cpufrequtils
+      - lm-sensors
       - ipmitool
       - grub-efi
       - efibootmgr
@@ -608,6 +609,11 @@
     - { src: "etc/fail2ban/jail.d/sshd.conf.j2", dest: "/etc/fail2ban/jail.d/sshd.conf" }
     - { src: "etc/fail2ban/jail.d/sshd.local.j2", dest: "/etc/fail2ban/jail.d/sshd.local" }
   tags: base-fail2ban
+
+# lm-sensors
+- name: run sensors-detect to update sensors configuration
+  command: sensors-detect --auto
+  tags: base-sensors
 
 # check-mk-agent
 - name: install check_mk agent plugins
