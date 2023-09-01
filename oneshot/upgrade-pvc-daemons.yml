@@ -27,7 +27,7 @@
         dest: /var/cache/apt/archives
         state: absent
   
-    - name: restart system cleanly
+    - name: restart daemons cleanly
       block:
         - name: secondary node
           command: 'pvc node secondary {{ ansible_hostname }}'
