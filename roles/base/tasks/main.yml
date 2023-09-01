@@ -15,6 +15,11 @@
   when: newhost_check.changed
   tags: always
 
+# Set coordinator state fact
+- set_fact:
+    is_coordinator: "{% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.is_coordinator }}{% endfor %}"
+  tags: always
+
 #
 # Set Debian details
 #

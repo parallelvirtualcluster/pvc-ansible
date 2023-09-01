@@ -22,7 +22,7 @@ MANUFACTURER="$( /usr/sbin/dmidecode | grep -A1 'Chassis Information' | tail -1 
 if [[ -z ${MANUFACTURER} ]]; then
     MANUFACTURER='Unknown'
 fi
-echo "> \033[1;37mPVC node\033[0m on \033[1;31m${MANUFACTURER}\033[0m hardware" >> $TMPFILE
+echo "> \033[1;37mPVC {% if is_coordinator %}coordinator{% else %}hypervisor{% endif %} node\033[0m on \033[1;31m${MANUFACTURER}\033[0m hardware" >> $TMPFILE
 echo "> $(/bin/uname -srvmo)" >> $TMPFILE
 
 mv $TMPFILE $TGTFILE || rm $TMPFILE
