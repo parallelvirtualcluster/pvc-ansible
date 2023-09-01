@@ -18,9 +18,11 @@ else
     echo >> $TMPFILE
 fi
 # Get machine information
-echo "> \033[1;37mPVC node\033[0m on \033[1;31m$(
-        /usr/sbin/dmidecode | grep -A1 'Chassis Information' | tail -1 | awk -F':' '{print $2}' | tr -s ' '
-    )\033[0m hardware" >> $TMPFILE
+MANUFACTURER="$( /usr/sbin/dmidecode | grep -A1 'Chassis Information' | tail -1 | awk -F':' '{print $2}' | tr -s ' ' )"
+if [[ -z ${MANUFACTURER} ]]; then
+    MANUFACTURER='Unknown'
+fi
+echo "> \033[1;37mPVC node\033[0m on \033[1;31m${MANUFACTURER}\033[0m hardware" >> $TMPFILE
 echo "> $(/bin/uname -srvmo)" >> $TMPFILE
 
 mv $TMPFILE $TGTFILE || rm $TMPFILE
