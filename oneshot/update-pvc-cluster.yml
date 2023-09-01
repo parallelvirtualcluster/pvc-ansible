@@ -48,18 +48,12 @@
         state: "absent"
         force: "yes"
 
-    - name: check library freshness
-      command: /usr/lib/check_mk_agent/plugins/freshness
+    - name: check freshness
+      command: /usr/sbin/needrestart -p
       register: freshness
       changed_when: freshness.rc == 1
       failed_when: false
     
-    - name: check kernel version
-      command: /usr/lib/check_mk_agent/plugins/kernelversion
-      register: kernelversion
-      changed_when: kernelversion.rc == 1
-      failed_when: false
-   
     - name: restart system cleanly
       block:
         - name: secondary node
@@ -204,7 +198,7 @@
 
         - name: reset any systemd failures
           command: systemctl reset-failed
-      when: freshness.changed or kernelversion.changed
+      when: freshness.changed
 
     - name: wait 30 seconds for system to stabilize
       pause:

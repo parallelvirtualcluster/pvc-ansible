@@ -238,6 +238,7 @@
       - sysstat
       - binutils
       - deborphan
+      - needrestart
       - wget
       - curl
       - gawk
