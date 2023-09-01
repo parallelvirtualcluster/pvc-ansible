@@ -51,7 +51,7 @@
     - name: check freshness
       command: /usr/sbin/needrestart -p
       register: freshness
-      changed_when: freshness.rc >= 1 and freshness.rc < 3
+      changed_when: freshness.rc >= 1 and freshness.rc < 4
       failed_when: false
     
     - name: restart system cleanly
