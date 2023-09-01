@@ -151,6 +151,13 @@
       import_role:
         name: pvc
 
+    - name: aptitude full upgrade and cleanup
+      apt:
+        update_cache: yes
+        autoremove: yes
+        autoclean: yes
+        upgrade: full
+
     - name: restart system
       reboot:
         post_reboot_delay: 15
