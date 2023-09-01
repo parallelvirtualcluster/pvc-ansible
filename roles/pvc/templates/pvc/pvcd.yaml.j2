@@ -7,7 +7,7 @@ pvc:
   functions:
     enable_hypervisor: True
     enable_networking: True
-    enable_storage: False
+    enable_storage: True
   cluster:
     coordinators:
 {% for node in pvc_nodes if node.is_coordinator %}
