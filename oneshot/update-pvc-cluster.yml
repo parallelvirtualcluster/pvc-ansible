@@ -67,6 +67,7 @@
   
         - name: flush node
           command: "pvc node flush {{ ansible_hostname }} --wait"
+          ignore_errors: yes
   
         - name: make sure node is in flushed state
           shell: "pvc node info {{ ansible_hostname }} | grep '^Domain State' | awk '{ print $NF }'"
@@ -172,6 +173,7 @@
 
         - name: unflush node
           command: "pvc node ready {{ ansible_hostname }} --wait"
+          ignore_errors: yes
  
         - name: make sure all VMs have returned
           shell: "pvc node info {{ ansible_hostname }} | grep '^Domain State' | awk '{ print $NF }'"
