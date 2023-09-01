@@ -16,7 +16,7 @@ line vty
 ! BGP EVPN mesh configuration
 !
 router bgp {{ pvc_asn }}
-  bgp router-id {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.router_id }}{% endfor %}
+  bgp router-id {% for node in pvc_nodes if node.hostname == this_node %}{{ node.router_id }}{% endfor %}
 
   no bgp default ipv4-unicast
   ! BGP sessions with route reflectors

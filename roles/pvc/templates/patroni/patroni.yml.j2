@@ -3,9 +3,9 @@ namespace: /patroni/
 name: {{ ansible_hostname }}
 
 restapi:
-    listen: {% for node in pvc_nodes if node.hostname == inventory_hostname %}'{{ node.cluster_ip }}:8008'{% endfor %}
+    listen: {% for node in pvc_nodes if node.hostname == this_node %}'{{ node.cluster_ip }}:8008'{% endfor %}
 
-    connect_address: {% for node in pvc_nodes if node.hostname == inventory_hostname %}'{{ node.cluster_ip }}:8008'{% endfor %}
+    connect_address: {% for node in pvc_nodes if node.hostname == this_node %}'{{ node.cluster_ip }}:8008'{% endfor %}
 
 zookeeper:
     hosts: [ {% for node in pvc_nodes if node.is_coordinator %}"{{ node.cluster_ip }}:2181"{% if not loop.last %},{% endif %}{% endfor %} ]
@@ -44,7 +44,7 @@ bootstrap:
 
 postgresql:
     listen: '0.0.0.0:5432'
-    connect_address: {% for node in pvc_nodes if node.hostname == inventory_hostname %}'{{ node.cluster_ip }}:5432'
+    connect_address: {% for node in pvc_nodes if node.hostname == this_node %}'{{ node.cluster_ip }}:5432'
 {% endfor %}
     log_destination: 'stderr'
     log_min_messages: INFO

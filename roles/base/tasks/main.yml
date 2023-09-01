@@ -15,9 +15,14 @@
   when: newhost_check.changed
   tags: always
 
+# Set this_node fact
+- set_fact:
+    this_node: "{{ inventory_hostname.split('.')[0] }}"
+  tags: always
+
 # Set coordinator state fact
 - set_fact:
-    is_coordinator: "{% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.is_coordinator }}{% endfor %}"
+    is_coordinator: "{% for node in pvc_nodes if node.hostname == this_node %}{{ node.is_coordinator }}{% endfor %}"
   tags: always
 
 #

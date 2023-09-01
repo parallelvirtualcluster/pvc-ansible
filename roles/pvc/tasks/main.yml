@@ -1,8 +1,13 @@
 ---
 
-# Set coordinator state
+# Set this_node fact
 - set_fact:
-    is_coordinator: "{% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.is_coordinator }}{% endfor %}"
+    this_node: "{{ inventory_hostname.split('.')[0] }}"
+  tags: always
+
+# Set coordinator state fact
+- set_fact:
+    is_coordinator: "{% for node in pvc_nodes if node.hostname == this_node %}{{ node.is_coordinator }}{% endfor %}"
   tags: always
 
 # First-run check

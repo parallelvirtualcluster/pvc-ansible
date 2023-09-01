@@ -2,7 +2,7 @@
 # pvcnoded configuration
 # {{ ansible_managed }}
 pvc:
-  node: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.hostname.split('.')[0] }}{% endfor %}
+  node: {% for node in pvc_nodes if node.hostname == this_node %}{{ node.hostname.split('.')[0] }}{% endfor %}
 
   debug: False
   functions:
@@ -55,11 +55,11 @@ pvc:
         successful_fence: {{ pvc_fence_successful_action }}
         failed_fence: {{ pvc_fence_failed_action }}
       ipmi:
-        host: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.ipmi_host }}{% endfor %}
+        host: {% for node in pvc_nodes if node.hostname == this_node %}{{ node.ipmi_host }}{% endfor %}
 
-        user: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.ipmi_user }}{% endfor %}
+        user: {% for node in pvc_nodes if node.hostname == this_node %}{{ node.ipmi_user }}{% endfor %}
 
-        pass: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.ipmi_password }}{% endfor %}
+        pass: {% for node in pvc_nodes if node.hostname == this_node %}{{ node.ipmi_password }}{% endfor %}
 
     migration:
       target_selector: {{ pvc_fence_migrate_target_selector }}
@@ -87,17 +87,17 @@ pvc:
         upstream:
           device: {{ pvc_upstream_device }}
           mtu: {{ pvc_upstream_mtu }}
-          address: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.upstream_ip }}/{{ pvc_upstream_netmask }}{% endfor %}
+          address: {% for node in pvc_nodes if node.hostname == this_node %}{{ node.upstream_ip }}/{{ pvc_upstream_netmask }}{% endfor %}
 
         cluster:
           device: {{ pvc_cluster_device }}
           mtu: {{ pvc_cluster_mtu }}
-          address: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.cluster_ip }}/{{ pvc_cluster_netmask }}{% endfor %}
+          address: {% for node in pvc_nodes if node.hostname == this_node %}{{ node.cluster_ip }}/{{ pvc_cluster_netmask }}{% endfor %}
 
         storage:
           device: {{ pvc_storage_device }}
           mtu: {{ pvc_storage_mtu }}
-          address: {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.storage_ip }}/{{ pvc_storage_netmask }}{% endfor %}
+          address: {% for node in pvc_nodes if node.hostname == this_node %}{{ node.storage_ip }}/{{ pvc_storage_netmask }}{% endfor %}
 
       storage:
         ceph_config_file: "/etc/ceph/ceph.conf"

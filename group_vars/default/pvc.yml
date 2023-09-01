@@ -77,34 +77,34 @@ pvc_routers:
 # PVC Node list
 # > Every node configured with this playbook must be specified in this list.
 pvc_nodes:
-  - hostname: "pvchv1" # This name MUST match the Ansible inventory_hostname
+  - hostname: "pvchv1" # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
     is_coordinator: yes
     node_id: 1
     router_id: "192.168.100.11"
     upstream_ip: "192.168.100.11"
     cluster_ip: "10.0.0.1"
     storage_ip: "10.0.1.1"
-    ipmi_host: "{{ ipmi['hosts']['pvchv1']['hostname'] }}" # Note the node inventory hostname key in here
+    ipmi_host: "{{ ipmi['hosts']['pvchv1']['hostname'] }}" # Note the node hostname key in here
     ipmi_user: "{{ ipmi['users']['pvc']['username'] }}"
     ipmi_password: "{{ ipmi['users']['pvc']['password'] }}"
-  - hostname: "pvchv2"
+  - hostname: "pvchv2" # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
     is_coordinator: yes
     node_id: 2
     router_id: "192.168.100.12"
     upstream_ip: "192.168.100.12"
     cluster_ip: "10.0.0.2"
     storage_ip: "10.0.1.2"
-    ipmi_host: "{{ ipmi['hosts']['pvchv2']['hostname'] }}" # Note the node inventory hostname key in here
+    ipmi_host: "{{ ipmi['hosts']['pvchv2']['hostname'] }}" # Note the node hostname key in here
     ipmi_user: "{{ ipmi['users']['pvc']['username'] }}"
     ipmi_password: "{{ ipmi['users']['pvc']['password'] }}"
-  - hostname: "pvchv3"
+  - hostname: "pvchv3" # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
     is_coordinator: yes
     node_id: 3
     router_id: "192.168.100.13"
     upstream_ip: "192.168.100.13"
     cluster_ip: "10.0.0.3"
     storage_ip: "10.0.1.3"
-    ipmi_host: "{{ ipmi['hosts']['pvchv3']['hostname'] }}" # Note the node inventory hostname key in here
+    ipmi_host: "{{ ipmi['hosts']['pvchv3']['hostname'] }}" # Note the node hostname key in here
     ipmi_user: "{{ ipmi['users']['pvc']['username'] }}"
     ipmi_password: "{{ ipmi['users']['pvc']['password'] }}"
 

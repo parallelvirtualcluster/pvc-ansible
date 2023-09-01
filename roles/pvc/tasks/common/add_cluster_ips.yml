@@ -38,13 +38,13 @@
     - "{{ bridges }}"
 
 - name: add IP addresses to upstream bridge
-  command: ip address add {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.upstream_ip }}/{{ pvc_upstream_netmask }}{% endfor %} dev brupstream
+  command: ip address add {% for node in pvc_nodes if node.hostname == this_node %}{{ node.upstream_ip }}/{{ pvc_upstream_netmask }}{% endfor %} dev brupstream
   ignore_errors: yes
 
 - name: add IP addresses to cluster bridge
-  command: ip address add {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.cluster_ip }}/{{ pvc_cluster_netmask }}{% endfor %} dev brcluster
+  command: ip address add {% for node in pvc_nodes if node.hostname == this_node %}{{ node.cluster_ip }}/{{ pvc_cluster_netmask }}{% endfor %} dev brcluster
   ignore_errors: yes
 
 - name: add IP addresses to storage bridge (will error if storage == cluster)
-  command: ip address add {% for node in pvc_nodes if node.hostname == inventory_hostname %}{{ node.storage_ip }}/{{ pvc_storage_netmask }}{% endfor %} dev brstorage
+  command: ip address add {% for node in pvc_nodes if node.hostname == this_node %}{{ node.storage_ip }}/{{ pvc_storage_netmask }}{% endfor %} dev brstorage
   ignore_errors: yes
