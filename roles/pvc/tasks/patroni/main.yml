@@ -107,6 +107,7 @@
     name: "{{ item }}"
     state: started
     enabled: no
+  ignore_errors: yes
   with_items:
     - patroni
 
