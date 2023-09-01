@@ -12,6 +12,7 @@ User = zookeeper
 Group = zookeeper
 EnvironmentFile = -/etc/zookeeper/conf/environment
 EnvironmentFile = -/etc/default/zookeeper
+Restart = always
 ExecStart = /usr/bin/java \
               -cp $CLASSPATH \
               $JAVA_OPTS \
