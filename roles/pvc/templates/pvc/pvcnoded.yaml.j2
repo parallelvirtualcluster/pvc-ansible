@@ -62,7 +62,7 @@ pvc:
         pass: {% for node in pvc_nodes if node.hostname == this_node %}{{ node.ipmi_password }}{% endfor %}
 
     migration:
-      target_selector: {{ pvc_fence_migrate_target_selector }}
+      target_selector: {{ pvc_migrate_target_selector }}
     configuration:
       directories:
         dynamic_directory: "/run/pvc"
