@@ -1,52 +1,103 @@
-#!/bin/bash
+#!/usr/bin/env python
 
-# Open file handle freshness check for Check_MK
-# Installed by PVC ansible
+# Check for freshness of various components using needrestart
 
-OK=0
-WARNING=1
+import subprocess
+import re
+import json
 
-FRESHNESS="$( lsof -Fcftn / 2>/dev/null | grep -v '/tmp' | \
-awk '
-{
-    field=substr($0,1,1);
-    data=substr($0,2);
-    if (field=="f") {
-        file_descriptor=data;
-    } else if (field=="t") {
-        file_type=data;
-    } else if (field=="c") {
-        command_name=data;
-    } else if (field=="n" && file_descriptor=="DEL" && file_type=="REG") {
-        name=data;
-        file[command_name]++;
-    }
+try:
+    nrout = subprocess.run(["/usr/sbin/needrestart", "-b"], timeout=5, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+except subprocess.TimeoutExpired:
+    exit(2)
+except Exception:
+    exit(1)
+
+stdout = nrout.stdout.decode("ascii").split('\n')
+stderr = nrout.stdout.decode("ascii").split('\n')
+
+# Output data structure after parsing needrestart output
+data = {
+    'kernel': {
+        'current': None,
+        'pending': None,
+        'state': 0,
+    },
+    'microcode': {
+        'current': None,
+        'pending': None,
+        'state': 0,
+    },
+    'services': {
+        'count': 0,
+        'list': list(),
+    },
+    'containers': {
+        'count': 0,
+        'list': list(),
+    },
+    'sessions': {
+        'count': 0,
+        'list': list(),
+    },
 }
-END {
-    for (name in file) {
-        error++;
-    # Skip these problematic programs
-    if (name=="systemd-udevd") { continue; }
-    if (name=="pulseaudio") { continue; }
-    if (name=="light-locker") { continue; }
-    if (name=="at-spi-bus-laun") { continue; }
-    if (name=="node") { continue; }
-    if (error_name) { error_name=error_name " " };
-        error_name=error_name name;
-    }
-    if (error_name) {
-        print error_name;
-        exit error;
-    } else {
-        exit;
-    }
-}' )";
 
-echo "<<<freshness>>>"
-if [ "$FRESHNESS" ]; then
-    echo "Applications needing restart: $FRESHNESS"
-    exit $WARNING
-else
-    echo "No applications needing restart"
-    exit $OK
-fi
+# NEEDRESTART-VER: 3.4
+# NEEDRESTART-KCUR: 4.19.0-6-amd64
+# NEEDRESTART-KEXP: 4.19.0-20-amd64
+# NEEDRESTART-KSTA: 3
+# NEEDRESTART-UCSTA: 2
+# NEEDRESTART-UCCUR: 0xb000038
+# NEEDRESTART-UCEXP: 0xb000040
+# NEEDRESTART-SVC: acpid
+# NEEDRESTART-SVC: cron
+# NEEDRESTART-SVC: irqbalance
+# NEEDRESTART-SVC: mcelog
+# NEEDRESTART-SVC: munin-node
+# NEEDRESTART-SVC: ntp
+# NEEDRESTART-SVC: ssh
+# NEEDRESTART-SVC: syslog-ng
+# NEEDRESTART-SVC: trousers
+# NEEDRESTART-SVC: watchdog
+# NEEDRESTART-SVC: wd_keepalive
+# NEEDRESTART-CONT: LXC web1
+# NEEDRESTART-SESS: metabase @ user manager service
+# NEEDRESTART-SESS: root @ session #28017
+
+# STA:
+#  0: unknown or failed to detect
+#  1: no pending upgrade
+#  2: ABI compatible upgrade pending
+#  3: version upgrade pending
+
+for line in stdout:
+    # Kernel version
+    if re.match(r'^NEEDRESTART-KSTA', line):
+        data['kernel']['state'] = int(line.split(': ')[-1])
+    elif re.match(r'^NEEDRESTART-KCUR', line):
+        data['kernel']['current'] = line.split(': ')[-1]
+    elif re.match(r'^NEEDRESTART-KEXP', line):
+        data['kernel']['pending'] = line.split(': ')[-1]
+    # Microcode version
+    elif re.match(r'^NEEDRESTART-UCSTA', line):
+        data['microcode']['state'] = int(line.split(': ')[-1])
+    elif re.match(r'^NEEDRESTART-UCCUR', line):
+        data['microcode']['current'] = line.split(': ')[-1]
+    elif re.match(r'^NEEDRESTART-UCEXP', line):
+        data['microcode']['pending'] = line.split(': ')[-1]
+    # Services needing restart
+    elif re.match(r'^NEEDRESTART-SVC', line):
+        data['services']['count'] += 1
+        data['services']['list'].append(' '.join(line.split(': ')[1:]))
+	# Containers needing restart
+    elif re.match(f'^NEEDRESTART-CONT', line):
+        data['containers']['count'] += 1
+        data['containers']['list'].append(' '.join(line.split(': ')[1:]))
+    # Sessions needing restart
+    elif re.match(f'^NEEDRESTART-SESS', line):
+        data['sessions']['count'] += 1
+        data['sessions']['list'].append(' '.join(line.split(': ')[1:]))
+
+print("<<<freshness>>>")
+print(json.dumps(data))
+exit(0)
