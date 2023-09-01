@@ -45,30 +45,6 @@
     verbosity: 1
 
 #
-# Debian Buster pre-release tweaks
-#
-- name: add proper VERSION line in os-release (Debian 10.X testing only)
-  lineinfile:
-    dest: "/etc/os-release"
-    line: 'VERSION="10 (buster)"'
-    state: present
-  register: installed_facts
-  when:
-    - ansible_distribution_major_version == "buster/sid" 
-
-- name: regather facts
-  setup:
-  when:
-    - installed_facts.changed
-    - ansible_distribution_major_version == "buster/sid" 
-
-- debug:
-    var: ansible_distribution_release
-    verbosity: 1
-  when:
-    - ansible_distribution_major_version == "buster/sid" 
-
-#
 # Configure APT
 #
 
