@@ -146,45 +146,6 @@ pvc_sriov_enable: False
 #            Lowering the stack limit may cause poor performance or crashes in Zookeeper during some tasks.
 #pvc_zookeeper_stack_limit: 256M  # 1/4 of default
 
-# CPU pinning configuration via cset
-# > ADVANCED TUNING: For most users, this is unnecessary and PVC will run fine with the default scheduling.
-#   Uncomment these options only for testing or if you are certain you meet the following conditions.
-# > These options will tune cpuset (installed by default) to limit Ceph OSDs to certain CPU cores, while
-#   simultaneously limiting other system tasks and VMs to the remaining CPU cores. In effect it dedicates the
-#   specified CPU cores to Ceph OSDs only to ensure those processes can have dedicated CPU time.
-# > Generally speaking, except in cases where extremely high random read throughput is required and in which
-#   the node(s) have a very large number of physical cores, this setting will not improve performance, and
-#   may in fact hurt performance. For more details please see the documentation.
-# > For optimal performance when using this setting, you should dedicate exactly 2 cores, and their
-#   respective SMT threads if applicable, to each OSD. For instance, with 2 OSDs, 4 real cores (and their
-#   corresponding SMT threads if applicable) should be specified. More cores has been seen to, in some cases
-#   drop performance further. For more details please see the documentation.
-# > Use the 'virsh capabilities' command to confim the exact CPU IDs (and SMT "siblings") for these lists.
-#
-pvc_shield_osds_enable: False
-#pvc_shield_osds_cset:
-#  # This example host has 2x 6-core SMT-enabled CPUs; we want to use cores 0 (+SMT 12) and 2 (+SMT 14), which are
-#  # both on physical CPU 0, for 1x OSD.
-#  - hostname: pvchv1
-#    osd_cset:
-#      - 0
-#      - 2
-#      - 12
-#      - 14
-#  # These example hosts have 1x 8-core SMT-enabled CPUs; we want to use cores 0 (+SMT 8) and 1 (+SMT 9) for 1x OSD.
-#  - hostname: pvchv2
-#    osd_cset:
-#      - 0
-#      - 1
-#      - 8
-#      - 9
-#  - hostname: pvchv3
-#    osd_cset:
-#      - 0
-#      - 1
-#      - 8
-#      - 9
-
 # Configuration file networks
 # > Taken from base.yml's configuration; DO NOT MODIFY THIS SECTION.
 pvc_upstream_device: "{{ networks['upstream']['device'] }}"
