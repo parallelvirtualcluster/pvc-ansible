@@ -19,6 +19,8 @@
 - include: patroni.yml
   tags: pvc-patroni
 
+- flush_handlers:
+
 - include: pvc.yml
   tags: pvc-pvc
   run_once: true
