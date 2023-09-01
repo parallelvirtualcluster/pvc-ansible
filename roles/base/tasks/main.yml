@@ -191,6 +191,7 @@
       - net-tools
       - pciutils
       - usbutils
+      - smartmontools
       - check-mk-agent
       - dns-root-data
       - bind9-host
