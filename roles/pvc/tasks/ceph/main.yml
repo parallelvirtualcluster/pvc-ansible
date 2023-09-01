@@ -172,7 +172,6 @@
   tags: pvc-ceph-cpuset
   when:
     - pvc_shield_osds_enable is defined
-    - pvc_shield_osds_enable
     - pvc_shield_osds_cset is defined
     - pvc_shield_osds_cset | selectattr('hostname', 'equalto', inventory_hostname) | list | count > 0
 
