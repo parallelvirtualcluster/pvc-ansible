@@ -475,6 +475,7 @@
   copy:
     src: "usr/lib/check_mk_agent/plugins/{{ item }}"
     dest: "/usr/lib/check_mk_agent/plugins/{{ item }}"
+    mode: 0755
   with_items:
     - backup
     - cephfsmounts
