@@ -117,14 +117,6 @@
     - ceph-mon@{{ ansible_hostname }}
     - ceph-mgr@{{ ansible_hostname }}
 
-# This is separate from the block to allow *disabling* of the config without removing it
-- name: install ceph-osd-cpuset controller config
-  template:
-    src: ceph/ceph-osd-cpuset-enable.j2
-    dest: /etc/default/ceph-osd-cpuset
-  when:
-    - pvc_shield_osds_enable is defined
-
 # System OSD CPU shielding activation
 - block:
     - name: install packages
@@ -133,6 +125,11 @@
           - cpuset
           - numactl
         state: latest
+
+    - name: install ceph-osd-cpuset controller config
+      template:
+        src: ceph/ceph-osd-cpuset-enable.j2
+        dest: /etc/default/ceph-osd-cpuset
 
     - name: install ceph-osd-cpuset script
       template:
@@ -167,12 +164,9 @@
         enabled: yes
 
     - debug:
-        msg: "NOTICE: cpuset configs have NOT been applied to the running system. This node must be rebooted to apply these changes."
-      when: systemd_file_cpuset.changed or systemd_file_osd.changed
+        msg: "NOTICE: Any cpuset configs have NOT been applied to the running system. This node must be rebooted to apply these changes."
   tags: pvc-ceph-cpuset
   when:
     - pvc_shield_osds_enable is defined
-    - pvc_shield_osds_cset is defined
-    - pvc_shield_osds_cset | selectattr('hostname', 'equalto', inventory_hostname) | list | count > 0
 
 - meta: flush_handlers

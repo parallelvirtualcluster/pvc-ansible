@@ -147,40 +147,30 @@ pvc_sriov_enable: False
 
 # CPU pinning configuration via cset
 # > ADVANCED TUNING: For most users, this is unnecessary and PVC will run fine with the default scheduling.
-# > These options can be set to maximize the CPU performance of the Ceph subsystem. Because Ceph OSD
-#   performance is heavily limited more by CPU than anything else, for users with a lot of relatively slow CPU
-#   cores, or for those looking to get maximum storage performance, tuning the pinning options here might
-#   provide noticeable benefits.
-# > This configuration makes use of the cset command and will dedicate a specific number of CPU cores to the
-#   Ceph OSD processes on each node. This is accomplished by using cset's shield mechanism to create a cgroup
-#   which will contain only Ceph OSD processes, while putting everything else onto the remaining CPUs.
-# > Avoid using this tuning if you have less than 8 total CPU cores (excluding SMT threads). Otherwise, you
-#   might not have enough CPU cores to properly run VMs, unless you are very careful with vCPU allocation.
-# > Like the 'pvc_nodes' dictionary, these options are set per-host, even if all hosts are identical. This
-#   is required to handle sitations where hosts might have different CPU topologies. Each host can have a
-#   specific set of CPUs that are included in the shield.
-# > Ensure that you know which CPU cores are "real" and which are SMT "threads". This can be obtained using
-#   the 'virsh capabilities' command and noting the 'siblings' entries for each CPU.
-# > Ensure you consider NUMA nodes when setting up this tuning. Generally speaking it is better to keep the
-#   OSD processes onto one NUMA node for simplicity; more advanced tuning is outside of the scope of this
-#   playbook.
-# > You should set a number of cores in the shield (along with their respective SMT threads) equal to the
-#   number of OSDs in the system. This can be adjusted later as needed. For instance, if you have 2 OSDs per
-#   node, and each node has a 10-core SMT-capable CPU, you would want to assign cores 0 and 1 (the first two
-#   real cores) and 10 and 11 (the SMT siblings of those cores in 'virsh capabilities') in the cset.
+#   Uncomment these options only for testing or if you are certain you meet the following conditions.
+# > These options will tune cpuset (installed by default) to limit Ceph OSDs to certain CPU cores, while
+#   simultaneously limiting other system tasks and VMs to the remaining CPU cores. In effect it dedicates the
+#   specified CPU cores to Ceph OSDs only to ensure those processes can have dedicated CPU time.
+# > Generally speaking, except in cases where extremely high random read throughput is required and in which
+#   the node(s) have a very large number of physical cores, this setting will not improve performance, and
+#   may in fact hurt performance. For more details please see the documentation.
+# > For optimal performance when using this setting, you should dedicate exactly 2 cores, and their
+#   respective SMT threads if applicable, to each OSD. For instance, with 2 OSDs, 4 real cores (and their
+#   corresponding SMT threads if applicable) should be specified. More cores has been seen to, in some cases
+#   drop performance further. For more details please see the documentation.
+# > Use the 'virsh capabilities' command to confim the exact CPU IDs (and SMT "siblings") for these lists.
 #
-# The shield mode is disabled by default and a commented out example configuration is shown.
 pvc_shield_osds_enable: False
 #pvc_shield_osds_cset:
 #  # This example host has 2x 6-core SMT-enabled CPUs; we want to use cores 0 (+SMT 12) and 2 (+SMT 14), which are
-#  # both on physical CPU 0, for 2x OSDs.
+#  # both on physical CPU 0, for 1x OSD.
 #  - hostname: pvchv1
 #    osd_cset:
 #      - 0
 #      - 2
 #      - 12
 #      - 14
-#  # These example hosts have 1x 8-core SMT-enabled CPUs; we want to use cores 0 (+SMT 8) and 1 (+SMT 9) for 2x OSDs.
+#  # These example hosts have 1x 8-core SMT-enabled CPUs; we want to use cores 0 (+SMT 8) and 1 (+SMT 9) for 1x OSD.
 #  - hostname: pvchv2
 #    osd_cset:
 #      - 0

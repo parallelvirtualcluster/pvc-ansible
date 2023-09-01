@@ -4,10 +4,16 @@
 
 # This script is designed to prepare the cpusets for use by Ceph OSDs, VMs, and other system resources.
 # Libvirt does not make this easy with any way to globally set its CPUs, so we must do this trickery.
+{% if pvc_shield_osds_cset is defined %}
 {% set cset_host = pvc_shield_osds_cset | selectattr('hostname', 'equalto', inventory_hostname) %}
 
 A_OSD_CPUS=( {{ cset_host[0]['osd_cset'] | join(' ') }} )
 A_SYS_CPUS=()
+{% else %}
+
+A_OSD_CPUS=()
+A_SYS_CPUS=()
+{% endif %}
 
 CPU_INFO="$( lscpu )"
 
@@ -41,7 +47,9 @@ for i in $( seq 0 $(( ${CPU_COUNT} - 1 )) ); do
     fi
 done
 
-if [[ $( cat /etc/default/ceph-osd-cpuset ) == "True" ]]; then
+{% raw %}
+if [[ $( cat /etc/default/ceph-osd-cpuset ) == "True" && ${#A_OSD_CPUS[@]} -gt 0 ]]; then
+{% endraw %}
     # Convert arrays into CSV
     OSD_MEMS="$( IFS=, ; echo "${A_OSD_MEMS[*]}" )"
     OSD_CPUS="$( IFS=, ; echo "${A_OSD_CPUS[*]}" )"
