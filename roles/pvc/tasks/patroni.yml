@@ -84,8 +84,7 @@
   with_items:
     - { src: "patroni/powerdns-schema.sql", dest: "/etc/postgresql/powerdns-schema.sql" }
 
-- name: set up PVC DNS database on first host
-  block:
+- block:
     - name: wait 15s for cluster to initialize
       pause:
         seconds: 15
