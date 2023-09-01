@@ -15,17 +15,6 @@
     - pvcd.yaml
   notify: restart pvcd
 
-- name: verify if cluster has been started
-  shell: "/usr/share/zookeeper/bin/zkCli.sh stat /nodes 2>&1 | grep -q 'Node does not exist'"
-  register: cluster_init
-  failed_when: no
-  run_once: yes
-
-- name: bootstrap a fresh cluster
-  shell: /usr/bin/pvc init
-  when: cluster_init.rc == 0
-  run_once: yes
-
 - name: stop and disable unneccessary services
   service:
     name: "{{ item }}"
@@ -34,8 +23,10 @@
   with_items:
     - pdns.service
 
-- include: remove_cluster_ips.yml
-  when: newhost.changed
+- name: bootstrap a fresh cluster
+  shell: /usr/bin/pvc init
+  when: bootstrap is defined and bootstrap
+  run_once: yes
 
 - name: start and enable services
   service:
@@ -46,3 +37,5 @@
     - pvc-flush.service
     - pvcd.service
     - pvcd.target
+
+- meta: flush_handlers

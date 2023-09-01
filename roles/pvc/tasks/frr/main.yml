@@ -21,3 +21,5 @@
     enabled: no
   with_items:
     - frr
+
+- meta: flush_handlers

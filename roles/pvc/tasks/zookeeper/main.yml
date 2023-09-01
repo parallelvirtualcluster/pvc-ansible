@@ -24,3 +24,5 @@
     enabled: no
   with_items:
     - zookeeper
+
+- meta: flush_handlers

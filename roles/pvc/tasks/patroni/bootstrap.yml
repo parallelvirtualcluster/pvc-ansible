@@ -1,0 +1,50 @@
+---
+- name: ensure patroni services are enabled and started on this host so it becomes header
+  service:
+    name: "{{ item }}.service"
+    state: started
+    enabled: yes
+  with_items:
+    - patroni
+
+- name: wait 15s for cluster to initialize
+  pause:
+    seconds: 15
+
+- block:
+    - name: create user for role
+      postgresql_user:
+        name: "{{ pvc_dns_database_user }}"
+        password: "{{ pvc_dns_database_password }}"
+        encrypted: yes
+        state: present
+        login_host: /run/postgresql
+  
+    - name: create database for role
+      postgresql_db:
+        name: "{{ pvc_dns_database_name }}"
+        owner: "{{ pvc_dns_database_user }}"
+        encoding: utf8
+        state: present
+        login_host: /run/postgresql
+  
+    - name: set user privs for role
+      postgresql_user:
+        name: "{{ pvc_dns_database_user }}"
+        db: "{{ pvc_dns_database_name }}"
+        priv: ALL
+        login_host: /run/postgresql
+  
+    - name: create extensions
+      postgresql_ext:
+        name: "{{ item }}"
+        db: "{{ pvc_dns_database_name }}"
+        login_host: /run/postgresql
+      with_items: "{{ extensions }}"
+      when: extensions is defined
+
+    - name: import dns database schema
+      command: "psql -U {{ pvc_dns_database_user }} -f /etc/postgresql/powerdns-schema.sql {{ pvc_dns_database_name }}"
+
+  become: yes
+  become_user: postgres

@@ -20,6 +20,10 @@
     - ceph-secret.xml
   notify: restart libvirtd
 
+- include: libvirt/bootstrap.yml
+  when: bootstrap is defined and bootstrap
+  run_once: yes
+
 - name: get ceph libvirt secret key
   command: ceph auth get-key client.libvirt
   register: libvirt_key
@@ -45,3 +49,5 @@
     enabled: no
   with_items:
     - libvirtd
+
+- meta: flush_handlers

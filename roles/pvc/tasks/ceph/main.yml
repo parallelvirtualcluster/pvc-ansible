@@ -1,0 +1,84 @@
+---
+- name: install packages
+  apt:
+    name:
+      - ceph-osd
+      - ceph-mds
+      - ceph-mon
+      - ceph-mgr
+      - radosgw
+      - libjemalloc2
+    state: latest
+
+- name: install sysctl tweaks
+  template:
+    src: ceph/sysctl.conf.j2
+    dest: /etc/sysctl.d/pvc-ceph.conf
+
+- name: activate sysctl tweaks
+  command: sysctl -p /etc/sysctl.d/pvc-ceph.conf
+
+- name: install user limits overrides
+  template:
+    src: ceph/limits.conf.j2
+    dest: /etc/security/limits.d/99-pvc-ceph.conf
+
+- name: install ceph default config
+  template:
+    src: ceph/default.conf.j2
+    dest: /etc/default/ceph
+
+- name: create ceph configuration directory
+  file:
+    dest: /etc/ceph
+    state: directory
+
+- include: ceph/bootstrap.yml
+  when: bootstrap is defined and bootstrap
+  run_once: yes
+
+- name: install configurations
+  copy:
+    src: ceph/{{ hostvars[inventory_hostname].group_names[0] }}/ceph/{{ item }}
+    dest: /etc/ceph/{{ item }}
+    owner: ceph
+    group: ceph
+    mode: 0640
+  with_items:
+    - ceph.conf
+    - ceph.mon.keyring
+    - ceph.client.admin.keyring
+    - ceph.osd.bootstrap.keyring
+    - monmap
+
+- name: create monitor data directory
+  file:
+    dest: /var/lib/ceph/mon/ceph-{{ ansible_hostname }}
+    state: directory
+    owner: ceph
+    group: ceph
+    mode: 0750
+  when: newhost is defined and newhost
+
+- name: populate monitor with map and keys
+  command: ceph-mon --mkfs -i {{ ansible_hostname }} --monmap /etc/ceph/monmap --keyring /etc/ceph/ceph.mon.keyring
+  become_user: ceph
+  when: newhost is defined and newhost
+
+- name: touch monitor done file
+  file:
+    dest: /var/lib/ceph/mon/ceph-{{ ansible_hostname }}/done
+    state: touch
+  become_user: ceph
+  when: newhost is defined and newhost
+
+- name: start and enable daemons
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  with_items:
+    - ceph-mon@{{ ansible_hostname }}
+    - ceph-mgr@{{ ansible_hostname }}
+
+- meta: flush_handlers

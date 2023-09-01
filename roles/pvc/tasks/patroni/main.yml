@@ -1,0 +1,85 @@
+---
+- name: install patroni packages via apt
+  apt:
+    name:
+      - python-psycopg2
+      - python3-kazoo
+      - patroni
+      - postgresql-11
+    state: latest
+    update-cache: yes
+
+- name: stop and disable postgresql
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  with_items:
+    - postgresql
+    - postgresql@11-main
+  when: newhost is defined and newhost
+
+- name: remove obsolete database directories
+  file:
+    dest: "{{ item }}"
+    state: absent
+  with_items:
+    - /etc/postgresql/11
+    - /var/lib/postgresql/11
+  when: newhost is defined and newhost
+
+- name: create patroni database directory
+  file:
+    dest: /var/lib/postgresql/patroni/pvc
+    state: directory
+    owner: postgres
+    mode: 0700
+  when: newhost is defined and newhost
+
+- name: install postgresql customization configuration file
+  template:
+    src: patroni/postgresql.pvc.conf.j2
+    dest: /etc/postgresql/postgresql.pvc.conf
+    owner: postgres
+    group: sudo
+    mode: 0640
+  notify: restart patroni
+
+- name: install patroni configuration file
+  template:
+    src: patroni/patroni.yml.j2
+    dest: /etc/patroni/config.yml
+    owner: postgres
+    group: postgres
+    mode: 0640
+  notify: restart patroni
+
+- name: install check_mk agent check
+  copy:
+    src: patroni/postgres
+    dest: /usr/lib/check_mk_agent/plugins/postgres
+    mode: 0755
+
+- name: install initial schema files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: postgres
+    group: sudo
+    mode: 0640
+  with_items:
+    - { src: "patroni/powerdns-schema.sql", dest: "/etc/postgresql/powerdns-schema.sql" }
+
+- include: patroni/bootstrap.yml
+  run_once: yes
+  when: bootstrap is defined and bootstrap
+
+- name: ensure patroni services are enabled and started
+  service:
+    name: "{{ item }}.service"
+    state: started
+    enabled: yes
+  with_items:
+    - patroni
+
+- meta: flush_handlers
