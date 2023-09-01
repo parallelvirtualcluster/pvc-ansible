@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# BLSE 2.0 bashrc file
+# PVC hypervisor bashrc file
 # {{ ansible_managed }}
 
 #
@@ -56,7 +56,7 @@ if [ -d ~/Scripts ]; then
 fi
 
 # Set editor to vim
-export EDITOR=/usr/bin/vim
+export EDITOR=$( which vim )
 
 # Force SCREEN to xterm due to Debian weirdness
 export SCREEN="xterm"
@@ -81,7 +81,8 @@ alias ll='ls -alh'
 alias la='ls -A'
 alias l='ls -lh'
 
-# Always-sudo commands, because fuck typing sudo all the time
+# Always-sudo commands
+# Some people may call these lazy; I call them convenient.
 alias service='sudo service'
 alias systemctl='sudo systemctl'
 alias journalctl='sudo journalctl'
@@ -90,9 +91,7 @@ alias apt='sudo apt'
 alias dpkg='sudo dpkg'
 alias find='sudo find'
 alias htop='sudo htop'
-alias powertop='sudo powertop'
 alias jnettop='sudo jnettop'
-alias wavemon='sudo wavemon'
 alias parted='sudo parted'
 alias fdisk='sudo fdisk'
 alias gdisk='sudo gdisk'
@@ -102,30 +101,11 @@ alias umount='sudo umount'
 alias virsh='sudo virsh -c qemu:///system'
 alias ceph='sudo ceph'
 alias rbd='sudo rbd'
-alias mysql='sudo mysql'
-alias zpool='sudo zpool'
-alias zfs='sudo zfs'
-alias crm='sudo crm'
 
 # Cool aliases
 alias cccp='sudo rsync -auv --progress'
-alias untmp='sudo umount /tmp/tmp.*{/*/*,/*,} 2>/dev/null'
-alias txz='tar -p --same-owner -I pxz'
-alias stxz='sudo tar -p --same-owner -I pxz'
 alias zkcli='sudo /usr/share/zookeeper/bin/zkCli.sh'
-alias hatop='sudo hatop -s /var/lib/haproxy/admin.sock'
-alias patronictl='sudo patronictl -c /etc/patroni/config.yml -d zookeeper://localhost:2181'
-alias repo='sudo reprepro -b /srv/debrepo'
-alias beet='sudo -u debian-deluged beet --config=/srv/deluged/config.beets/config.yaml'
-{% if 'mon' in group_names %}
-alias icli='sudo -u monitor icli --status-file /omd/sites/monitor/tmp/nagios/status.dat --config /omd/sites/monitor/var/nagios/objects.cache -z \!o'
-
-#
-# Show monitoring stats
-#
-
-icli
-{% endif %}
+alias patronictl='sudo -E patronictl -c /etc/patroni/config.yml -d zookeeper://localhost:2181'
 
 #
 # SOURCE OTHER SCRIPTS
