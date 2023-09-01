@@ -78,7 +78,7 @@
   with_items:
     - { src: "etc/apt/apt.conf.d/10norecommends.j2", dest: "/etc/apt/apt.conf.d/10norecommends" }
     - { src: "etc/apt/preferences.d/pins.j2", dest: "/etc/apt/preferences.d/pins" }
-    - { src: "etc/apt/sources.list.{{ ansible_machine }}.{{ ansible_distribution_release }}.j2", dest: "/etc/apt/sources.list" }
+    - { src: "etc/apt/sources.list.{{ ansible_machine }}.{{ ansible_lsb.codename }}.j2", dest: "/etc/apt/sources.list" }
   tags: base-apt
 
 - name: add key for bonilan repo
@@ -245,13 +245,6 @@
   loop_control:
     loop_var: network
   tags: base-network
-
-# capabilities
-- name: set ping capabilities
-  capabilities:
-    path: /bin/ping
-    capability: cap_net_raw=ep
-  tags: base-system
 
 # locale
 - name: install locale config files
