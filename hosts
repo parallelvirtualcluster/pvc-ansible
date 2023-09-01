@@ -1,9 +1,0 @@
-# PVC hosts file
-
-[sites:children]
-#default
-
-#[default]
-#pvchv1
-#pvchv2
-#pvchv3
