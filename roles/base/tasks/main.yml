@@ -854,6 +854,7 @@
   with_subelements:
     - "{{ admin_users }}"
     - removed
+  ignore_errors: yes
   tags:
     - users
     - user-deploy
