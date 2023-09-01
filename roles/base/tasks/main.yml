@@ -230,6 +230,7 @@
       - xz-utils
       - haveged
       - ipmitool
+      - grub-efi
       - linux-image-amd64
       - linux-headers-amd64
   tags: base-packages
@@ -571,6 +572,14 @@
     - "admin"
     - "pvc"
   tags: base-ipmi
+
+# GRUB bootloader
+- name: install GRUB configuration
+  template:
+    src: etc/default/grub.j2
+    dest: /etc/default/grub
+  notify:
+    - update grub
 
 #
 # Configure users

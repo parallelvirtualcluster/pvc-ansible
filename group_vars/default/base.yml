@@ -9,7 +9,7 @@ timezone_location: Canada/Eastern
 # Cluster domain for node FQDNs
 local_domain: upstream.local
 
-# Cluster hardware model, used in pvc_user_configuration below
+# Cluster hardware model, used in pvc_user_configuration and grub_configuration below
 cluster_hardware: default
 
 # Debian package repository URL
@@ -20,6 +20,14 @@ debian_pvc_repository: https://repo.bonifacelabs.net/debian
 # Root user password
 # > Use pwgen to generate
 root_password: ""
+
+# GRUB configuration
+# > Generally this is a good default, though some systems use console 1 for serial-over-IPMI
+#   consoles, so set this based on your actual hardware.
+grub:
+  serial_console:
+    "default":
+      console: 0
 
 # IPMI configuration
 # > For the "pvc" user password, use pwgen to generate.

@@ -34,3 +34,6 @@
 
 - name: newaliases
   command: newaliases
+
+- name: update grub
+  command: update-grub
