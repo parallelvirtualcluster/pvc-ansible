@@ -7,10 +7,10 @@ set -o errexit
 
 TMPFILE=$(mktemp)
 TGTFILE=/run/pvc-motd.dynamic
-DEBVER="[$( grep 'PRETTY_NAME=' /etc/os-release | awk -F'"' '{ print $2 }' )]"
+DEBVER="$( grep 'PRETTY_NAME=' /etc/os-release | awk -F'"' '{ print $2 }' )"
 
 echo >> $TMPFILE
-echo "\033[01;34mParallel Virtual Cluster \033[01;36m${DEBVER}\033[0m" >> $TMPFILE
+echo "\033[01;34mParallel Virtual Cluster \033[01;36m(${DEBVER})\033[0m" >> $TMPFILE
 echo -n "> \033[01;32m$(hostname)\033[0m" >> $TMPFILE
 if test -f /etc/hostdesc; then
     echo " - $( cat /etc/hostdesc )" >> $TMPFILE
