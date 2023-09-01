@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 # Update dynamic MOTD file
 # {{ ansible_managed }}
@@ -10,19 +10,23 @@ TGTFILE=/run/pvc-motd.dynamic
 DEBVER="$( grep 'PRETTY_NAME=' /etc/os-release | awk -F'"' '{ print $2 }' )"
 
 echo >> $TMPFILE
-echo "\033[01;34mParallel Virtual Cluster \033[01;36m(${DEBVER})\033[0m" >> $TMPFILE
-echo -n "> \033[01;32m$(hostname)\033[0m" >> $TMPFILE
-if test -f /etc/hostdesc; then
-    echo " - $( cat /etc/hostdesc )" >> $TMPFILE
-else
-    echo >> $TMPFILE
-fi
+echo -e "\033[01;34mParallel Virtual Cluster \033[01;36m(${DEBVER})\033[0m" >> $TMPFILE
+echo -e "> \033[01;32m$(hostname)\033[0m - \033[1;37mPVC {% if is_coordinator %}coordinator{% else %}hypervisor{% endif %} node\033[0m" >> $TMPFILE
 # Get machine information
-MANUFACTURER="$( /usr/sbin/dmidecode | grep -A1 'Chassis Information' | tail -1 | awk -F':' '{print $2}' | tr -s ' ' | xargs echo -n )"
-if [ -z "${MANUFACTURER}" ]; then
-    MANUFACTURER='Unknown'
+HARDWARE_DETAIL="$( /usr/sbin/dmidecode | grep -A7 'System Information' )"
+HARDWARE_VENDOR="$( grep 'Manufacturer:' <<<"${HARDWARE_DETAIL}" | sed 's/Manufacturer: //; s/\s*$//g; s/^\s*//g' )"
+if [[ -z ${HARDWARE_VENDOR} ]]; then
+    HARDWARE_VENDOR="Unknown"
 fi
-echo "> \033[1;37mPVC {% if is_coordinator %}coordinator{% else %}hypervisor{% endif %} node\033[0m on \033[1;31m${MANUFACTURER}\033[0m hardware" >> $TMPFILE
-echo "> $(/bin/uname -srvmo)" >> $TMPFILE
+HARDWARE_MODEL="$( grep 'Product Name:' <<<"${HARDWARE_DETAIL}" | sed 's/Product Name: //; s/\s*$//g; s/^\s*//g' )"
+if [[ -z ${HARDWARE_MODEL} ]]; then
+    HARDWARE_MODEL="Unknown"
+fi
+HARDWARE_SERIAL="$( grep 'Serial Number:' <<<"${HARDWARE_DETAIL}" | sed 's/Serial Number: //; s/\s*$//g; s/^\s*//g' )"
+if [[ -z ${HARDWARE_SERIAL} ]]; then
+    HARDWARE_SERIAL="Unknown"
+fi
+echo -e "> Hardware Vendor: \033[1;31m${HARDWARE_VENDOR}\033[0m Model: \033[1;31m${HARDWARE_MODEL}\033[0m Serial: \033[1;31m${HARDWARE_SERIAL}\033[0m" >> $TMPFILE
+echo -e "> $(/bin/uname -srvmo)" >> $TMPFILE
 
 mv $TMPFILE $TGTFILE || rm $TMPFILE
