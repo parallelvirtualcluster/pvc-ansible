@@ -19,6 +19,11 @@ logrotate_interval: daily
 # Root email name (usually "root")
 username_email_root: root
 
+# Hosts entries
+hosts:
+  - name: test
+    ip: 127.0.0.1
+
 # Administrative shell users for the cluster
 admin_users:
   - name: "myuser"
