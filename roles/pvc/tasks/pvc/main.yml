@@ -10,7 +10,7 @@
       - ethtool
       - jq
     state: latest
-  when: bootstrap is defined and bootstrap
+  when: newhost is defined and newhost
 
 - name: install pvc node daemon configuration
   template:
@@ -61,4 +61,4 @@
     enabled: yes
   with_items:
     - pvcnoded
-  when: bootstrap is not defined or not bootstrap
+  when: newhost is defined and newhost
