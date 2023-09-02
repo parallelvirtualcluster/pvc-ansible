@@ -111,6 +111,11 @@
   run_once: yes
   ignore_errors: yes
 
+- name: set pg_autoscale_mode disabled
+  command: ceph config set global osd_pool_default_pg_autoscale_mode off
+  run_once: yes
+  ignore_errors: yes
+
 - name: create mgr auth keyring
   command: ceph auth get-or-create mgr.{{ ansible_hostname }} mon 'allow profile mgr' osd 'allow *' mds 'allow *' --out-file /var/lib/ceph/mgr/ceph-{{ ansible_hostname }}/keyring
   become_user: ceph
