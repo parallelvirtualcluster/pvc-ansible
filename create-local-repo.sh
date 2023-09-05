@@ -44,10 +44,12 @@ set -o errexit
 
 pushd pvc-ansible
 git pull --rebase
+git checkout master
 popd
 
 pushd pvc-installer
 git pull --rebase
+git checkout master
 popd
 
 git add pvc-ansible pvc-installer
