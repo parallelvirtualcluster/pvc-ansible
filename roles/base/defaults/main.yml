@@ -3,7 +3,7 @@ debian_main_repository: http://debian.mirror.rafal.ca/debian
 debian_security_repository: http://security.debian.org
 
 debian_pvc_repository: https://repo.parallelvirtualcluster.org/debian
-debian_pvc_signing_key_path: https://repo.parallelvirtualcluster.org/debian/bonifacelabs_signing_key.pub
+debian_pvc_signing_key_path: https://repo.parallelvirtualcluster.org/debian/pvc.pub
 debian_pvc_signing_key_id: 83D07192314835D4
 
 recursive_dns_servers:
