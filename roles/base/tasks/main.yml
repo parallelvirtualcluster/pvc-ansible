@@ -1069,4 +1069,11 @@
     - ssh
   tags: base-services
 
+#
+# Cleanup
+#
+
+- name: run dpkg-cleanup.sh script
+  command: /usr/local/sbin/dpkg-cleanup.sh
+
 - meta: flush_handlers
