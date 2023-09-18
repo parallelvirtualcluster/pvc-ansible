@@ -1,6 +1,6 @@
 ---
 
-- include: update-pvc-daemons.yml
+- import_playbook: update-pvc-daemons.yml
 
 - hosts: all
   remote_user: deploy
