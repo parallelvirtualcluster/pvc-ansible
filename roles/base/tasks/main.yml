@@ -296,6 +296,12 @@
   until: apt_res is success
   tags: base-packages
 
+- name: install Intel-specific microcode package
+  apt:
+    name:
+      - intel-microcode
+  when: "'GenuineIntel' in ansible_processor"
+
 - name: install cleanup scripts
   template:
     src: "{{ item.src }}"
