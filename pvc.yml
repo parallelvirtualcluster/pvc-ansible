@@ -2,6 +2,7 @@
 - hosts: all
   remote_user: deploy
   become: yes
+  any_errors_fatal: yes
   roles:
     - name: base
       tags: base
