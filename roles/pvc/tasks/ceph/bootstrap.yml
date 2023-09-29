@@ -1,6 +1,6 @@
 ---
 - name: generate cluster FSID
-  command: uuidgen
+  command: /usr/bin/uuidgen
   register: fsid_raw
   delegate_to: localhost
   become: no
