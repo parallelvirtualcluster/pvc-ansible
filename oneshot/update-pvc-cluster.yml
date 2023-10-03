@@ -59,10 +59,22 @@
   gather_facts: yes
   serial: 1
   tasks:
-    - name: check freshness
-      command: /usr/sbin/needrestart -p
-      register: freshness
-      changed_when: freshness.rc >= 1 and freshness.rc < 3
+    - name: check freshness (kernel)
+      command: /usr/sbin/needrestart -p -k
+      register: freshness_kernel
+      changed_when: freshness_kernel.rc >= 1 and freshness_kernel.rc < 3
+      failed_when: false
+    
+    - name: check freshness (libraries)
+      command: /usr/sbin/needrestart -p -l
+      register: freshness_libraries
+      changed_when: freshness_libraries.rc >= 1 and freshness_libraries.rc < 3
+      failed_when: false
+    
+    - name: check freshness (microcode)
+      command: /usr/sbin/needrestart -p -w
+      register: freshness_microcode
+      changed_when: freshness_microcode.rc >= 1 and freshness_microcode.rc < 3
       failed_when: false
     
     - name: restart system cleanly
@@ -205,7 +217,7 @@
 
         - name: reset any systemd failures
           command: systemctl reset-failed
-      when: freshness.changed
+      when: freshness_kernel.changed or freshness_libraries.changed or freshness_microcode.changed
 
     - name: wait 30 seconds for system to stabilize
       pause:
