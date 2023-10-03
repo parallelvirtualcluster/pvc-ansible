@@ -302,6 +302,12 @@
       - intel-microcode
   when: "'GenuineIntel' in ansible_processor"
 
+- name: install AMD-specific microcode package
+  apt:
+    name:
+      - amd64-microcode
+  when: "'AuthenticAMD' in ansible_processor"
+
 - name: install cleanup scripts
   template:
     src: "{{ item.src }}"
