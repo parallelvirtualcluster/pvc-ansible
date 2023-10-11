@@ -35,12 +35,6 @@
         autoclean: yes
         upgrade: full
 
-    - name: clean up obsolete kernels
-      command: /usr/local/sbin/kernel-cleanup.sh
-
-    - name: clean up obsolete packages
-      command: /usr/local/sbin/dpkg-cleanup.sh
-
     - name: clean apt archives
       file:
         dest: /var/cache/apt/archives
@@ -224,6 +218,12 @@
         seconds: 30
       become: no
       connection: local
+
+    - name: clean up obsolete kernels
+      command: /usr/local/sbin/kernel-cleanup.sh
+
+    - name: clean up obsolete packages
+      command: /usr/local/sbin/dpkg-cleanup.sh
 
 - hosts: all
   remote_user: deploy
