@@ -4,7 +4,7 @@
 # {{ ansible_managed }}
 
 echo "<<<zookeeper>>>"
-zk_stat=$( /usr/share/zookeeper/bin/zkCli.sh -server $(hostname -s):2181 -q get /primary_node 2>/dev/null )
+zk_stat=$( /usr/share/zookeeper/bin/zkCli.sh -server $(hostname -s):2181 -q get /zookeeper 2>/dev/null )
 zk_retcode=$?
 if [[ ${zk_retcode} -eq 0 ]]; then
     echo "Connection succeeded"
