@@ -140,6 +140,12 @@
           ignore_errors: true
           with_items: "{{ osd_services.stdout_lines }}"
 
+        - name: wait 30 seconds for system to stabilize
+          pause:
+            seconds: 30
+          become: no
+          connection: local
+
         - name: stop Ceph Monitor daemon cleanly
           service:
             name: "ceph-mon@{{ ansible_hostname }}"
