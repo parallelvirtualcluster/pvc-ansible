@@ -1,0 +1,9 @@
+[Unit]
+Description=[Timer] PVC VM autobackup (normal)
+
+[Timer]
+Unit=pvc-autobackup-normal.service
+OnCalendar={{ pvc_autobackup.schedule.normal_time }}
+
+[Install]
+WantedBy=pvc.target

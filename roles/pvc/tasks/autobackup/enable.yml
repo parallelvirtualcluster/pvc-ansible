@@ -1,0 +1,47 @@
+---
+
+- name: install required automount packages
+  apt:
+    name: "{{ pvc_autobackup.auto_mount.packages }}"
+    state: present
+  when:
+    - pvc_autobackup.auto_mount.enabled is defined and pvc_autobackup.auto_mount.enabled
+    - pvc_autobackup.auto_mount.packages is defined and pvc_autobackup.auto_mount.packages
+
+- name: install autobackup YAML configuration
+  template:
+    src: "autobackup/autobackup.yaml.j2"
+    dest: "/etc/pvc/autobackup.yaml"
+
+- name: install autobackup normal systemd units
+  template:
+    src: "autobackup/pvc-autobackup-normal.{{ item }}.j2"
+    dest: "/etc/systemd/system/pvc-autobackup-normal.{{ item }}"
+  loop:
+    - timer
+    - service
+  register: systemd_normal
+
+- name: install autobackup forced-full systemd units
+  template:
+    src: "autobackup/pvc-autobackup-full.{{ item }}.j2"
+    dest: "/etc/systemd/system/pvc-autobackup-full.{{ item }}"
+  loop:
+    - timer
+    - service
+  when: pvc_autobackup.schedule.forced_full_time is defined and pvc_autobackup.schedule.forced_full_time
+  register: systemd_full
+
+- name: reload systemd to apply changes
+  command: systemctl daemon-reload
+  when: systemd_normal.changed or systemd_full.changed
+
+- name: enable timer units
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - pvc-autobackup-normal.timer
+    - pvc-autobackup-full.timer
+

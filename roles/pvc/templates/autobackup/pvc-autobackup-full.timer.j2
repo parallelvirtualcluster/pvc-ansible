@@ -1,0 +1,9 @@
+[Unit]
+Description=[Timer] PVC VM autobackup (forced-full)
+
+[Timer]
+Unit=pvc-autobackup-full.service
+OnCalendar={{ pvc_autobackup.schedule.forced_full_time }}
+
+[Install]
+WantedBy=pvc.target

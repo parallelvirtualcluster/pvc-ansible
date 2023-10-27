@@ -1,0 +1,8 @@
+[Unit]
+Description=[Cron] PVC VM autobackup (forced-full)
+
+[Service]
+Type=oneshot
+IgnoreSIGPIPE=false
+KillMode=process
+ExecStart=/usr/bin/pvc --quiet vm autobackup --cron --force-full

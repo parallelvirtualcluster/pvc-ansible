@@ -188,6 +188,94 @@ cpu_tuning:
     system_cpus: 2      # Set based on your actual system configuration (min 2, increase on coordinators if many nodes)
     osd_cpus: 2         # Set based on your actual number of OSDs (for optimal performance, 2 per OSD)
 
+# PVC VM autobackups
+# > PVC supports autobackups, which can perform automatic snapshot-level VM backups of selected
+#   virtual machines based on tags. The backups are fully managed on a consistent schedule, and
+#   include both full and incremental varieties.
+# > To solve the shared storage issue and ensure backups are taken off-cluster, automaticmounting
+#   of remote filesystems is supported by autobackup.
+pvc_autobackup:
+  # Enable or disable autobackup
+  # > If disabled, no timers or "/etc/pvc/autobackup.yaml" configuration will be installed, and any
+  #   existing timers or configuration will be REMOVED on each run (even if manually created).
+  # > Since autobackup is an integrated PVC CLI feature, the command will always be available regardless
+  #   of this setting, but without this option enabled, the lack of a "/etc/pvc/autobackup.yaml" will
+  #   prevent its use.
+  enabled: no
+  # Set the backup root path and (optional) suffix
+  # > This directory will be used for autobackups, optionally suffixed with the suffix if it is present
+  # > If remote mounting is enabled, the remote filesystem will be mounted at the root path; if it is
+  #   not enabled, there must be a valid large(!) filesystem mounted on all coordinator nodes at this
+  #   path.
+  # > The suffix can be used to allow a single backup root path to back up multiple clusters without
+  #   conflicts should those clusters share VM names. It is optional unless this matches your situation.
+  # > The path "/tmp/backups" is usually recommended for remote mounting
+  # > NOTE: If you specify it, the suffix must begin with a '/', but is relative to the root path!
+  backup_root_path:   "/tmp/backups"
+  backup_root_suffix: "/cluster1"
+  # Set the VM tag(s) which will be selected for autobackup
+  # > Autobackup selects VMs based on their tags. If a VM has a tag present in this list, it will be
+  #   selected for autobackup at runtime; if not it will be ignored.
+  # > Usually, the tag "autobackup" here is sufficient; the administrator should then add this tag
+  #   to any VM(s) they want to use autobackups. However, any tag may be specified to keep the tag list
+  #   cleaner and more focused, should the administrator choose to.
+  backup_tags:
+    - autobackup
+  # Autobackup scheduling
+  schedule:
+    # Backups are performed at regular intervals via a systemd timer
+    # > Optionally, forced-full backups can also be specified, which ensures consistent rotation
+    #   between VMs regardless of when they are added; if forced_full_time is empty or missing, this
+    #   feature is disabled
+    # > This default schedule performs a (forced) full backup every Monday at midnight, then normal backups
+    #   every other day at midnight (these may be full or incremental depending on the options below
+    # > These options use a systemd timer date string; see "man systemd.time" for details
+    normal_time:      "Tue..Sun *-*-* 0:0:00"
+    forced_full_time: "Mon *-*-* 0:0:00"
+    # The interval between full backups determines which backups are full and which are incrementals
+    # > When a backup is run, if there are this many (inclusive) backups since the last full backup,
+    #   then a new full backup is taken and rotation occurs; otherwise, an incremental backup is taken
+    # > For example, a value of 1 means every backup is a full backup; a value of 2 means every other
+    #   bakcup is a full backup; a value of 7 means every 7th backup is a full backup (i.e. once per week
+    #   with a daily backup time).
+    full_interval: 7
+    # The retention count specifies how many full backups should be kept
+    # > Retention cleanup is run after each full backup, and thus, that backup is counted in this number
+    # > For example, a value of 2 means that there will always be at least 2 full backups. When a new
+    #   full backup is taken, the oldest (i.e. 3rd) full backup is removed.
+    # > When a full backup is removed, all incremental backups with that full backup as their parent are
+    #   also removed.
+    # > Thus, this schedule combined with a full_interval of 7 ensures there is always 2 full weekly backups,
+    #   plus at least 1 full week's worth of incremental backups.
+    full_retention: 2
+  # Configure automatic mounting support
+  # > PVC autobackup features the ability to automatically and dynamically mount and unmount remote
+  #   filesystems, or, indeed, perform any arbitrary pre- or post-run tasks, using a set of arbitrary
+  #   commands
+  # > Automatic mountoing is optional if you choose to use a static mount on all PVC coordinators
+  # > While the examples here show absolute paths, that is not required; they will run with the $PATH of the
+  #   executing environment (either the "pvc" command on a CLI or a cron/systemd timer)
+  # > A "{backup_root_path}" f-string/str.format type variable MAY be present in any cmds string to represent
+  #   the above configured root backup path, and is which is interpolated at runtime
+  # > If multiple commands are given, they will be executed in the order given; if no commands are given,
+  #   nothing is executed, but the keys MUST be present
+  auto_mount:
+    # Enable or disable automatic mounting
+    enabled: no
+    # These Debian packages will be automatically installed if automatic mounting is enabled
+    packages:
+      # This example installs nfs-common, required for NFS mounts
+      #- nfs-common
+    # These commands are executed at the start of the backup run and should mount a filesystem or otherwise
+    # prepare the system for the backups
+    mount_cmds:
+      # This example shows an NFS mount leveraging the backup_root_path variable
+      #- "/usr/sbin/mount.nfs -o nfsvers=3 10.0.0.10:/backups {backup_root_path}"
+    # These commands are executed at the end of the backup run and should unmount a filesystem
+    unmount_cmds:
+      # This example shows a generic umount leveraging the backup_root_path variable
+      #- "/usr/bin/umount {backup_root_path}"
+
 # Configuration file networks
 # > Taken from base.yml's configuration; DO NOT MODIFY THIS SECTION.
 pvc_upstream_device: "{{ networks['upstream']['device'] }}"

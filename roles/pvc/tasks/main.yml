@@ -56,6 +56,11 @@
 - include: pvc/main.yml
   tags: pvc-daemon
 
+# Install PVC autobackup
+- include: autobackup/main.yml
+  tags: pvc-autobackup
+  when: pvc_autobackup is defined
+
 # Install CPU tuning
 - include: cputuning/main.yml
   tags: pvc-cputuning

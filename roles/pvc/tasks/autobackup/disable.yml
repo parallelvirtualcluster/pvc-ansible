@@ -1,0 +1,27 @@
+---
+
+- name: disable timer units
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop:
+    - pvc-autobackup-normal.timer
+    - pvc-autobackup-full.timer
+
+- name: remove autobackup configurations
+  file:
+    dest: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/pvc/autobackup.yaml
+    - /etc/systemd/system/pvc-autobackup-normal.timer
+    - /etc/systemd/system/pvc-autobackup-normal.service
+    - /etc/systemd/system/pvc-autobackup-full.timer
+    - /etc/systemd/system/pvc-autobackup-full.service
+  register: systemd
+  ignore_errors: yes
+
+- name: reload systemd to apply changes
+  command: systemctl daemon-reload
+  when: systemd.changed
