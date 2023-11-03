@@ -128,6 +128,21 @@
     src: /etc/ceph/ceph.osd.bootstrap.keyring
     state: link
 
+- name: create mgr override systemd directory
+  file:
+    dest: /etc/systemd/system/ceph-mgr@.service.d
+    state: directory
+
+- name: install mgr restart override systemd settings
+  template:
+    src: ceph/restart.conf.j2
+    dest: /etc/systemd/system/ceph-mgr@.service.d/restart.conf
+  register: systemd
+
+- name: systemctl daemon-reload when files changed
+  command: systemctl daemon-reload
+  when: systemd.changed
+
 - name: start but disable daemons
   service:
     name: "{{ item }}"
