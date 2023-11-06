@@ -21,6 +21,12 @@
     state: restarted
   ignore_errors: yes
 
+- name: restart keydb
+  service:
+    name: keydb-server
+    state: restarted
+  ignore_errors: yes
+
 # Restart services one-at-a-time
 # Ideally, this would be accomplished by a serial=1, but Ansible doesn't support that and
 # likely never will. Instead, we just run the service restart manually, waiting X seconds

@@ -45,6 +45,10 @@
   tags: pvc-patroni
   when: is_coordinator
 
+- include: keydb/main.yml
+  tags: pvc-keydb
+  when: is_coordinator
+
 # Install core services
 - include: libvirt/main.yml
   tags: pvc-libvirt
