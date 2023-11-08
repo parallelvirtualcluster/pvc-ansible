@@ -271,10 +271,14 @@ pvc_autobackup:
     mount_cmds:
       # This example shows an NFS mount leveraging the backup_root_path variable
       #- "/usr/sbin/mount.nfs -o nfsvers=3 10.0.0.10:/backups {backup_root_path}"
+      # This example shows an SSHFS mount leveraging the backup_root_path variable
+      #- "/usr/bin/sshfs user@hostname:/path {backup_root_path} -o default_permissions -o sshfs_sync -o IdentityFile=/path/to/id_rsa"
     # These commands are executed at the end of the backup run and should unmount a filesystem
     unmount_cmds:
       # This example shows a generic umount leveraging the backup_root_path variable
       #- "/usr/bin/umount {backup_root_path}"
+      # This example shows an fusermount3 unmount (e.g. for SSHFS) leveraging the backup_root_path variable
+      #- "/usr/bin/fusermount3 -u {backup_root_path}"
 
 # Configuration file networks
 # > Taken from base.yml's configuration; DO NOT MODIFY THIS SECTION.
