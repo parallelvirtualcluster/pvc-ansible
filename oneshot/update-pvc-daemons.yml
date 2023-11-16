@@ -58,7 +58,7 @@
             state: restarted
             enabled: yes
           with_items:
-            - pvcapid-worker
+            - pvcworkerd
             - pvcnoded
 
         - name: wait 15 seconds for system to stabilize
@@ -76,7 +76,7 @@
           when: ansible_facts.services[item] is not defined or ansible_facts.services[item]["state"] != "running"
           with_items:
             - pvcnoded.service
-            - pvcapid-worker.service
+            - pvcworkerd.service
 
         - name: reset any systemd failures
           command: systemctl reset-failed

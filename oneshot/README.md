@@ -54,7 +54,7 @@ For each host in the cluster sequentially, do:
 
 ## `upgrade-pvc-daemons.yml`
 
-This playbook performs a sequential upgrade of the PVC software daemons via apt on all nodes in a PVC cluster. This is a less invasive update process than the `update-pvc-cluster.yml` playbook as it does not flush or reboot the nodes, but does restart all PVC daemons (`pvcnoded`, `pvcapid`, and `pvcapid-worker`).
+This playbook performs a sequential upgrade of the PVC software daemons via apt on all nodes in a PVC cluster. This is a less invasive update process than the `update-pvc-cluster.yml` playbook as it does not flush or reboot the nodes, but does restart all PVC daemons (`pvcnoded`, `pvcapid`, and `pvcworkerd`).
 
 ### Running the Playbook
 
@@ -84,7 +84,7 @@ For each node in the cluster sequentially, do:
 
 1. Secondary the node, then wait 30 seconds
 
-1. Restart both active PVC daemons (`pvcapid-worker`, `pvcnoded`), then wait 60 seconds; since the node is not the primary coordinator, `pvcapid` will not be running
+1. Restart both active PVC daemons (`pvcworkerd`, `pvcnoded`), then wait 60 seconds; since the node is not the primary coordinator, `pvcapid` will not be running
 
 1. Verify daemons are running
 
