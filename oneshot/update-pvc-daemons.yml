@@ -39,7 +39,11 @@
       file:
         dest: /var/cache/apt/archives
         state: absent
-  
+ 
+    - name: clean pycaches
+      command: 'find /usr/share/pvc -name "__pycache__" -exec rm -r {} \;'
+      ignore_errors: true
+
     - name: restart daemons cleanly
       block:
         - name: secondary node
