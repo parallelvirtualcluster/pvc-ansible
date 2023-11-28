@@ -1,0 +1,188 @@
+---
+# PVC system configuration
+# {{ ansible_managed }}
+
+path:
+  plugin_directory: "/usr/share/pvc/plugins"
+  dynamic_directory: "/run/pvc"
+  system_log_directory: "/var/log/pvc"
+  console_log_directory: "/var/log/libvirt"
+  ceph_directory: "/etc/ceph"
+
+subsystem:
+  enable_hypervisor: yes
+  enable_networking: yes
+  enable_storage: yes
+  enable_worker: yes
+  enable_api: yes
+
+cluster:
+  name: {{ cluster_group }}
+  all_nodes:
+{% for node in pvc_nodes %}
+    - {{ node.hostname }}
+{% endfor %}
+  coordinator_nodes:
+{% for node in pvc_nodes if node.is_coordinator %}
+    - {{ node.hostname }}
+{% endfor %}
+  networks:
+    upstream:
+      domain: "{{ pvc_upstream_domain }}"
+      device: {{ pvc_upstream_device }}
+      mtu: {{ pvc_upstream_mtu }}
+      ipv4:
+        netmask: {{ pvc_upstream_netmask }}
+        network_address: {{ pvc_upstream_subnet }}
+        floating_address: {{ pvc_upstream_floatingip }}
+        gateway_address: {{ pvc_upstream_gatewayip }}
+{% set _node = namespace(upstream_ip="by-id") %}
+{% for node in pvc_nodes if node.hostname == this_node %}
+{% if node.upstream_ip is defined and node.upstream_ip %}
+{% set _node.upstream_ip = node.upstream_ip %}
+{% endif %}
+{% endfor %}
+      node_ip_selection: {{ _node.upstream_ip }}
+    cluster:
+      domain: "{{ pvc_cluster_domain }}"
+      device: {{ pvc_cluster_device }}
+      mtu: {{ pvc_cluster_mtu }}
+      ipv4:
+        netmask: {{ pvc_cluster_netmask }}
+        network_address: {{ pvc_cluster_subnet }}
+        floating_address: {{ pvc_cluster_floatingip }}
+{% set _node = namespace(cluster_ip="by-id") %}
+{% for node in pvc_nodes if node.hostname == this_node %}
+{% if node.cluster_ip is defined and node.cluster_ip %}
+{% set _node.cluster_ip = node.cluster_ip %}
+{% endif %}
+{% endfor %}
+      node_ip_selection: {{ _node.cluster_ip }}
+    storage:
+      domain: "{{ pvc_storage_domain }}"
+      device: {{ pvc_storage_device }}
+      mtu: {{ pvc_storage_mtu }}
+      ipv4:
+        netmask: {{ pvc_storage_netmask }}
+        network_address: {{ pvc_storage_subnet }}
+        floating_address: {{ pvc_storage_floatingip }}
+{% set _node = namespace(storage_ip="by-id") %}
+{% for node in pvc_nodes if node.hostname == this_node %}
+{% if node.storage_ip is defined and node.storage_ip %}
+{% set _node.storage_ip = node.storage_ip %}
+{% endif %}
+{% endfor %}
+      node_ip_selection: {{ _node.storage_ip }}
+
+database:
+  zookeeper:
+    port: 2181
+  keydb:
+    port: 6379
+    hostname: {{ pvc_cluster_floatingip }}
+    path: "/0"
+  postgres:
+    port: 5432
+    hostname: {{ pvc_cluster_floatingip }}
+    credentials:
+      api:
+        database: "{{ pvc_api_database_name }}"
+        username: "{{ pvc_api_database_user }}"
+        password: "{{ pvc_api_database_password }}"
+      dns:
+        database: "{{ pvc_dns_database_name }}"
+        username: "{{ pvc_dns_database_user }}"
+        password: "{{ pvc_dns_database_password }}"
+
+timer:
+  vm_shutdown_timeout: {{ pvc_vm_shutdown_timeout if pvc_vm_shutdown_timeout is defined and pvc_vm_shutdown_timeout else "180"}}
+  keepalive_interval: {{ pvc_keepalive_interval if pvc_keepalive_interval is defined and pvc_keepalive_interval else "5" }}
+  monitoring_interval: {{ pvc_monitoring_interval if pvc_monitoring_interval is defined and pvc_monitoring_interval else "60" }}
+
+fencing:
+  disable_on_ipmi_failure: {{ pvc_disable_fencing_on_ipmi_failure if pvc_disable_fencing_on_ipmi_failure is defined else "no" }}
+  intervals:
+    fence_intervals: {{ pvc_fence_intervals if pvc_fence_intervals is defined and pvc_fence_intervals else "6" }}
+    suicide_intervals: {{ pvc_suicide_intervals if pvc_suicide_intervals is defined and pvc_suicide_intervals else "0" }}
+  actions:
+    successful_fence: {{ pvc_fence_successful_action if pvc_fence_successful_action is defined and pvc_fence_successful_action else "migrate" }}
+    failed_fence: {{ pvc_fence_failed_action if pvc_fence_failed_action is defined and pvc_fence_failed_action else "none" }}
+  ipmi:
+    hostname: "{% for node in pvc_nodes if node.hostname == this_node %}{{ node.ipmi_host }}{% endfor %}"
+    username: "{% for node in pvc_nodes if node.hostname == this_node %}{{ node.ipmi_user }}{% endfor %}"
+    password: "{% for node in pvc_nodes if node.hostname == this_node %}{{ node.ipmi_password }}{% endfor %}"
+
+migration:
+  target_selector: {{ pvc_migrate_target_selector if pvc_migrate_target_selector is defined and pvc_migrate_target_selector else "mem" }}
+
+logging:
+  debug_logging: {{ "yes" if pvc_log_debug is defined and pvc_log_debug else "no" }}
+  file_logging: {{ "no" if pvc_log_to_file is defined and not pvc_log_to_file else "yes" }}
+  stdout_logging: {{ "no" if pvc_log_to_stdout is defined and not pvc_log_to_stdout else "yes" }}
+  zookeeper_logging: {{ "no" if pvc_log_to_zookeeper is defined and not pvc_log_to_zookeeper else "yes" }}
+  log_colours: {{ "no" if pvc_log_colours is defined and not pvc_log_colours else "yes" }}
+  log_dates: {{ "no" if pvc_log_dates is defined and not pvc_log_dates else "yes" }}
+  log_keepalives: {{ "no" if pvc_log_keepalives is defined and not pvc_log_keepalives else "yes" }}
+  log_cluster_details: {{ "no" if pvc_log_keepalive_cluster_details is defined and not pvc_log_keepalive_cluster_details else "yes" }}
+  log_monitoring_details: {{ "no" if pvc_log_keepalive_plugin_details is defined and not pvc_log_keepalive_plugin_details else "yes"}}
+  console_log_lines: {{ pvc_log_console_lines if pvc_log_console_lines is defined and pvc_log_console_lines else "1000" }}
+  node_log_lines: {{ pvc_log_node_lines if pvc_log_node_lines is defined and pvc_log_node_lines else "2000" }}
+
+guest_networking:
+  bridge_device: {{ pvc_bridge_device }}
+  bridge_mtu: {{ pvc_bridge_mtu }}
+  sriov_enable: {{ "yes" if pvc_sriov_enable is defined and pvc_sriov_enable else "no" }}
+  sriov_device: {{ pvc_sriov_device }}
+
+ceph:
+  ceph_config_file: "ceph.conf"
+  ceph_keyring_file: "ceph.client.admin.keyring"
+  monitor_port: 6789
+  secret_uuid: "{{ pvc_ceph_storage_secret_uuid }}"
+
+api:
+  listen:
+    address: {{ pvc_api_listen_address }}
+    port: {{ pvc_api_listen_port }}
+
+  authentication:
+    enabled: {{ "yes" if pvc_api_enable_authentication is defined and pvc_api_enable_authentication else "no" }}
+    secret_key: "{{ pvc_api_secret_key }}"
+    source: token
+
+  token:
+{% for token in pvc_api_tokens %}
+    - description: "{{ token.description }}"
+      token: "{{ token.token }}"
+{% endfor %}
+
+  ssl:
+    enabled: {{ "yes" if pvc_api_enable_ssl is defined and pvc_api_enable_ssl else "no" }}
+    certificate: "{{ pvc_api_ssl_cert_path if pvc_api_ssl_cert_path is defined and pvc_api_ssl_cert_path else '/etc/pvc/api-cert.pem' }}"
+    private_key: "{{ pvc_api_ssl_key_path if pvc_api_ssl_key_path is defined and pvc_api_ssl_cert_path else '/etc/pvc/api-key.pem' }}"
+
+autobackup:
+{% if pvc_autobackup is defined and pvc_autobackup %}
+  backup_root_path: {{ pvc_autobackup.backup_root_path }}
+  backup_root_suffix: {{ pvc_autobackup.backup_root_suffix }}
+  backup_tags:
+{% for tag in pvc_autobackup.backup_tags %}
+    - {{ tag }}
+{% endfor %}
+  backup_schedule:
+    full_interval: {{ pvc_autobackup.schedule.full_interval }}
+    full_retention: {{ pvc_autobackup.schedule.full_retention }}
+  auto_mount:
+    enabled: {{ pvc_autobackup.auto_mount.enabled }}
+    mount_cmds:
+{% for cmd in pvc_autobackup.auto_mount.mount_cmds %}
+      - "{{ cmd }}"
+{% endfor %}
+    unmount_cmds:
+{% for cmd in pvc_autobackup.auto_mount.unmount_cmds %}
+      - "{{ cmd }}"
+{% endfor %} 
+{% endif %}
+
+# VIM modeline, requires "set modeline" in your VIMRC
+# vim: expandtab shiftwidth=2 tabstop=2 filetype=yaml
