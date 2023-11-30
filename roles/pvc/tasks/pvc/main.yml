@@ -3,6 +3,8 @@
   apt:
     name:
       - pvc-daemon-node
+      - pvc-daemon-health
+      - pvc-daemon-worker
       - pvc-daemon-api
       - pvc-daemon-common
       - pvc-client-cli
@@ -11,8 +13,7 @@
       # default provisioner script helper programs
       - debootstrap
       - rinse
-    state: latest
-  when: newhost is defined and newhost
+    state: present
   register: apt_res
   retries: 5
   until: apt_res is success
@@ -24,6 +25,15 @@
     mode: 0640
   with_items:
     - pvc.conf
+
+- name: remove obsolete pvc daemon configurations
+  file:
+    dest: "/etc/pvc/{{ item }}"
+    state: absent
+  with_items:
+    - pvcnoded.yaml
+    - pvcapid.yaml
+    - autobackup.yaml
 
 - name: install API SSL certificate file
   copy:
