@@ -1,4 +1,5 @@
 ---
+# Set the cluster into maintenance mode
 - hosts: all
   remote_user: deploy
   become: yes
@@ -15,6 +16,28 @@
       run_once: yes
       ignore_errors: yes
 
+# Run the PVC daemon role against the system (update pvc.conf)
+- hosts: all
+  remote_user: deploy
+  become: yes
+  become_user: root
+  gather_facts: yes
+  tasks:
+    - set_fact:
+        this_node: "{{ inventory_hostname.split('.')[0] }}"
+
+    - set_fact:
+        is_coordinator: "{% for node in pvc_nodes if node.hostname == this_node %}{{ node.is_coordinator }}{% endfor %}"
+
+    - set_fact:
+        new_host: no
+
+    - name: import PVC daemon role
+      include_role:
+        name: pvc
+        tasks_from: pvc/main.yml
+
+# Install the latest PVC packages & restart daemons to apply
 - hosts: all
   remote_user: deploy
   become: yes
@@ -92,6 +115,7 @@
       become: no
       connection: local
 
+# Set the cluster out of maintenance mode
 - hosts: all
   remote_user: deploy
   become: yes
