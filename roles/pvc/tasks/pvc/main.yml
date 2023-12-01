@@ -32,6 +32,8 @@
     src: "pvc/{{ item }}.j2"
     dest: "/etc/pvc/{{ item }}"
     mode: 0640
+    owner: root
+    group: sudo
   with_items:
     - pvc.conf
   register: new_daemon_config
