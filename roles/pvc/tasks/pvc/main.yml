@@ -1,19 +1,28 @@
 ---
-- name: install pvc packages
+- name: install pvc packages (all)
   apt:
     name:
       - pvc-daemon-node
       - pvc-daemon-health
       - pvc-daemon-worker
-      - pvc-daemon-api
       - pvc-daemon-common
       - pvc-client-cli
       - ethtool
       - jq
-      # default provisioner script helper programs
+    state: present
+  register: apt_res
+  retries: 5
+  until: apt_res is success
+
+- name: install pvc packages (coordinators only)
+  apt:
+    name:
+      - pvc-daemon-api
+      # default provisioner script helper programs (pvcworkerd)
       - debootstrap
       - rinse
     state: present
+  when: is_coordinator
   register: apt_res
   retries: 5
   until: apt_res is success
