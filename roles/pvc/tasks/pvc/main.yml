@@ -34,6 +34,7 @@
     mode: 0640
   with_items:
     - pvc.conf
+  register: new_daemon_config
 
 - name: remove obsolete pvc daemon configurations
   file:
@@ -43,6 +44,12 @@
     - pvcnoded.yaml
     - pvcapid.yaml
     - autobackup.yaml
+  # Only apply this task when the new daemon config has NOT changed.
+  # In practice, this means that the first time pvc.conf is written,
+  # the old configs will NOT be purged. Then, the next time this is
+  # run (presuming no fundamental changes happen to that config),
+  # they will be removed. Provides safety in case of a failed update.
+  when: not new_daemon_config.changed
 
 - name: install API SSL certificate file
   copy:
