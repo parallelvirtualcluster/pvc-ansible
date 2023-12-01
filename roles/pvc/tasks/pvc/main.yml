@@ -29,8 +29,8 @@
 
 - name: install pvc daemon configuration
   template:
-    src: pvc/{{ item }}.j2
-    dest: /etc/pvc/{{ item }}
+    src: "pvc/{{ item }}.j2"
+    dest: "/etc/pvc/{{ item }}"
     mode: 0640
   with_items:
     - pvc.conf

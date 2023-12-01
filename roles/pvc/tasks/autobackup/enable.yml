@@ -8,11 +8,6 @@
     - pvc_autobackup.auto_mount.enabled is defined and pvc_autobackup.auto_mount.enabled
     - pvc_autobackup.auto_mount.packages is defined and pvc_autobackup.auto_mount.packages
 
-- name: install autobackup YAML configuration
-  template:
-    src: "autobackup/autobackup.yaml.j2"
-    dest: "/etc/pvc/autobackup.yaml"
-
 - name: install autobackup normal systemd units
   template:
     src: "autobackup/pvc-autobackup-normal.{{ item }}.j2"
