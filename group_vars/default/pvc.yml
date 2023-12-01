@@ -18,7 +18,7 @@
 #   control over the timings of various areas of the cluster, for instance if your hardware is slow or error-prone.
 #pvc_vm_shutdown_timeout: 180            # Number of seconds before a 'shutdown' VM is forced off
 #pvc_keepalive_interval: 5               # Number of seconds between keepalive ticks
-#pvc_monitoring_interval: 60             # Number of seconds between monitoring plugin runs
+#pvc_monitoring_interval: 15             # Number of seconds between monitoring plugin runs
 #pvc_fence_intervals: 6                  # Number of keepalive ticks before a node is considered dead
 #pvc_suicide_intervals: 0                # Number of keepalive ticks before a node consideres itself dead (0 to disable)
 #pvc_fence_successful_action: migrate    # What to do with VMs when a fence is successful (migrate, None)
