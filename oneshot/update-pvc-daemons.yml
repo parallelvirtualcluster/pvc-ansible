@@ -125,3 +125,29 @@
     - name: unset PVC maintenance mode
       command: pvc cluster maintenance off
       run_once: yes
+
+# Clean up legacy configs if safe to do so
+- hosts: all
+  remote_user: deploy
+  become: yes
+  become_user: root
+  gather_facts: yes
+  tasks:
+    - name: check if new configuration exists
+      stat:
+        path: /etc/pvc/pvc.conf
+      register: pvc_config_check
+
+    - name: check if installed PVC version is above 0.9.82
+      shell: "dpkg --compare-versions $(dpkg-query --showformat='${Version}' --show pvc-daemon-node) gt 0.9.82"
+      register: pvc_version_check
+
+    - name: remove obsolete PVC daemon configurations
+      file:
+        dest: "/etc/pvc/{{ item }}"
+        state: absent
+      with_items:
+        - pvcnoded.yaml
+        - pvcapid.yaml
+        - autobackup.yaml
+      when: pvc_config_file_check.stat.exists and pvc_version_check.rc == 0 
