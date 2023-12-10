@@ -14,6 +14,15 @@
   retries: 5
   until: apt_res is success
 
+- name: install Prometheus libvirt exporter if enabled
+  apt:
+    name:
+      - prometheus-libvirt-exporter
+  register: apt_res
+  retries: 5
+  until: apt_res is success
+  when: enable_prometheus_exporters is defined and enable_prometheus_exporters
+
 - name: add libvirt user to ceph group
   user:
     name: libvirt-qemu
