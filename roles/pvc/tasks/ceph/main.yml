@@ -116,6 +116,21 @@
   run_once: yes
   ignore_errors: yes
 
+- name: set Prometheus metric exporter enabled
+  command: ceph mgr module enable prometheus
+  run_once: yes
+  ignore_errors: yes
+
+- name: enable Prometheus metrics on all pools
+  command: ceph config set mgr mgr/prometheus/rbd_stats_pools "*"
+  run_once: yes
+  ignore_errors: yes
+
+- name: explicitly enable Prometheus performance counters
+  command: ceph config set mgr mgr/prometheus/exclude_perf_counters false
+  run_once: yes
+  ignore_errors: yes
+
 - name: create mgr auth keyring
   command: ceph auth get-or-create mgr.{{ ansible_hostname }} mon 'allow profile mgr' osd 'allow *' mds 'allow *' --out-file /var/lib/ceph/mgr/ceph-{{ ansible_hostname }}/keyring
   become_user: ceph
