@@ -82,14 +82,15 @@
           become: no
           connection: local
   
-        - name: restart PVC daemons
+        - name: restart PVC node daemons
           service:
             name: "{{ item }}"
             state: restarted
             enabled: yes
           with_items:
-            - pvcworkerd
             - pvcnoded
+            - pvcworkerd
+            - pvchealthd
 
         - name: wait 15 seconds for system to stabilize
           pause:
