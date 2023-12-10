@@ -19,10 +19,13 @@ maxClientCnxns=200
 autopurge.snapRetainCount=3
 autopurge.purgeInterval=1
 
-# Enable Prometheus metrics (someday, but not today under Debian 12 or less)
+# Enable internal Prometheus metrics (someday, but not today under Debian 12 or less)
 #metricsProvider.className=org.apache.zookeeper.metrics.prometheus.PrometheusMetricsProvider
 #metricsProvider.httpPort=9181
 #metricsProvider.exportJvmInfo=true
+
+# Enable all 4LW commands; need MNTR for external Prometheus metrics
+4lw.commands.whitelist=*
 
 # Listen on port 2181 on the cluster IP
 clientPort=2181

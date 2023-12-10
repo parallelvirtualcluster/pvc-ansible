@@ -4,6 +4,11 @@
     name: zookeeper
     state: restarted
 
+- name: restart prometheus-zookeeper
+  service:
+    name: prometheus-zookeeper-exporter
+    state: restarted
+
 - name: restart libvirtd
   service:
     name: libvirtd
