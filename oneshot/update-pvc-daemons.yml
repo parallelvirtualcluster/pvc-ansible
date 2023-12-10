@@ -58,6 +58,7 @@
           - pvc-daemon-health
           - pvc-daemon-worker
         state: latest
+        dpkg_options: "force-all"
       register: packages
 
     - name: clean apt archives
