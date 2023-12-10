@@ -13,6 +13,7 @@
   register: apt_res
   retries: 5
   until: apt_res is success
+  ignore_errors: yes
 
 - name: install pvc packages (coordinators only)
   apt:
@@ -26,6 +27,10 @@
   register: apt_res
   retries: 5
   until: apt_res is success
+  ignore_errors: yes
+
+- name: check if pvc-client-cli is installed
+  command: dpkg -l pvc-client-cli
 
 - name: install pvc daemon configuration
   template:
