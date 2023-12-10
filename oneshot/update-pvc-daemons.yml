@@ -55,6 +55,8 @@
           - pvc-daemon-common
           - pvc-daemon-api
           - pvc-daemon-node
+          - pvc-daemon-health
+          - pvc-daemon-worker
         state: latest
       register: packages
 
