@@ -153,4 +153,4 @@
         - pvcnoded.yaml
         - pvcapid.yaml
         - autobackup.yaml
-      when: pvc_config_file_check.stat.exists and pvc_version_check.rc == 0 
+      when: pvc_config_check.stat.exists and pvc_version_check.rc == 0 
