@@ -21,6 +21,11 @@
     state: restarted
   ignore_errors: yes
 
+- name: restart prometheus-postgres
+  service:
+    name: prometheus-postgres-exporter
+    state: restarted
+
 - name: restart keydb
   service:
     name: keydb-server
