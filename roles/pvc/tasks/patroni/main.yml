@@ -37,6 +37,15 @@
   retries: 5
   until: apt_res is success
 
+- name: install Prometheus postgresql exporter if enabled
+  apt:
+    name:
+      - prometheus-postgres-exporter
+  register: apt_res
+  retries: 5
+  until: apt_res is success
+  when: enable_prometheus_exporters is defined and enable_prometheus_exporters
+
 - name: stop and disable postgresql
   service:
     name: "{{ item }}"

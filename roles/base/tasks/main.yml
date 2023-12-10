@@ -296,11 +296,12 @@
   until: apt_res is success
   tags: base-packages
 
-- name: install Prometheus node exporter if enabled
+- name: install Prometheus node and process exporters if enabled
   apt:
     name:
       - prometheus-node-exporter
-  when: enable_prometheus_exporter is defined and enable_prometheus_exporter
+      - prometheus-process-exporter
+  when: enable_prometheus_exporters is defined and enable_prometheus_exporters
 
 - name: install Intel-specific microcode package
   apt:
