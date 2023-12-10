@@ -130,6 +130,7 @@
   command: ceph config set mgr mgr/prometheus/exclude_perf_counters false
   run_once: yes
   ignore_errors: yes
+  when: debian_version|int >= 12
 
 - name: create mgr auth keyring
   command: ceph auth get-or-create mgr.{{ ansible_hostname }} mon 'allow profile mgr' osd 'allow *' mds 'allow *' --out-file /var/lib/ceph/mgr/ceph-{{ ansible_hostname }}/keyring
