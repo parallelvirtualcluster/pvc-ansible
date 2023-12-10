@@ -25,3 +25,5 @@ fail2ban_ignorelist:
   - 10.0.0.0/8
 
 cpu_governor: "ondemand"
+
+enable_prometheus_exporter: yes

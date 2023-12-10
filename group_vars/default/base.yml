@@ -28,6 +28,9 @@ debian_main_repository: http://ftp.debian.org/debian
 debian_security_repository: http://security.debian.org
 debian_pvc_repository: https://repo.parallelvirtualcluster.org/debian
 
+# Enable Prometheus metric reporting from PVC nodes (installs prometheus-node-exporter)
+enable_prometheus_exporter: yes
+
 # Root user password
 # > Use pwgen to generate
 root_password: ""
