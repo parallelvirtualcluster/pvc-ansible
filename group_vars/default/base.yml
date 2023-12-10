@@ -29,7 +29,7 @@ debian_security_repository: http://security.debian.org
 debian_pvc_repository: https://repo.parallelvirtualcluster.org/debian
 
 # Enable Prometheus metric reporting from PVC nodes (installs prometheus-node-exporter)
-enable_prometheus_exporter: yes
+enable_prometheus_exporters: yes
 
 # Root user password
 # > Use pwgen to generate
