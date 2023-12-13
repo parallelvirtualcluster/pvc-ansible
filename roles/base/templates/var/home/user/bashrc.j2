@@ -102,9 +102,8 @@ alias virsh='sudo virsh -c qemu:///system'
 alias ceph='sudo ceph'
 alias rbd='sudo rbd'
 
-# Cool aliases
-alias cccp='sudo rsync -auv --progress'
-alias zkcli='sudo /usr/share/zookeeper/bin/zkCli.sh -server $(hostname -s):2181'
+# PVC subsystem aliases
+alias zk='/usr/bin/zkcli --servers $(hostname -s):2181'
 alias patronictl='sudo -E patronictl -c /etc/patroni/config.yml'
 
 #

@@ -4,6 +4,7 @@
     name:
       - zookeeper
       - zookeeper-bin
+      - zkcli
     state: latest
   register: apt_res
   retries: 5
