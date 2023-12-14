@@ -35,7 +35,7 @@
 - name: create pvc configuration directory
   file:
     dest: "/etc/pvc"
-    mode: directory
+    state: directory
     owner: root
     group: sudo
 
