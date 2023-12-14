@@ -32,6 +32,13 @@
 - name: check if pvc-client-cli is installed
   command: dpkg -l pvc-client-cli
 
+- name: create pvc configuration directory
+  file:
+    dest: "/etc/pvc"
+    mode: directory
+    owner: root
+    group: sudo
+
 - name: install pvc daemon configuration
   template:
     src: "pvc/{{ item }}.j2"
