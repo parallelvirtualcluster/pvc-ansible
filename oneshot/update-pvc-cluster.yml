@@ -27,6 +27,13 @@
         content: |
           #!/bin/sh
           exit 101
+ 
+    - name: upgrade vhostmd (forced due to bugs)
+      apt:
+        update_cache: yes
+        name: vhostmd
+        state: latest
+        dpkg_options: "force-confnew"
 
     - name: aptitude full upgrade and cleanup
       apt:
