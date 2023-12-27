@@ -126,6 +126,15 @@
   become_user: root
   gather_facts: yes
   tasks:
+    - name: restart PVC supplemental node daemons for schema updates
+      service:
+        name: "{{ item }}"
+        state: restarted
+        enabled: yes
+      with_items:
+        - pvcworkerd
+        - pvchealthd
+
     - name: unset PVC maintenance mode
       command: pvc cluster maintenance off
       run_once: yes
