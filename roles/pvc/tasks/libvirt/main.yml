@@ -121,5 +121,6 @@
     - libvirtd.socket
     - libvirtd-ro.socket
     - libvirtd-admin.socket
+  ignore_errors: yes
 
 - meta: flush_handlers
