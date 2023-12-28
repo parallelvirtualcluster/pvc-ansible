@@ -33,7 +33,7 @@
 
 - name: install Prometheus zookeeper exporter config if enabled
   template:
-    src: patroni/prometheus.env.j2
+    src: zookeeper/prometheus.env.j2
     dest: /etc/default/prometheus-zookeeper-exporter
     owner: prometheus
     group: prometheus
