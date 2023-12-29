@@ -15,6 +15,7 @@ subsystem:
   enable_storage: yes
   enable_worker: yes
   enable_api: yes
+  enable_prometheus: {{ 'yes' if enable_prometheus_exporters else 'no' }}
 
 cluster:
   name: {{ cluster_group }}

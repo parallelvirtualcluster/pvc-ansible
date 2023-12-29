@@ -21,7 +21,7 @@ pvc_fence_successful_action: migrate    # What to do with VMs when a fence is su
 pvc_fence_failed_action: None           # What to do with VMs when a fence is failed (migrate, None) - migrate is DANGEROUS without pvc_suicide_intervals set to < pvc_fence_intervals
 pvc_migrate_target_selector: mem        # The selector to use for migrating VMs
 
-# Enable Prometheus exporters
+# Enable Prometheus exporters and corresponding API endpoints
 enable_prometheus_exporters: yes
 
 # Memory tuning

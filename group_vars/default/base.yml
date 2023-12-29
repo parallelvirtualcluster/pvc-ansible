@@ -28,7 +28,9 @@ debian_main_repository: http://ftp.debian.org/debian
 debian_security_repository: http://security.debian.org
 debian_pvc_repository: https://repo.parallelvirtualcluster.org/debian
 
-# Enable Prometheus metric reporting from PVC nodes (installs prometheus-node-exporter)
+# Enable Prometheus metric reporting from PVC nodes; installs prometheus-node-exporter and enables
+# (unauthenticated) metrics endpoints within the PVC API. Set "no" to turn off Prometheus metric
+# functionality.
 enable_prometheus_exporters: yes
 
 # Root user password
