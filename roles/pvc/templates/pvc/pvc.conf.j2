@@ -163,11 +163,11 @@ api:
     private_key: "{{ pvc_api_ssl_key_path if pvc_api_ssl_key_path is defined and pvc_api_ssl_cert_path else '/etc/pvc/api-key.pem' }}"
 
 autobackup:
-{% if pvc_autobackup is defined and pvc_autobackup %}
-  backup_root_path: {{ pvc_autobackup.backup_root_path }}
-  backup_root_suffix: {{ pvc_autobackup.backup_root_suffix }}
+{% if pvc_autobackup is defined and pvc_autobackup.enabled is defined and pvc_autobackup.enabled %}
+  backup_root_path: {{ pvc_autobackup.root_path }}
+  backup_root_suffix: {{ pvc_autobackup.root_suffix }}
   backup_tags:
-{% for tag in pvc_autobackup.backup_tags %}
+{% for tag in pvc_autobackup.tags %}
     - {{ tag }}
 {% endfor %}
   backup_schedule:

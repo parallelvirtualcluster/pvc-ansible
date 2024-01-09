@@ -59,7 +59,34 @@ pvc_api_database_password: "PVCprovPassw0rd"
 #                                    # This slice includes all OSD processes
 #                                    # At least 1 core per OSD should be assigned to this slice.
 
-# Coordinators
+# VM Autobackup
+# This is uncommented but disabled so this is not installed by default; enable it in your per-cluster configs
+# Autobackup allows the exporting of VM backups automatically to an external disk target.
+# These values are default; ensure you modify them in your own group_vars to match your system!
+pvc_autobackup:
+  enabled: no
+  root_path: /tmp/backups
+  root_suffix: /mycluster
+  tags:
+    - autobackup
+  schedule:
+    normal_time: "Tue..Sun *-*-* 0:0:00"
+    forced_full_time: "Mon *-*-* 0:0:00"
+    full_interval: 7
+    full_retention: 2
+  auto_mount:
+    enabled: no
+    packages:
+      # Example: Install nfs-common for NFS mounts
+      # - nfs-common
+    mount_cmds:
+      # Example: Mount an NFSv3 path from 10.0.0.10:/backups to {backup_root_path}
+      # - "/usr/sbin/mount.nfs -o nfsvers=3 10.0.0.10:/backups {backup_root_path}"
+    unmount_cmds:
+      # Example: Unmount the {backup_root_path}
+      # - "/usr/bin/umount {backup_root_path}"
+
+# Coordinators & Nodes list
 pvc_nodes:
   - hostname: "pvc1"                # The full ansible inventory hostname of the node
     is_coordinator: yes             # If the node is a coordinator or not

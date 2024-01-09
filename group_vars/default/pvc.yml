@@ -211,15 +211,15 @@ pvc_autobackup:
   #   conflicts should those clusters share VM names. It is optional unless this matches your situation.
   # > The path "/tmp/backups" is usually recommended for remote mounting
   # > NOTE: If you specify it, the suffix must begin with a '/', but is relative to the root path!
-  backup_root_path:   "/tmp/backups"
-  backup_root_suffix: "/cluster1"
+  root_path:   "/tmp/backups"
+  root_suffix: "/mycluster"
   # Set the VM tag(s) which will be selected for autobackup
   # > Autobackup selects VMs based on their tags. If a VM has a tag present in this list, it will be
   #   selected for autobackup at runtime; if not it will be ignored.
   # > Usually, the tag "autobackup" here is sufficient; the administrator should then add this tag
   #   to any VM(s) they want to use autobackups. However, any tag may be specified to keep the tag list
   #   cleaner and more focused, should the administrator choose to.
-  backup_tags:
+  tags:
     - autobackup
   # Autobackup scheduling
   schedule:
@@ -265,20 +265,20 @@ pvc_autobackup:
     # These Debian packages will be automatically installed if automatic mounting is enabled
     packages:
       # This example installs nfs-common, required for NFS mounts
-      #- nfs-common
+      # - nfs-common
     # These commands are executed at the start of the backup run and should mount a filesystem or otherwise
     # prepare the system for the backups
     mount_cmds:
       # This example shows an NFS mount leveraging the backup_root_path variable
-      #- "/usr/sbin/mount.nfs -o nfsvers=3 10.0.0.10:/backups {backup_root_path}"
+      # - "/usr/sbin/mount.nfs -o nfsvers=3 10.0.0.10:/backups {backup_root_path}"
       # This example shows an SSHFS mount leveraging the backup_root_path variable
-      #- "/usr/bin/sshfs user@hostname:/path {backup_root_path} -o default_permissions -o sshfs_sync -o IdentityFile=/path/to/id_rsa"
+      # - "/usr/bin/sshfs user@hostname:/path {backup_root_path} -o default_permissions -o sshfs_sync -o IdentityFile=/path/to/id_rsa"
     # These commands are executed at the end of the backup run and should unmount a filesystem
     unmount_cmds:
       # This example shows a generic umount leveraging the backup_root_path variable
-      #- "/usr/bin/umount {backup_root_path}"
+      # - "/usr/bin/umount {backup_root_path}"
       # This example shows an fusermount3 unmount (e.g. for SSHFS) leveraging the backup_root_path variable
-      #- "/usr/bin/fusermount3 -u {backup_root_path}"
+      # - "/usr/bin/fusermount3 -u {backup_root_path}"
 
 # Configuration file networks
 # > Taken from base.yml's configuration; DO NOT MODIFY THIS SECTION.
