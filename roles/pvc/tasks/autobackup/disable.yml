@@ -8,6 +8,7 @@
   loop:
     - pvc-autobackup-normal.timer
     - pvc-autobackup-full.timer
+  ignore_errors: yes
 
 - name: remove autobackup configurations
   file:
