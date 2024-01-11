@@ -248,6 +248,23 @@ pvc_autobackup:
     # > Thus, this schedule combined with a full_interval of 7 ensures there is always 2 full weekly backups,
     #   plus at least 1 full week's worth of incremental backups.
     full_retention: 2
+  # Set reporting options for autobackups
+  # NOTE: By default, pvc-ansible installs a local Postfix MTA and Postfix sendmail to send emails
+  # This may not be what you want! If you want an alternate sendmail MTA (e.g. msmtp) you must install it
+  # yourself in a custom role!
+  reporting:
+    # Enable or disable email reporting; if disabled ("no"), no reports are ever sent
+    enabled: no
+    # Email a report to these addresses; at least one MUST be specified if enabled
+    emails:
+      - myuser@domain.tld
+      - otheruser@domain.tld
+    # Email a report on the specified jobs
+    report_on:
+        # Send a report on a forced_full backup (usually, weekly)
+        forced_full: yes
+        # Send a report on a normal backup (usually, daily)
+        normal: yes
   # Configure automatic mounting support
   # > PVC autobackup features the ability to automatically and dynamically mount and unmount remote
   #   filesystems, or, indeed, perform any arbitrary pre- or post-run tasks, using a set of arbitrary

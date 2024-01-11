@@ -5,4 +5,4 @@ Description=[Cron] PVC VM autobackup (forced-full)
 Type=oneshot
 IgnoreSIGPIPE=false
 KillMode=process
-ExecStart=/usr/bin/pvc --quiet vm autobackup --cron --force-full
+ExecStart=/usr/bin/pvc --quiet vm autobackup --cron --force-full {% if pvc_autobackup.reporting.enabled and pvc_autobackup.reporting.report_on.forced_full %}--email-report {{ pvc_autobackup.reporting.emails|join(',') }}{% endif %}

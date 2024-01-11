@@ -74,6 +74,11 @@ pvc_autobackup:
     forced_full_time: "Mon *-*-* 0:0:00"
     full_interval: 7
     full_retention: 2
+  reporting:
+    enabled: no
+    report_on:
+      forced_full: no
+      normal: no
   auto_mount:
     enabled: no
     packages:

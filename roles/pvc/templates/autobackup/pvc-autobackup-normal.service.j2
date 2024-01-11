@@ -5,4 +5,4 @@ Description=[Cron] PVC VM autobackup (normal)
 Type=oneshot
 IgnoreSIGPIPE=false
 KillMode=process
-ExecStart=/usr/bin/pvc --quiet vm autobackup --cron
+ExecStart=/usr/bin/pvc --quiet vm autobackup --cron {% if pvc_autobackup.reporting.enabled and pvc_autobackup.reporting.report_on.normal %}--email-report {{ pvc_autobackup.reporting.emails|join(',') }}{% endif %}
