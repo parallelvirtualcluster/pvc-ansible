@@ -18,7 +18,9 @@ DEBVER="${NAME} ${VERSION_ID} \"$(tc ${VERSION_CODENAME} )\""
 
 echo >> $TMPFILE
 echo -e "\033[01;34mParallel Virtual Cluster \033[01;36m(${DEBVER})\033[0m" >> $TMPFILE
-echo -e "> PVC \033[1;36m{% if is_coordinator %}coordinator{% else %}hypervisor{% endif %}\033[0m node \033[01;36m$(hostname)\033[0m" >> $TMPFILE
+echo -e "> \033[1;34mHostname:\033[0m \033[01;36m$(hostname)\033[0m" >> $TMPFILE
+echo -e "> \033[1;34mSystem Type:\033[0m: PVC \033[1;36m{% if is_coordinator %}coordinator{% else %}hypervisor{% endif %}\033[0m node" >> $TMPFILE
+
 # Get machine information
 HARDWARE_DETAIL="$( /usr/sbin/dmidecode | grep -A7 'System Information' )"
 HARDWARE_VENDOR="$( grep 'Manufacturer:' <<<"${HARDWARE_DETAIL}" | sed 's/Manufacturer: //; s/\s*$//g; s/^\s*//g' )"
@@ -33,7 +35,10 @@ HARDWARE_SERIAL="$( grep 'Serial Number:' <<<"${HARDWARE_DETAIL}" | sed 's/Seria
 if [[ -z ${HARDWARE_SERIAL} ]]; then
     HARDWARE_SERIAL="Unknown"
 fi
-echo -e "> Hardware Vendor: \033[1;36m${HARDWARE_VENDOR}\033[0m  Model: \033[1;36m${HARDWARE_MODEL}\033[0m  Serial: \033[1;36m${HARDWARE_SERIAL}\033[0m" >> $TMPFILE
-echo -e "> $(/bin/uname -srvmo)" >> $TMPFILE
+echo -e -n "> \033[1;34mHardware Vendor:\033[0m ${HARDWARE_VENDOR}" >> $TMPFILE
+echo -e -n "  \033[1;34mModel:\033[0m ${HARDWARE_MODEL}" >> $TMPFILE
+echo -e -n "  \033[1;34mSerial:\033[0m ${HARDWARE_SERIAL}" >> $TMPFILE
+echo >> $TMPFILE
+echo -e "> \033[1;34mKernel:\033[0m $(/bin/uname -srvmo)" >> $TMPFILE
 
 mv $TMPFILE $TGTFILE || rm $TMPFILE
