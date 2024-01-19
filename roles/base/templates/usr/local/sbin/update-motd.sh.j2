@@ -42,3 +42,4 @@ echo >> $TMPFILE
 echo -e "> \033[1;34mKernel:\033[0m $(/bin/uname -srvmo)" >> $TMPFILE
 
 mv $TMPFILE $TGTFILE || rm $TMPFILE
+chmod 644 $TGTFILE
