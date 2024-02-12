@@ -130,7 +130,15 @@
         - pvcworkerd
         - pvchealthd
 
-    - name: unset PVC maintenance mode
+    - name: become primary on first node
+      command: pvc node primary --wait
+      run_once: yes
+
+    - name: apply database migrations on first node (safe upgrades prevented this in dpkg)
+      command: /usr/share/pvc/pvc-api-db-upgrade
+      run_once: yes
+
+    - name: unset PVC maintenance mode on first node
       command: pvc cluster maintenance off
       run_once: yes
 
