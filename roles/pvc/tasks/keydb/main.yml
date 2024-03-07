@@ -27,6 +27,11 @@
     mode: 0640
   notify: restart keydb
 
+- name: create keydb unit override directory
+  file:
+    state: directory
+    dest: /etc/systemd/system/keydb-server.service.d
+
 - name: install keydb unit override file
   template:
     src: keydb/override.conf.j2
