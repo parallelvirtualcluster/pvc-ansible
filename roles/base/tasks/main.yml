@@ -551,6 +551,7 @@
     state: link
     src: /etc/ntp.conf
     dest: /etc/ntpsec/ntp.conf
+    force: yes
   when: debian_version|int >= 12
   notify:
     - restart ntp
