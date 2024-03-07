@@ -546,6 +546,16 @@
     - { src: "etc/ntp.conf.j2", dest: "/etc/ntp.conf" }
   tags: base-time
 
+- name: add link to ntpsec config on Debian 12+
+  file:
+    state: link
+    src: /etc/ntp.conf
+    dest: /etc/ntpsec/ntp.conf
+  when: debian_version|int >= 12
+  notify:
+    - restart ntp
+  tags: base-time
+
 # ssl
 - name: ensure haveged is running
   service:
