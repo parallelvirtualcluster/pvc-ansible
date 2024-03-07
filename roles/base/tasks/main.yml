@@ -536,7 +536,7 @@
   tags: base-mta
 
 # ntp
-- name: write the NTP config file
+- name: write the NTP config file on Debian < 12
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -544,17 +544,27 @@
     - restart ntp
   with_items:
     - { src: "etc/ntp.conf.j2", dest: "/etc/ntp.conf" }
+  when: debian_version|int < 12
   tags: base-time
 
-- name: add link to ntpsec config on Debian 12+
-  file:
-    state: link
-    src: /etc/ntp.conf
-    dest: /etc/ntpsec/ntp.conf
-    force: yes
-  when: debian_version|int >= 12
+- name: write the NTP config file on Debian >= 12
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
   notify:
     - restart ntp
+  with_items:
+    - { src: "etc/ntpsec/ntp.conf.j2", dest: "/etc/ntpsec/ntp.conf" }
+  when: debian_version|int >= 12
+  tags: base-time
+
+- name: clean up old NTP config file on Debian >= 12
+  file:
+    dest: /etc/ntp.conf
+    state: absent
+  notify:
+    - restart ntp
+  when: debian_version|int >= 12
   tags: base-time
 
 # ssl

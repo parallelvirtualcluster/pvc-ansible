@@ -1,0 +1,31 @@
+# Main NTP configuration (NTPSEC)
+# {{ ansible_managed }}
+
+driftfile /var/lib/ntpsec/ntp.drift
+statsdir  /var/lib/ntpsec
+
+statistics loopstats peerstats clockstats
+
+filegen loopstats file loopstats type day enable
+filegen peerstats file peerstats type day enable
+filegen clockstats file clockstats type day enable
+
+# Enable orphan mode if cluster cannot connect to the Internet
+tos orphan 6
+server 127.127.1.0
+fudge  127.127.1.0 stratum 10
+
+# NTP masters
+{% for server in ntp_servers %}
+server {{ server }} iburst
+{% endfor %}
+
+# Local PVC cluster
+{% for node in pvc_nodes %}
+peer {{ node.cluster_ip }}  # {{ node.hostname }}.{{ pvc_cluster_domain }}
+{% endfor %}
+
+restrict -4 default nomodify
+restrict -6 default nomodify
+restrict 127.0.0.1
+restrict ::1
