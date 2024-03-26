@@ -530,19 +530,11 @@
       become: no
       connection: local
 
-    - name: restart pvcnoded on all nodes
-      service:
-        name: pvcnoded
-        state: restarted
+    - name: restart PVC daemons on all nodes
+      shell: "systemctl restart pvchealthd && systemctl restart pvcworkerd && systemctl restart pvcnoded && sleep 30"
       run_once: yes
       delegate_to: "{{ item }}"
       loop: "{{ ansible_play_hosts }}"
-
-    - name: wait 30 seconds for system to stabilize
-      pause:
-        seconds: 30
-      become: no
-      connection: local
 
     - name: set first node as primary coordinator
       command: "pvc node primary --wait {{ ansible_play_hosts[0].split('.')[0] }}"
