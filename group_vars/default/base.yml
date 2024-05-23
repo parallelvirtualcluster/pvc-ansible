@@ -9,6 +9,9 @@ timezone_location: Canada/Eastern
 # Cluster domain for node FQDNs
 local_domain: upstream.local
 
+# Email address of the manager of the cluster
+manager_email: team@company.tld
+
 # DNS recursive servers and search domains for nodes
 recursive_dns_servers:
   - 8.8.8.8
