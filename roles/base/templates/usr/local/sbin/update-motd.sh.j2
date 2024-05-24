@@ -15,11 +15,16 @@ NAME="$( grep '^NAME=' /etc/os-release | awk -F'"' '{ print $2 }' )"
 VERSION_ID="$( cat /etc/debian_version )"
 VERSION_CODENAME="$( grep '^VERSION_CODENAME=' /etc/os-release | awk -F'=' '{ print $2 }' )"
 DEBVER="${NAME} ${VERSION_ID} \"$(tc ${VERSION_CODENAME} )\""
+PVCVER="$( /usr/share/pvc/pvcnoded.py --version )"
 
 echo >> $TMPFILE
-echo -e "\033[01;34mParallel Virtual Cluster \033[01;36m(${DEBVER})\033[0m" >> $TMPFILE
-echo -e "> \033[1;34mHostname:\033[0m \033[01;36m$(hostname)\033[0m" >> $TMPFILE
-echo -e "> \033[1;34mSystem Type:\033[0m: PVC \033[1;36m{% if is_coordinator %}coordinator{% else %}hypervisor{% endif %}\033[0m node" >> $TMPFILE
+echo -e "\033[01;34mParallel Virtual Cluster (PVC) Node\033[0m" >> $TMPFILE
+echo -e "> \033[1;34mNode name:\033[0m \033[01;36m$(hostname)\033[0m" >> $TMPFILE
+echo -e "> \033[1;34mCluster name:\033[0m \033[01;36m{{ cluster_group }}\033[0m" >> $TMPFILE
+echo -e "> \033[1;34mSystem type:\033[0m PVC \033[1;36m{% if is_coordinator %}coordinator{% else %}hypervisor{% endif %}\033[0m node" >> $TMPFILE
+echo -e "> \033[1;34mPVC version:\033[0m ${PVCVER}" >> $TMPFILE
+echo -e "> \033[1;34mBase system:\033[0m {{ ansible_lsb.description }}" >> $TMPFILE
+echo -e "> \033[1;34mKernel:\033[0m $(/bin/uname -vm)" >> $TMPFILE
 
 # Get machine information
 HARDWARE_DETAIL="$( /usr/sbin/dmidecode | grep -A7 'System Information' )"
@@ -39,7 +44,6 @@ echo -e -n "> \033[1;34mHardware Vendor:\033[0m ${HARDWARE_VENDOR}" >> $TMPFILE
 echo -e -n "  \033[1;34mModel:\033[0m ${HARDWARE_MODEL}" >> $TMPFILE
 echo -e -n "  \033[1;34mSerial:\033[0m ${HARDWARE_SERIAL}" >> $TMPFILE
 echo >> $TMPFILE
-echo -e "> \033[1;34mKernel:\033[0m $(/bin/uname -srvmo)" >> $TMPFILE
 
 mv $TMPFILE $TGTFILE || rm $TMPFILE
 chmod 644 $TGTFILE

@@ -468,12 +468,6 @@
 - name: set PVC Plymouth theme as the default
   command: plymouth-set-default-theme -R pvc
 
-# issue prompt
-- name: install PVC /etc/issue file
-  template:
-    src: etc/issue.j2
-    dest: /etc/issue
-
 # syslog
 - name: install rsyslog and logrotate configs
   template:
@@ -638,24 +632,26 @@
   tags: base-shell
 
 # motd
-- name: ensure update-motd and profile.d scripts are present
+- name: ensure update-issue, update-motd and profile.d scripts are present
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     mode: 0755
   with_items:
+    - { src: "usr/local/sbin/update-issue.sh.j2", dest: "/usr/local/sbin/update-issue.sh" }
     - { src: "usr/local/sbin/update-motd.sh.j2", dest: "/usr/local/sbin/update-motd.sh" }
     - { src: "etc/profile.d/w.sh.j2", dest: "/etc/profile.d/w.sh" }
     - { src: "etc/profile.d/pvc.sh.j2", dest: "/etc/profile.d/zzz_pvc.sh" }
   register: profile_scripts
   tags: base-shell
 
-- name: install update-motd crontab
+- name: install banner update crontabs
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     mode: 0644
   with_items:
+    - { src: "etc/cron.d/update-issue.j2", dest: "/etc/cron.d/update-issue" }
     - { src: "etc/cron.d/update-motd.j2", dest: "/etc/cron.d/update-motd" }
   tags: base-shell
 
@@ -667,6 +663,11 @@
 
 - name: run update-motd on change
   command: /usr/local/sbin/update-motd.sh
+  when: profile_scripts.changed
+  tags: base-shell
+
+- name: run update-issue on change
+  command: /usr/local/sbin/update-issue.sh
   when: profile_scripts.changed
   tags: base-shell
 

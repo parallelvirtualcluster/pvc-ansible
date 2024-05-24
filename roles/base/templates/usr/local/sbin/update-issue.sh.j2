@@ -1,0 +1,63 @@
+#!/bin/bash
+
+# Update dynamic ISSUE file
+# {{ ansible_managed }}
+
+set -o errexit
+
+# Title-case generator
+tc() { set ${*,,} ; echo ${*^} ; }
+
+TMPFILE=$(mktemp)
+TGTFILE=/etc/issue
+
+VERSION_ID="$( cat /etc/debian_version )"
+VERSION_CODENAME="$( grep '^VERSION_CODENAME=' /etc/os-release | awk -F'=' '{ print $2 }' )"
+DEBVER="${NAME} ${VERSION_ID} \"$(tc ${VERSION_CODENAME} )\""
+PVCVER="$( /usr/share/pvc/pvcnoded.py --version )"
+
+echo >> $TMPFILE
+echo "  ███████████████████████ █████           █████ ███████████  ██  ██  ██  " >> $TMPFILE
+echo "  ███████████████████████  █████         █████  ███████████  ██  ██  ██  " >> $TMPFILE
+echo "                     ████   █████       █████   ████                     " >> $TMPFILE
+echo "                     ████    █████     █████    ████                     " >> $TMPFILE
+echo "  ███████████████████████     █████   █████     ████                     " >> $TMPFILE
+echo "  ███████████████████████      █████ █████      ████                     " >> $TMPFILE
+echo "  ███                           █████████       ███████████████████████  " >> $TMPFILE
+echo "  ███                            ███████        ███████████████████████  " >> $TMPFILE
+echo >> $TMPFILE
+echo >> $TMPFILE
+echo -e "                   \033[01;34mParallel Virtual Cluster (PVC) Node\033[0m"    >> $TMPFILE
+echo >> $TMPFILE
+echo -e "  > \033[1;34mNode name:\033[0m \033[01;36m$(hostname)\033[0m" >> $TMPFILE
+echo -e "  > \033[1;34mCluster name:\033[0m \033[01;36m{{ cluster_group }}\033[0m" >> $TMPFILE
+echo -e "  > \033[1;34mSystem type:\033[0m PVC \033[1;36m{% if is_coordinator %}coordinator{% else %}hypervisor{% endif %}\033[0m node" >> $TMPFILE
+echo -e "  > \033[1;34mManaged by:\033[0m {{ manager_email }}" >> $TMPFILE
+echo -e "  > \033[1;34mPVC version:\033[0m ${PVCVER}" >> $TMPFILE
+echo -e "  > \033[1;34mBase system:\033[0m {{ ansible_lsb.description }}" >> $TMPFILE
+echo -e "  > \033[1;34mKernel:\033[0m $(/bin/uname -vm)" >> $TMPFILE
+
+# Get machine information
+HARDWARE_DETAIL="$( /usr/sbin/dmidecode | grep -A7 'System Information' )"
+HARDWARE_VENDOR="$( grep 'Manufacturer:' <<<"${HARDWARE_DETAIL}" | sed 's/Manufacturer: //; s/\s*$//g; s/^\s*//g' )"
+if [[ -z ${HARDWARE_VENDOR} ]]; then
+    HARDWARE_VENDOR="Unknown"
+fi
+HARDWARE_MODEL="$( grep 'Product Name:' <<<"${HARDWARE_DETAIL}" | sed 's/Product Name: //; s/\s*$//g; s/^\s*//g' )"
+if [[ -z ${HARDWARE_MODEL} ]]; then
+    HARDWARE_MODEL="Unknown"
+fi
+HARDWARE_SERIAL="$( grep 'Serial Number:' <<<"${HARDWARE_DETAIL}" | sed 's/Serial Number: //; s/\s*$//g; s/^\s*//g' )"
+if [[ -z ${HARDWARE_SERIAL} ]]; then
+    HARDWARE_SERIAL="Unknown"
+fi
+echo -e -n "  > \033[1;34mHardware Vendor:\033[0m ${HARDWARE_VENDOR}" >> $TMPFILE
+echo -e -n "  \033[1;34mModel:\033[0m ${HARDWARE_MODEL}" >> $TMPFILE
+echo -e -n "  \033[1;34mSerial:\033[0m ${HARDWARE_SERIAL}" >> $TMPFILE
+echo >> $TMPFILE
+echo >> $TMPFILE
+echo "  UNAUTHORIZED ACCESS IS PROHIBITED. ALL LOGIN ATTEMPTS WILL BE LOGGED." >> $TMPFILE
+echo >> $TMPFILE
+
+mv $TMPFILE $TGTFILE || rm $TMPFILE
+chmod 644 $TGTFILE
