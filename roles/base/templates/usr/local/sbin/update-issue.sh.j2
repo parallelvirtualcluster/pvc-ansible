@@ -16,7 +16,7 @@ VERSION_CODENAME="$( grep '^VERSION_CODENAME=' /etc/os-release | awk -F'=' '{ pr
 DEBVER="${NAME} ${VERSION_ID} \"$(tc ${VERSION_CODENAME} )\""
 PVCVER="$( /usr/share/pvc/pvcnoded.py --version )"
 
-echo "\033[0m" >> $TMPFILE
+echo -e "\033[0m" >> $TMPFILE
 echo >> $TMPFILE
 echo "  ███████████████████████ █████           █████ ███████████  ██  ██  ██  " >> $TMPFILE
 echo "  ███████████████████████  █████         █████  ███████████  ██  ██  ██  " >> $TMPFILE
