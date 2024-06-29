@@ -258,14 +258,14 @@
 
       when: debian_version|int < 11
 
-    - name: aptitude upgrade
+    - name: apt upgrade
       apt:
         upgrade: safe
       register: apt_res
       retries: 5
       until: apt_res is success
 
-    - name: aptitude dist upgrade and cleanup
+    - name: apt dist upgrade and cleanup
       apt:
         autoremove: yes
         autoclean: yes
@@ -296,7 +296,7 @@
       import_role:
         name: pvc
 
-    - name: aptitude full upgrade and cleanup
+    - name: apt full upgrade and cleanup
       apt:
         update_cache: yes
         autoremove: yes

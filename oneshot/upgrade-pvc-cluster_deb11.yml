@@ -121,7 +121,7 @@
         name: python-is-python3
         state: latest
 
-    - name: aptitude dist upgrade and cleanup
+    - name: apt dist upgrade and cleanup
       apt:
         update_cache: yes
         autoremove: yes
@@ -150,7 +150,7 @@
       import_role:
         name: pvc
 
-    - name: aptitude full upgrade and cleanup
+    - name: apt full upgrade and cleanup
       apt:
         update_cache: yes
         autoremove: yes

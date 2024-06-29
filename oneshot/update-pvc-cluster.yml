@@ -35,7 +35,7 @@
         state: latest
         dpkg_options: "force-confnew"
 
-    - name: aptitude full upgrade and cleanup
+    - name: apt full upgrade and cleanup
       apt:
         update_cache: yes
         autoremove: yes
