@@ -1,5 +1,5 @@
 ---
-# Play 1: Sanity check, information gathering, patroni freeze
+# Play 1: Sanity check, initial configuration upgrade, information gathering, patroni freeze
 - hosts: all
   remote_user: deploy
   become: yes
@@ -15,6 +15,14 @@
     - name: set PVC maintenance mode
       command: pvc cluster maintenance on
       ignore_errors: yes
+
+    - name: include base role
+      import_role:
+        name: base
+
+    - name: include pvc role
+      import_role:
+        name: pvc
 
     - name: get current postgresql directory
       shell: "find /usr/lib/postgresql -mindepth 1 -maxdepth 1 -type d -name '[0-9][0-9]' | sort -n | tail -1"
