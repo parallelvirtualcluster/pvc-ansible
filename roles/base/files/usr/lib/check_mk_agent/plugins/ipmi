@@ -23,10 +23,16 @@ if [[ -z ${IPMIIP_INTERFACES} ]]; then
 fi
 
 # Grab IPMI IP from ipmitool
-IPMIIP_IPMITOOL="$( ipmitool lan print 2>/dev/null | grep 'IP Address' | grep -v 'Source' | awk '{ print $NF }' )"
+IPMIIP_IPMITOOL=""
+COUNT=0
+while [[ -z ${IPMIIP_IPMITOOL} && ${COUNT} -lt 3 ]]; do
+    IPMIIP_IPMITOOL="$( ipmitool lan print 2>/dev/null | grep 'IP Address' | grep -v 'Source' | awk '{ print $NF }' )"
+    sleep 1
+    COUNT=$(( ${COUNT} + 1 ))
+done
 
 if [[ -z ${IPMIIP_IPMITOOL} ]]; then
-	echo "No IPMI IP returned by ipmitool"
+	echo "No IPMI IP returned by ipmitool in 3 tries"
 	exit
 fi
 if [[ ${IPMIIP_INTERFACES} != ${IPMIIP_IPMITOOL} ]]; then
