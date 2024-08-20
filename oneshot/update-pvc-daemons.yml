@@ -125,7 +125,6 @@
       service:
         name: "{{ item }}"
         state: restarted
-        enabled: yes
       with_items:
         - pvcworkerd
         - pvchealthd
@@ -136,6 +135,14 @@
 
     - name: apply database migrations on first node (safe upgrades prevented this in dpkg)
       command: /usr/share/pvc/pvc-api-db-upgrade
+      run_once: yes
+
+    - name: restart API daemon to apply database migrations
+      service:
+        name: "{{ item }}"
+        state: restarted
+      with_items:
+        - pvcapid
       run_once: yes
 
     - name: unset PVC maintenance mode on first node
