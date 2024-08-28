@@ -544,10 +544,22 @@
       delegate_to: "{{ item }}"
       loop: "{{ ansible_play_hosts }}"
 
+    - name: wait 30 seconds for system to stabilize
+      pause:
+        seconds: 30
+      become: no
+      connection: local
+
     - name: set first node as primary coordinator
       command: "pvc node primary --wait {{ ansible_play_hosts[0].split('.')[0] }}"
       run_once: yes
       delegate_to: "{{ ansible_play_hosts[0] }}"
+
+    - name: wait 15 seconds for system to stabilize
+      pause:
+        seconds: 15
+      become: no
+      connection: local
 
     - name: unset PVC maintenance mode
       command: pvc cluster maintenance off

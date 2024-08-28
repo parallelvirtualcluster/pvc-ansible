@@ -145,6 +145,12 @@
         - pvcapid
       run_once: yes
 
+    - name: wait 15 seconds for system to stabilize
+      pause:
+        seconds: 15
+      become: no
+      connection: local
+
     - name: unset PVC maintenance mode on first node
       command: pvc cluster maintenance off
       run_once: yes

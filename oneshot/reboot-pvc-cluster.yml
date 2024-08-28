@@ -160,6 +160,12 @@
   become_user: root
   gather_facts: yes
   tasks:
+    - name: wait 15 seconds for system to stabilize
+      pause:
+        seconds: 15
+      become: no
+      connection: local
+
     - name: unset PVC maintenance mode
       command: pvc cluster maintenance off
       run_once: yes
