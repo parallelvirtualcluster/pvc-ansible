@@ -799,6 +799,7 @@
   tags:
     - users
     - user-root
+  ignore_errors: yes
 
 - name: remove Root known_hosts
   file:
