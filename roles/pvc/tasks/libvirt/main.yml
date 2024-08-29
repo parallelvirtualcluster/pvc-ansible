@@ -28,6 +28,7 @@
     name: libvirt-qemu
     groups: ceph
     append: yes
+  ignore_errors: yes
 
 - name: add admin users to libvirt groups
   user:
@@ -35,6 +36,7 @@
     groups: kvm,libvirt
     append: yes
   with_items: "{{ admin_users }}"
+  ignore_errors: yes
 
 - name: install libvirt configurations
   template:
