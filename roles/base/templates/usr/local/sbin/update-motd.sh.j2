@@ -23,7 +23,7 @@ echo -e "> \033[1;34mNode name:\033[0m \033[01;36m$(hostname)\033[0m" >> $TMPFIL
 echo -e "> \033[1;34mCluster name:\033[0m \033[01;36m{{ cluster_group }}\033[0m" >> $TMPFILE
 echo -e "> \033[1;34mSystem type:\033[0m PVC \033[1;36m{% if is_coordinator %}coordinator{% else %}hypervisor{% endif %}\033[0m node" >> $TMPFILE
 echo -e "> \033[1;34mPVC version:\033[0m ${PVCVER}" >> $TMPFILE
-echo -e "> \033[1;34mBase system:\033[0m {{ ansible_lsb.description }}" >> $TMPFILE
+echo -e "> \033[1;34mBase system:\033[0m {{ ansible_lsb.description if ansible_lsb else 'Debian GNU/Linux' }}" >> $TMPFILE
 echo -e "> \033[1;34mKernel:\033[0m $(/bin/uname -vm)" >> $TMPFILE
 
 # Get machine information
