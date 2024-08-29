@@ -846,6 +846,7 @@
   tags:
     - users
     - user-backup
+  ignore_errors: yes
 
 - name: create backup .ssh directory
   file:
@@ -911,6 +912,7 @@
   tags:
     - users
     - user-deploy
+  ignore_errors: yes
 
 - name: ensure homedir has right permissions
   file:
@@ -975,6 +977,7 @@
   tags:
     - users
     - user-admin
+  ignore_errors: yes
 
 - name: ensure homedir has right permissions
   file:
