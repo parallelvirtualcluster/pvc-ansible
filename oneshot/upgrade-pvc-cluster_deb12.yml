@@ -512,6 +512,17 @@
             name: patroni
             state: started
             masked: no
+
+        - name: wait 15 seconds for system to stabilize
+          pause:
+            seconds: 15
+          become: no
+          connection: local
+
+        - name: apply schema updates
+          shell: /usr/share/pvc/pvc-api-db-upgrade
+          ignore_errors: yes
+
       run_once: yes
       delegate_to: "{{ patroni_leader }}"
 
