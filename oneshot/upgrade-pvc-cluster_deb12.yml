@@ -561,5 +561,21 @@
       become: no
       connection: local
 
+# Play 5: Final role updates to normalize cluster
+- hosts: all
+  remote_user: deploy
+  become: yes
+  become_user: root
+  gather_facts: yes
+  tasks:
+    - name: include base role
+      import_role:
+        name: base
+
+    - name: include pvc role
+      import_role:
+        name: pvc
+
     - name: unset PVC maintenance mode
       command: pvc cluster maintenance off
+      run_once: yes
