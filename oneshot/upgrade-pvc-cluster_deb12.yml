@@ -185,7 +185,7 @@
         - ceph-osd@.service.d
         - ceph-osd-cpuset.service
 
-    - name: replace sources.list entries will bookworm
+    - name: replace sources.list entries with bookworm
       replace:
         dest: "{{ item }}"
         regexp: "{{ debian_codename }}"
