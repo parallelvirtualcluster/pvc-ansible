@@ -664,12 +664,12 @@
 
 - name: run update-motd on change
   command: /usr/local/sbin/update-motd.sh
-  when: profile_scripts.changed
+  when: profile_scripts.changed and not newhost
   tags: base-shell
 
 - name: run update-issue on change
   command: /usr/local/sbin/update-issue.sh
-  when: profile_scripts.changed
+  when: profile_scripts.changed and not newhost
   tags: base-shell
 
 # htop
