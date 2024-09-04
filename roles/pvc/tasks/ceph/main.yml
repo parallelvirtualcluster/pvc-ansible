@@ -172,10 +172,10 @@
 # Single-node cluster ruleset
 - name: remove default CRUSH replicated_rule ruleset
   command: ceph osd crush rule rm replicated_rule
-  when: "{{ pvc_nodes | length }} == 1"
+  when: pvc_nodes | length == 1
 
 - name: add single-node CRUSH replicated_rule ruleset
   command: ceph osd crush rule create-replicated replicated_rule default osd
-  when: "{{ pvc_nodes | length }} == 1"
+  when: pvc_nodes | length == 1
 
 - meta: flush_handlers
