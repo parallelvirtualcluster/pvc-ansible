@@ -31,8 +31,9 @@ A full explanation of all variables can be found in [the manual](https://paralle
 
 ## Using
 
-*NOTE:* These roles expect a Debian 10.X (Buster) or Debian 11.X (Bullseye) system specifically.
-        This is currently the only operating environment supported for PVC.
+*NOTE:* These roles expect a Debian 12.X (Bookworm) system specifically (as of PVC 0.9.100).
+        This is currently the only operating environment supported for PVC. This role MAY work
+        on Debian derivatives but this is not guaranteed!
 
 *NOTE:* All non-`default` directories under `group_vars/` and `files/`, and the `hosts` file,
         are ignored by this Git repository. It is advisable to manage these files securely
