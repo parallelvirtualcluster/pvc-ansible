@@ -46,6 +46,9 @@
         autoremove: yes
         autoclean: yes
         package:
+          - gunicorn
+          - python3-gunicorn
+          - python3-setuptools
           - pvc-client-cli
           - pvc-daemon-common
           - pvc-daemon-api
