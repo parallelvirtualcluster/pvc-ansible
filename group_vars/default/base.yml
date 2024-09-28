@@ -148,7 +148,7 @@ admin_users:
 #   Third, the 3 PVC interfaces are created as vLANs (1000, 1001, and 1002) on top of the bond.
 #   This should cover most normal usecases, though consult the template files for more detail if needed.
 networks:
-  "enp1s0f0":
+  enp1s0f0:
     device: "enp1s0f0"
     type: "nic"
     custom_options:
@@ -156,7 +156,7 @@ networks:
         command: ethtool -K $IFACE rx-gro-hw off
       - timing: post  # Forms a "post-up" statement
         command: sysctl -w net.ipv6.conf.$IFACE.accept_ra=0
-  "enp1s0f1":
+  enp1s0f1:
     device: "enp1s0f1"
     type: "nic"
     custom_options:
@@ -164,7 +164,7 @@ networks:
         command: ethtool -K $IFACE rx-gro-hw off
       - timing: post  # Forms a "post-up" statement
         command: sysctl -w net.ipv6.conf.$IFACE.accept_ra=0
-  "bond0":
+  bond0:
     device: "bond0"
     type: "bond"
     bond_mode: "802.3ad"
@@ -172,7 +172,7 @@ networks:
       - "enp1s0f0"
       - "enp1s0f1"
     mtu: 9000  # Forms a "post-up ip link set $IFACE mtu" statement
-  "upstream":
+  upstream:
     device: "vlan1000"
     type: "vlan"
     raw_device: "bond0"
@@ -182,7 +182,7 @@ networks:
     subnet: "192.168.100.0"
     floating_ip: "192.168.100.10"
     gateway_ip: "192.168.100.1"
-  "cluster":
+  cluster:
     device: "vlan1001"
     type: "vlan"
     raw_device: "bond0"
@@ -191,7 +191,7 @@ networks:
     netmask: "24"
     subnet: "10.0.0.0"
     floating_ip: "10.0.0.254"
-  "storage":
+  storage:
     device: "vlan1002"
     type: "vlan"
     raw_device: "bond0"
