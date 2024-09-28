@@ -149,54 +149,54 @@ admin_users:
 #   This should cover most normal usecases, though consult the template files for more detail if needed.
 networks:
   enp1s0f0:
-    device: "enp1s0f0"
-    type: "nic"
+    device: enp1s0f0
+    type: nic
     custom_options:
-      - timing: pre  # Forms a "pre-up" statement
+      - timing: pre  # Forms a pre-up statement
         command: ethtool -K $IFACE rx-gro-hw off
-      - timing: post  # Forms a "post-up" statement
+      - timing: post  # Forms a post-up statement
         command: sysctl -w net.ipv6.conf.$IFACE.accept_ra=0
   enp1s0f1:
-    device: "enp1s0f1"
-    type: "nic"
+    device: enp1s0f1
+    type: nic
     custom_options:
-      - timing: pre  # Forms a "pre-up" statement
+      - timing: pre  # Forms a pre-up statement
         command: ethtool -K $IFACE rx-gro-hw off
-      - timing: post  # Forms a "post-up" statement
+      - timing: post  # Forms a post-up statement
         command: sysctl -w net.ipv6.conf.$IFACE.accept_ra=0
   bond0:
-    device: "bond0"
-    type: "bond"
-    bond_mode: "802.3ad"
+    device: bond0
+    type: bond
+    bond_mode: 802.3ad
     bond_devices:
-      - "enp1s0f0"
-      - "enp1s0f1"
-    mtu: 9000  # Forms a "post-up ip link set $IFACE mtu" statement
+      - enp1s0f0
+      - enp1s0f1
+    mtu: 9000  # Forms a post-up ip link set $IFACE mtu statement
   upstream:
-    device: "vlan1000"
-    type: "vlan"
-    raw_device: "bond0"
+    device: vlan1000
+    type: vlan
+    raw_device: bond0
     mtu: 1500  # Use a lower MTU on upstream for compatibility
     domain: "{{ local_domain }}"
-    netmask: "24"
-    subnet: "192.168.100.0"
-    floating_ip: "192.168.100.10"
-    gateway_ip: "192.168.100.1"
+    netmask: 24
+    subnet: 192.168.100.0
+    floating_ip: 192.168.100.10
+    gateway_ip: 192.168.100.1
   cluster:
-    device: "vlan1001"
-    type: "vlan"
-    raw_device: "bond0"
+    device: vlan1001
+    type: vlan
+    raw_device: bond0
     mtu: 9000  # Use a higher MTU on cluster for performance
-    domain: "pvc-cluster.local"
-    netmask: "24"
-    subnet: "10.0.0.0"
-    floating_ip: "10.0.0.254"
+    domain: pvc-cluster.local
+    netmask: 24
+    subnet: 10.0.0.0
+    floating_ip: 10.0.0.254
   storage:
-    device: "vlan1002"
-    type: "vlan"
-    raw_device: "bond0"
+    device: vlan1002
+    type: vlan
+    raw_device: bond0
     mtu: 9000  # Use a higher MTU on cluster for performance
-    domain: "pvc-storage.local"
-    netmask: "24"
-    subnet: "10.0.1.0"
-    floating_ip: "10.0.1.254"
+    domain: pvc-storage.local
+    netmask: 24
+    subnet: 10.0.1.0
+    floating_ip: 10.0.1.254
