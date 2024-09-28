@@ -133,23 +133,50 @@ admin_users:
 # > The "type" can be one of three NIC types: "nic" for raw NIC devices, "bond" for ifenslave bonds,
 #   or "vlan" for vLAN interfaces. The PVC role will write out an interfaces file matching these specs.
 # > Three names are reserved for the PVC-specific interfaces: upstream, cluster, and storage; others
-#   may be used at will to describe the other devices.
+#   may be used at will to describe the other devices. These devices have IP info which is then written
+#   into `pvc.conf`.
 # > All devices should be using the newer device name format (i.e. enp1s0f0 instead of eth0).
-# > In this example configuration, the "upstream" device is an LACP bond of the first two onboard NICs,
-#   with the two other PVC networks being vLANs on top of this device.
 # > Usually, the Upstream network provides Internet connectivity for nodes in the cluster, and all
 #   nodes are part of it regardless of function for this reason; an optional, advanced, configuration
 #   will have only coordinators in the upstream network, however this configuration is out of the scope
 #   of this role.
+# > This example configuration is one the author uses frequently, to demonstrate all possible options.
+#   First, two base NIC devices are set with some custom ethtool options; these are optional of course.
+#   The "timing" value for a "custom_options" entry must be "pre" or "post". The command can include $IFACE
+#   which is written as-is (to be interpreted by Debian ifupdown at runtime).
+#   Second, a bond interface is created on top of the two NIC devices in 802.3ad (LACP) mode with high MTU.
+#   Third, the 3 PVC interfaces are created as vLANs (1000, 1001, and 1002) on top of the bond.
+#   This should cover most normal usecases, though consult the template files for more detail if needed.
 networks:
-  "upstream":
-    device: "bondU"
+  "enp1s0f0":
+    device: "enp1s0f0"
+    type: "nic"
+    custom_options:
+      - timing: pre  # Forms a "pre-up" statement
+        command: ethtool -K $IFACE rx-gro-hw off
+      - timing: post  # Forms a "post-up" statement
+        command: sysctl -w net.ipv6.conf.$IFACE.accept_ra=0
+  "enp1s0f1":
+    device: "enp1s0f1"
+    type: "nic"
+    custom_options:
+      - timing: pre  # Forms a "pre-up" statement
+        command: ethtool -K $IFACE rx-gro-hw off
+      - timing: post  # Forms a "post-up" statement
+        command: sysctl -w net.ipv6.conf.$IFACE.accept_ra=0
+  "bond0":
+    device: "bond0"
     type: "bond"
     bond_mode: "802.3ad"
     bond_devices:
       - "enp1s0f0"
       - "enp1s0f1"
-    mtu: 1500
+    mtu: 9000  # Forms a "post-up ip link set $IFACE mtu" statement
+  "upstream":
+    device: "vlan1000"
+    type: "vlan"
+    raw_device: "bond0"
+    mtu: 1500  # Use a lower MTU on upstream for compatibility
     domain: "{{ local_domain }}"
     netmask: "24"
     subnet: "192.168.100.0"
@@ -158,8 +185,8 @@ networks:
   "cluster":
     device: "vlan1001"
     type: "vlan"
-    raw_device: "bondU"
-    mtu: 1500
+    raw_device: "bond0"
+    mtu: 9000  # Use a higher MTU on cluster for performance
     domain: "pvc-cluster.local"
     netmask: "24"
     subnet: "10.0.0.0"
@@ -167,8 +194,8 @@ networks:
   "storage":
     device: "vlan1002"
     type: "vlan"
-    raw_device: "bondU"
-    mtu: 1500
+    raw_device: "bond0"
+    mtu: 9000  # Use a higher MTU on cluster for performance
     domain: "pvc-storage.local"
     netmask: "24"
     subnet: "10.0.1.0"

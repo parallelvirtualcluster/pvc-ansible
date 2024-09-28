@@ -3,7 +3,14 @@
 
 auto {{ network.value['device'] }}
 iface {{ network.value['device'] }} inet {{ network.value['mode']|default('manual') }}
+{% if network.value['custom_options'] is defined %}
+{% for option in network.value['custom_options'] %}
+    {{ option['timing'] }}-up {{ option['command'] }}
+{% endfor %}
+{% endif %}
+{% if network.value['mtu'] is defined %}
     post-up ip link set $IFACE mtu {{ network.value['mtu'] }}
+{% endif %}
 {% if network.value['type'] == 'bond' %}
     bond-mode {{ network.value['bond_mode'] }}
     bond-slaves {{ network.value['bond_devices'] | join(' ') }}
