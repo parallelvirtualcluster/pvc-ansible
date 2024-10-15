@@ -90,9 +90,9 @@
             - pvcworkerd
             - pvchealthd
 
-        - name: wait 15 seconds for system to stabilize
+        - name: wait 30 seconds for system to stabilize
           pause:
-            seconds: 15
+            seconds: 30
           become: no
           connection: local
 
@@ -111,9 +111,9 @@
           command: systemctl reset-failed
       when: packages.changed
 
-    - name: wait 15 seconds for system to stabilize
+    - name: wait 30 seconds for system to stabilize
       pause:
-        seconds: 15
+        seconds: 30
       become: no
       connection: local
 
@@ -148,9 +148,9 @@
         - pvcapid
       run_once: yes
 
-    - name: wait 15 seconds for system to stabilize
+    - name: wait 30 seconds for system to stabilize
       pause:
-        seconds: 15
+        seconds: 30
       become: no
       connection: local
 
