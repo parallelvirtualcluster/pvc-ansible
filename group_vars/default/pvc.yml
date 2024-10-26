@@ -1,125 +1,128 @@
 ---
 # Logging configuration (uncomment to override defaults)
-#   These default options are generally best for most clusters; override these if you want more granular
-#   control over the logging output of the PVC system.
-#pvc_log_to_file: False                  # Log to a file in /var/log/pvc
-#pvc_log_to_stdout: True                 # Log to stdout (i.e. journald)
-#pvc_log_to_zookeeper: True              # Log to Zookeeper (required for 'node log' commands)
-#pvc_log_colours: True                   # Log colourful prompts for states instead of text
-#pvc_log_dates: False                    # Log dates (useful with log_to_file, not useful with log_to_stdout as journald adds these)
-#pvc_log_keepalives: True                # Log keepalive event every pvc_keepalive_interval seconds
-#pvc_log_keepalive_cluster_details: True # Log cluster details (VMs, OSDs, load, etc.) duing keepalive events
-#pvc_log_keepalive_plugin_details: True  # Log health plugin details (messages) suring keepalive events
-#pvc_log_console_lines: 1000             # The number of VM console log lines to store in Zookeeper for 'vm log' commands.
-#pvc_log_node_lines: 2000                # The number of node log lines to store in Zookeeper for 'node log' commands.
+# These default options are generally best for most clusters; override these if you want more granular
+# control over the logging output of the PVC system.
+#pvc_log_to_stdout: True                  # Log to stdout (i.e. journald)
+#pvc_log_to_file: False                   # Log to files in /var/log/pvc
+#pvc_log_to_zookeeper: True               # Log to Zookeeper; required for 'node log' commands to function, but writes a lot of data to Zookeeper - disable if using very small system disks
+#pvc_log_colours: True                    # Log colourful prompts for states instead of text
+#pvc_log_dates: False                     # Log dates (useful with log_to_file, not useful with log_to_stdout as journald adds these)
+#pvc_log_keepalives: True                 # Log each keepalive event every pvc_keepalive_interval seconds
+#pvc_log_keepalive_cluster_details: True  # Log cluster details (VMs, OSDs, load, etc.) duing keepalive events
+#pvc_log_keepalive_plugin_details: True   # Log health plugin details (messages) suring keepalive events
+#pvc_log_console_lines: 1000              # The number of VM console log lines to store in Zookeeper for 'vm log' commands.
+#pvc_log_node_lines: 2000                 # The number of node log lines to store in Zookeeper for 'node log' commands.
 
 # Timing and fencing configuration (uncomment to override defaults)
-#   These default options are generally best for most clusters; override these if you want more granular
-#   control over the timings of various areas of the cluster, for instance if your hardware is slow or error-prone.
-#pvc_vm_shutdown_timeout: 180            # Number of seconds before a 'shutdown' VM is forced off
-#pvc_keepalive_interval: 5               # Number of seconds between keepalive ticks
-#pvc_monitoring_interval: 15             # Number of seconds between monitoring plugin runs
-#pvc_fence_intervals: 6                  # Number of keepalive ticks before a node is considered dead
-#pvc_suicide_intervals: 0                # Number of keepalive ticks before a node consideres itself dead (0 to disable)
-#pvc_fence_successful_action: migrate    # What to do with VMs when a fence is successful (migrate, None)
-#pvc_fence_failed_action: None           # What to do with VMs when a fence is failed (migrate, None) - migrate is DANGEROUS without pvc_suicide_intervals set to < pvc_fence_intervals
-#pvc_migrate_target_selector: mem        # The selector to use for migrating VMs if not explicitly set; one of mem, memfree, load, vcpus, vms
+# These default options are generally best for most clusters; override these if you want more granular
+# control over the timings of various areas of the cluster, for instance if your hardware is slow or error-prone.
+# DO NOT lower most of these values; this will NOT provide "more reliability", but the contrary.
+#pvc_vm_shutdown_timeout: 180             # Number of seconds before a 'shutdown' VM is forced off
+#pvc_keepalive_interval: 5                # Number of seconds between keepalive ticks
+#pvc_monitoring_interval: 15              # Number of seconds between monitoring plugin runs
+#pvc_fence_intervals: 6                   # Number of keepalive ticks before a node is considered dead
+#pvc_suicide_intervals: 0                 # Number of keepalive ticks before a node consideres itself dead and forcibly restarts itself (0 to disable, recommended)
+#pvc_fence_successful_action: migrate     # What to do with VMs when a fence is successful (migrate, None)
+#pvc_fence_failed_action: None            # What to do with VMs when a fence is failed (migrate, None) - migrate is DANGEROUS without pvc_suicide_intervals set to < pvc_fence_intervals
+#pvc_migrate_target_selector: mem         # The selector to use for migrating VMs if not explicitly set by the VM; one of mem, memfree, load, vcpus, vms
 
 # Client API basic configuration
-pvc_api_listen_address: "{{ pvc_upstream_floatingip }}"
-pvc_api_listen_port: "7370"
-pvc_api_secret_key: ""                      # Use pwgen to generate
+pvc_api_listen_address: "{{ pvc_upstream_floatingip }}"  # This should usually be the upstream floating IP
+pvc_api_listen_port: "7370"                              # This can be any port, including low ports, if desired, but be mindful of port conflicts
+pvc_api_secret_key: ""                                   # Use pwgen to generate
 
 # Client API user tokens
 # Create a token (random UUID or password) for each user you wish to have access to the PVC API.
 # The first token will always be used for the "local" connection, and thus at least one token MUST be defined.
+# WARNING: All tokens function at the same privilege level and provide FULL CONTROL over the cluster. Keep them secret!
 pvc_api_enable_authentication: True
 pvc_api_tokens:
-#  - description: "myuser"
-#    token: "a3945326-d36c-4024-83b3-2a8931d7785a"
+  - description: "myuser"                           # The description is purely cosmetic for current iterations of PVC
+    token: "a3945326-d36c-4024-83b3-2a8931d7785a"   # The token should be random for security; use uuidgen or pwgen to generate
 
 # PVC API SSL configuration
 # Use these options to enable SSL for the API listener, providing security over WAN connections.
 # There are two options for defining the SSL certificate and key to use:
-#   a) Set both pvc_api_ssl_cert_path and pvc_api_ssl_key_path to paths to an existing SSL combined (CA + cert) certificate and key, respectively, on the system.
-#   b) Set both pvc_api_ssl_cert and pvc_api_ssl_key to the raw PEM-encoded contents of an SSL combined (CA + cert) certificate and key, respectively, which will be installed under /etc/pvc.
+#   a) Set both pvc_api_ssl_cert_path and pvc_api_ssl_key_path to paths to an existing SSL combined (CA + intermediate + cert) certificate and key, respectively, on the system.
+#   b) Set both pvc_api_ssl_cert and pvc_api_ssl_key to the raw PEM-encoded contents of an SSL combined (CA + intermediate + cert) certificate and key, respectively, which will be installed under /etc/pvc.
 # If the _path options are non-empty, the raw entries are ignored and will not be used.
-pvc_api_enable_ssl: False
-pvc_api_ssl_cert_path:
+pvc_api_enable_ssl: False   # Enable SSL listening; this is highly recommended when using the API over the Internet!
+pvc_api_ssl_cert_path: ""   # Set a path here, or...
 pvc_api_ssl_cert: >
-  # A RAW CERTIFICATE FILE, installed to /etc/pvc/api-cert.pem
-pvc_api_ssl_key_path:
+  # Enter a A RAW CERTIFICATE FILE content, installed to /etc/pvc/api-cert.pem
+pvc_api_ssl_key_path: ""    # Set a path here, or...
 pvc_api_ssl_key: >
-  # A RAW KEY FILE, installed to /etc/pvc/api-key.pem
+  # Enter a A RAW KEY FILE content, installed to /etc/pvc/api-key.pem
 
 # Ceph storage configuration
 pvc_ceph_storage_secret_uuid: ""            # Use uuidgen to generate
 
 # Database configuration
-pvc_dns_database_name: "pvcdns"
-pvc_dns_database_user: "pvcdns"
+pvc_dns_database_name: "pvcdns"             # Should usually be "pvcdns" unless there is good reason to change it
+pvc_dns_database_user: "pvcdns"             # Should usually be "pvcdns" unless there is good reason to change it
 pvc_dns_database_password: ""               # Use pwgen to generate
-pvc_api_database_name: "pvcapi"
-pvc_api_database_user: "pvcapi"
+pvc_api_database_name: "pvcapi"             # Should usually be "pvcapi" unless there is good reason to change it
+pvc_api_database_user: "pvcapi"             # Should usually be "pvcapi" unless there is good reason to change it
 pvc_api_database_password: ""               # Use pwgen to generate
-pvc_replication_database_user: "replicator"
+pvc_replication_database_user: "replicator" # Should be "replicator" for Patroni
 pvc_replication_database_password: ""       # Use pwgen to generate
-pvc_superuser_database_user: "postgres"
+pvc_superuser_database_user: "postgres"     # Should be "postgres"
 pvc_superuser_database_password: ""         # Use pwgen to generate
 
 # Network routing configuration
-# > The ASN should be a private ASN number.
-# > The list of routers are those which will learn routes to the PVC client networks via BGP;
-#   they should speak BGP and allow sessions from the PVC nodes.
+# The ASN should be a private ASN number, usually "65500"
+# The list of routers are those which will learn routes to the PVC client networks via BGP;
+# they should speak BGP and allow sessions from the PVC nodes.
+# If you do not have any upstream BGP routers, e.g. if you wish to use static routing to and from managed networks, leave the list empty
 pvc_asn: "65500"
 pvc_routers:
-  - "192.168.100.1"
+  - "10.100.0.254"
 
 # PVC Node list
-# > Every node configured with this playbook must be specified in this list.
+# Every node configured with this playbook must be specified in this list.
 pvc_nodes:
-  - hostname: "pvchv1" # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
-    is_coordinator: yes
-    node_id: 1
-    router_id: "192.168.100.11"
-    upstream_ip: "192.168.100.11"
+  - hostname: "hv1"  # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
+    is_coordinator: yes  # Coordinators should be set to "yes", hypervisors to "no"
+    node_id: 1  # Should match the number portion of the hostname
+    router_id: "10.100.0.1"
+    upstream_ip: "10.100.0.1"
     cluster_ip: "10.0.0.1"
     storage_ip: "10.0.1.1"
-    ipmi_host: "{{ ipmi['hosts']['pvchv1']['hostname'] }}" # Note the node hostname key in here
+    ipmi_host: "{{ ipmi['hosts']['hv1']['hostname'] }}"  # Note the node hostname as the key here
     ipmi_user: "{{ ipmi['users']['pvc']['username'] }}"
     ipmi_password: "{{ ipmi['users']['pvc']['password'] }}"
-    cpu_tuning:             # Example of cpu_tuning overrides per-node, only relevant if enabled; see below
-      system_cpus: 2
-      osd_cpus: 2
-  - hostname: "pvchv2" # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
+    cpu_tuning:         # Example of cpu_tuning overrides per-node, only relevant if enabled; see below
+      system_cpus: 2    # Number of CPU cores (+ their hyperthreads) to allocate to the system
+      osd_cpus: 2       # Number of CPU cores (+ their hyperthreads) to allocate to the storage OSDs
+  - hostname: "hv2" # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
     is_coordinator: yes
     node_id: 2
-    router_id: "192.168.100.12"
-    upstream_ip: "192.168.100.12"
+    router_id: "10.100.0.2"
+    upstream_ip: "10.100.0.2"
     cluster_ip: "10.0.0.2"
     storage_ip: "10.0.1.2"
-    ipmi_host: "{{ ipmi['hosts']['pvchv2']['hostname'] }}" # Note the node hostname key in here
+    ipmi_host: "{{ ipmi['hosts']['hv2']['hostname'] }}"  # Note the node hostname as the key here
     ipmi_user: "{{ ipmi['users']['pvc']['username'] }}"
     ipmi_password: "{{ ipmi['users']['pvc']['password'] }}"
-  - hostname: "pvchv3" # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
+  - hostname: "hv3" # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
     is_coordinator: yes
     node_id: 3
-    router_id: "192.168.100.13"
-    upstream_ip: "192.168.100.13"
+    router_id: "10.100.0.3"
+    upstream_ip: "10.100.0.3"
     cluster_ip: "10.0.0.3"
     storage_ip: "10.0.1.3"
-    ipmi_host: "{{ ipmi['hosts']['pvchv3']['hostname'] }}" # Note the node hostname key in here
+    ipmi_host: "{{ ipmi['hosts']['hv3']['hostname'] }}"  # Note the node hostname as the key here
     ipmi_user: "{{ ipmi['users']['pvc']['username'] }}"
     ipmi_password: "{{ ipmi['users']['pvc']['password'] }}"
 
 # Bridge device entry
-# This device is passed to PVC and is used when creating bridged networks. Normal managed networks are
-# created on top of the "cluster" interface defined below, however bridged networks must be created
-# directly on an underlying non-vLAN network device. This can be the same underlying device as the
-# upstream/cluster/storage networks (especially if the upstream network device is not a vLAN itself),
-# or a different device separate from the other 3 main networks.
-pvc_bridge_device: bondU        # Replace based on your network configuration
-pvc_bridge_mtu: 1500            # Replace based on your network configuration
+# This device is used when creating bridged networks. Normal managed networks are created on top of the
+# "cluster" interface defined below, however bridged networks must be created directly on an underlying
+# non-vLAN network device. This can be the same underlying device as the upstream/cluster/storage networks
+# (especially if the upstream network device is not a vLAN itself), or a different device separate from the
+# other 3 main networks.
+pvc_bridge_device: bond0        # Replace based on your network configuration
+pvc_bridge_mtu: 1500            # Replace based on your network configuration; bridges will have this MTU by default unless otherwise specified
 
 # SR-IOV device configuration
 # SR-IOV enables the passing of hardware-virtualized network devices (VFs), created on top of SR-IOV-enabled
@@ -154,7 +157,6 @@ pvc_sriov_enable: False
 # > ADVANCED TUNING: These options are strongly recommended due to the performance gains possible, but
 #   most users would be able to use the default without too much issue. Read the following notes
 #   carefully to determine if this setting should be enabled in your cluster.
-# > NOTE: CPU tuning is only supported on Debian Bullseye (11) or newer
 # > NOTE: CPU tuning playbooks require jmespath (e.g. python3-jmespath) installed on the controller node
 # > Defines CPU tuning/affinity options for various subsystems within PVC. This is useful to
 #   help limit the impact that noisy elements may have on other elements, e.g. busy VMs on
