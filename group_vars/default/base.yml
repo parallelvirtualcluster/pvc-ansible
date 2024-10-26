@@ -60,72 +60,80 @@ ipmi:
       password: "{{ root_password }}"
     pvc:
       username: "host"
-      password: ""
+      password: ""  # Set a random password here
+                    # > use pwgen to generate
   hosts:
-    "pvchv1":                   # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
-      hostname: pvchv1-lom      # A valid short name (e.g. from /etc/hosts) or an FQDN must be used here and it must resolve to address.
+    "hv1":                      # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
+      hostname: hv1-lom         # A valid short name (e.g. from /etc/hosts) or an FQDN must be used here and it must resolve to address.
                                 # PVC connects to this *hostname* for fencing.
-      address: 192.168.100.101
+      address: 10.100.0.101     # The IPMI address should usually be in the "upstream" network, but can be routed if required
       netmask: 255.255.255.0
-      gateway: 192.168.100.1
-      channel: 1                # Optional: defaults to "1" if not set
-    "pvchv2":                   # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
-      hostname: pvchv2-lom      # A valid short name (e.g. from /etc/hosts) or an FQDN must be used here and it must resolve to address.
+      gateway: 10.100.0.254
+      channel: 1                # Optional: defaults to "1" if not set; defines the IPMI LAN channel which is usually 1
+    "hv2":                      # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
+      hostname: hv2-lom         # A valid short name (e.g. from /etc/hosts) or an FQDN must be used here and it must resolve to address.
                                 # PVC connects to this *hostname* for fencing.
       address: 192.168.100.102
       netmask: 255.255.255.0
       gateway: 192.168.100.1
-      channel: 1                # Optional: defaults to "1" if not set
-    "pvchv3":                   # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
-      hostname: pvchv3-lom      # A valid short name (e.g. from /etc/hosts) or an FQDN must be used here and it must resolve to address.
+      channel: 1                # Optional: defaults to "1" if not set; defines the IPMI LAN channel which is usually 1
+    "hv3":                      # This name MUST match the Ansible inventory_hostname's first portion, i.e. "inventory_hostname.split('.')[0]"
+      hostname: hv3-lom         # A valid short name (e.g. from /etc/hosts) or an FQDN must be used here and it must resolve to address.
                                 # PVC connects to this *hostname* for fencing.
       address: 192.168.100.103
       netmask: 255.255.255.0
       gateway: 192.168.100.1
-      channel: 1                # Optional: defaults to "1" if not set
+      channel: 1                # Optional: defaults to "1" if not set; defines the IPMI LAN channel which is usually 1
 
 # IPMI user configuration
 # > Adjust this based on the specific hardware you are using; the cluster_hardware variable is
 #   used as the key in this dictionary.
-# > If you run multiple clusters with different hardware, it may be prudent to move this to an
-#   'all' group_vars file instead.
 ipmi_user_configuration:
   "default":
-    channel: 1
-    admin:
-      id: 1
-      role: 0x4 # ADMINISTRATOR
-      username: "{{ ipmi['users']['admin']['username'] }}"
-      password: "{{ ipmi['users']['admin']['password'] }}"
-    pvc:
-      id: 2
-      role: 0x4 # ADMINISTRATOR
+    channel: 1                  # The IPMI user channel, usually 1
+    admin:                      # Configuration for the Admin user
+      id: 1                     # The user ID, usually 1 for the Admin user
+      role: 0x4                 # ADMINISTRATOR privileges
+      username: "{{ ipmi['users']['admin']['username'] }}"  # Loaded from the above section
+      password: "{{ ipmi['users']['admin']['password'] }}"  # Loaded from the above section
+    pvc:                        # Configuration for the PVC user
+      id: 2                     # The user ID, usually 2 for the PVC user
+      role: 0x4                 # ADMINISTRATOR privileges
       username: "{{ ipmi['users']['pvc']['username'] }}"
       password: "{{ ipmi['users']['pvc']['password'] }}"
 
 # Log rotation configuration
+# > The defaults here are usually sufficient and should not need to be changed without good reason
 logrotate_keepcount: 7
 logrotate_interval: daily
 
 # Root email name (usually "root")
+# > Can be used to send email destined for the root user (e.g. cron reports) to a real email address if desired
 username_email_root: root
 
 # Hosts entries
+# > Define any static `/etc/hosts` entries here; the provided example shows the format but should be removed
 hosts:
   - name: test
-    ip: 127.0.0.1
+    ip: 1.2.3.4
 
 # Administrative shell users for the cluster
+# > These users will be permitted SSH access to the cluster, with the user created automatically and its 
+#   SSH public keys set based on the provided lists. In addition, all keys will be allowed access to the
+#   Ansible deploy user for managing the cluster
 admin_users:
-  - name: "myuser"
-    uid: 500
+  - name: "myuser"      # Set the username
+    uid: 500            # Set the UID; the first admin user should be 500, then 501, 502, etc.
     keys:
+      # These SSH public keys will be added if missing
       - "ssh-ed25519 MyKey 2019-06"
     removed:
+      # These SSH public keys will be removed if present
       - "ssh-ed25519 ObsoleteKey 2017-01"
 
 # Backup user SSH user keys, for remote backups separate from administrative users (e.g. rsync)
 # > Uncomment to activate this functionality.
+# > Useful for tools like BackupPC (the authors preferred backup tool) or remote rsync backups.
 #backup_keys:
 #  - "ssh-ed25519 MyKey 2019-06"
 
@@ -135,11 +143,9 @@ admin_users:
 # > Three names are reserved for the PVC-specific interfaces: upstream, cluster, and storage; others
 #   may be used at will to describe the other devices. These devices have IP info which is then written
 #   into `pvc.conf`.
-# > All devices should be using the newer device name format (i.e. enp1s0f0 instead of eth0).
-# > Usually, the Upstream network provides Internet connectivity for nodes in the cluster, and all
-#   nodes are part of it regardless of function for this reason; an optional, advanced, configuration
-#   will have only coordinators in the upstream network, however this configuration is out of the scope
-#   of this role.
+# > All devices should be using the predictable device name format (i.e. enp1s0f0 instead of eth0). If
+#   you do not know these names, consult the manual of your selected node hardware, or boot a Linux
+#   LiveCD to see the generated interface configuration.
 # > This example configuration is one the author uses frequently, to demonstrate all possible options.
 #   First, two base NIC devices are set with some custom ethtool options; these are optional of course.
 #   The "timing" value for a "custom_options" entry must be "pre" or "post". The command can include $IFACE
@@ -151,6 +157,7 @@ networks:
   enp1s0f0:
     device: enp1s0f0
     type: nic
+    mtu: 9000  # Forms a post-up ip link set $IFACE mtu statement; a high MTU is recommended for optimal backend network performance
     custom_options:
       - timing: pre  # Forms a pre-up statement
         command: ethtool -K $IFACE rx-gro-hw off
@@ -159,6 +166,7 @@ networks:
   enp1s0f1:
     device: enp1s0f1
     type: nic
+    mtu: 9000  # Forms a post-up ip link set $IFACE mtu statement; a high MTU is recommended for optimal backend network performance
     custom_options:
       - timing: pre  # Forms a pre-up statement
         command: ethtool -K $IFACE rx-gro-hw off
@@ -167,36 +175,36 @@ networks:
   bond0:
     device: bond0
     type: bond
-    bond_mode: 802.3ad
+    bond_mode: 802.3ad  # Can also be active-backup for active-passive failover, but LACP is advised
     bond_devices:
       - enp1s0f0
       - enp1s0f1
-    mtu: 9000  # Forms a post-up ip link set $IFACE mtu statement
+    mtu: 9000  # Forms a post-up ip link set $IFACE mtu statement; a high MTU is recommended for optimal backend network performance
   upstream:
     device: vlan1000
     type: vlan
     raw_device: bond0
-    mtu: 1500  # Use a lower MTU on upstream for compatibility
-    domain: "{{ local_domain }}"
-    netmask: 24
-    subnet: 192.168.100.0
-    floating_ip: 192.168.100.10
-    gateway_ip: 192.168.100.1
+    mtu: 1500                     # Use a lower MTU on upstream for compatibility with upstream networks to avoid fragmentation
+    domain: "{{ local_domain }}"  # This should be the local_domain for the upstream network
+    subnet: 10.100.0.0            # The CIDR subnet address without the netmask
+    netmask: 24                   # The CIDR netmask
+    floating_ip: 10.100.0.250     # The floating IP used by the cluster primary coordinator; should be a high IP that won't conflict with any node IDs
+    gateway_ip: 10.100.0.254      # The default gateway IP
   cluster:
     device: vlan1001
     type: vlan
     raw_device: bond0
-    mtu: 9000  # Use a higher MTU on cluster for performance
-    domain: pvc-cluster.local
-    netmask: 24
-    subnet: 10.0.0.0
-    floating_ip: 10.0.0.254
+    mtu: 9000                     # Use a higher MTU on cluster for performance
+    domain: pvc-cluster.local     # This domain is arbitrary; using this default example is a good practice
+    subnet: 10.0.0.0              # The CIDR subnet address without the netmask; this should be an UNROUTED network (no gateway)
+    netmask: 24                   # The CIDR netmask
+    floating_ip: 10.0.0.254       # The floating IP used by the cluster primary coordinator; should be a high IP that won't conflict with any node IDs
   storage:
     device: vlan1002
     type: vlan
     raw_device: bond0
-    mtu: 9000  # Use a higher MTU on cluster for performance
-    domain: pvc-storage.local
-    netmask: 24
-    subnet: 10.0.1.0
-    floating_ip: 10.0.1.254
+    mtu: 9000                     # Use a higher MTU on storage for performance
+    domain: pvc-storage.local     # This domain is arbitrary; using this default example is a good practice
+    subnet: 10.0.1.0              # The CIDR subnet address without the netmask; this should be an UNROUTED network (no gateway)
+    netmask: 24                   # The CIDR netmask
+    floating_ip: 10.0.1.254       # The floating IP used by the cluster primary coordinator; should be a high IP that won't conflict with any node IDs
