@@ -63,6 +63,11 @@
       delegate_to: "{{ item }}"
       loop: "{{ patroni_followers }}"
 
+    - name: perform a backup of the primary
+      shell:
+        cmd: "sudo -u postgres /usr/bin/pg_dumpall > upgrade_dump.sql"
+        chdir: "/var/lib/postgresql"
+
     - name: stop and mask patroni service on leader to perform database upgrade (later)
       service:
         name: patroni
@@ -474,29 +479,14 @@
       delegate_to: "{{ patroni_leader }}"
 
     - block:
-        - name: initialize new postgres database
-          shell:
-            cmd: "sudo -u postgres /usr/lib/postgresql/{{ new_postgres_version }}/bin/initdb -D /var/lib/postgresql/{{ new_postgres_version }}/pvc"
-            chdir: "/var/lib/postgresql"
-
-        - name: enable data checksums in new database
-          shell:
-            cmd: "sudo -u postgres /usr/lib/postgresql/{{ new_postgres_version }}/bin/pg_checksums --enable /var/lib/postgresql/{{ new_postgres_version }}/pvc"
-            chdir: "/var/lib/postgresql"
-
-        - name: run postgres upgrade
-          shell:
-            cmd: "sudo -u postgres /usr/lib/postgresql/{{ new_postgres_version }}/bin/pg_upgrade -b {{ old_postgres_bin_dir }} -d /var/lib/postgresql/patroni/pvc -D /var/lib/postgresql/{{ new_postgres_version }}/pvc"
-            chdir: "/var/lib/postgresql"
-
         - name: move old postgres database out of the way
           shell:
             cmd: "sudo -u postgres mv /var/lib/postgresql/patroni/pvc /var/lib/postgresql/patroni/pvc.old"
             chdir: "/var/lib/postgresql"
 
-        - name: move new postgres database into place
+        - name: initialize new postgres database
           shell:
-            cmd: "sudo -u postgres mv /var/lib/postgresql/{{ new_postgres_version }}/pvc /var/lib/postgresql/patroni/pvc"
+            cmd: "sudo -u postgres /usr/lib/postgresql/{{ new_postgres_version }}/bin/initdb -D /var/lib/postgresql/patroni/pvc"
             chdir: "/var/lib/postgresql"
 
         - name: ensure recovery.conf is absent
@@ -519,9 +509,19 @@
           become: no
           connection: local
 
+        - name: import backup of the primary
+          shell:
+            cmd: "sudo -u postgres /usr/bin/psql < upgrade_dump.sql"
+            chdir: "/var/lib/postgresql"
+
         - name: apply schema updates
           shell: /usr/share/pvc/pvc-api-db-upgrade
           ignore_errors: yes
+
+        - name: remove temporary backup
+          file:
+            dest: /var/lib/postgresql/upgrade_dump.sql
+            state: absent
 
       run_once: yes
       delegate_to: "{{ patroni_leader }}"
