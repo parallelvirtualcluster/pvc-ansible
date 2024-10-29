@@ -15,7 +15,7 @@ NAME="$( grep '^NAME=' /etc/os-release | awk -F'"' '{ print $2 }' )"
 VERSION_ID="$( cat /etc/debian_version )"
 VERSION_CODENAME="$( grep '^VERSION_CODENAME=' /etc/os-release | awk -F'=' '{ print $2 }' )"
 DEBVER="${NAME} ${VERSION_ID} \"$(tc ${VERSION_CODENAME} )\""
-PVCVER="$( /usr/share/pvc/pvcnoded.py --version )"
+PVCVER="$( /usr/share/pvc/pvcnoded.py --version || echo 'Unknown' )"
 
 echo >> $TMPFILE
 echo -e "\033[01;34mParallel Virtual Cluster (PVC) Node\033[0m" >> $TMPFILE
