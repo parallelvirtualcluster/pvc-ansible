@@ -303,18 +303,21 @@
       - prometheus-node-exporter
       - prometheus-process-exporter
   when: enable_prometheus_exporters is defined and enable_prometheus_exporters
+  tags: base-packages
 
 - name: install Intel-specific microcode package
   apt:
     name:
       - intel-microcode
   when: "'GenuineIntel' in ansible_processor"
+  tags: base-packages
 
 - name: install AMD-specific microcode package
   apt:
     name:
       - amd64-microcode
   when: "'AuthenticAMD' in ansible_processor"
+  tags: base-packages
 
 - name: install cleanup scripts
   template:
@@ -443,6 +446,7 @@
   file:
     state: directory
     dest: "/usr/share/grub-pvc"
+  tags: base-bootloader
 
 - name: install PVC grub style
   copy:
@@ -451,6 +455,7 @@
   with_items:
     - background.png
     - theme.txt
+  tags: base-bootloader
 
 - name: install GRUB configuration
   template:
@@ -459,6 +464,7 @@
   notify:
     - update grub
     - regenerate uefi entries
+  tags: base-bootloader
 
 # Plymouth theme
 - name: install PVC Plymouth theme archive
@@ -468,14 +474,17 @@
     creates: "/usr/share/plymouth/themes/pvc"
     owner: root
     group: root
+  tags: base-bootloader
 
 - name: install PVC Plymouth background file
   copy:
     src: "usr/share/grub-pvc/background.png"
     dest: "/usr/share/plymouth/themes/pvc/background-tile.png"
+  tags: base-bootloader
 
 - name: set PVC Plymouth theme as the default
   command: plymouth-set-default-theme -R pvc
+  tags: base-bootloader
 
 # syslog
 - name: install rsyslog and logrotate configs
