@@ -1,0 +1,4 @@
+# needrestart - Blacklist PVC binaries
+# {{ ansible_managed }}
+
+push @{$nrconf{blacklist}}, qr(^/usr/share/pvc/);

@@ -412,6 +412,14 @@
     mode: 0440
   tags: base-system
 
+# needrestart
+- name: write the needrestart pvc blacklist file
+  template:
+    src: "etc/needrestart/conf.d/pvc.conf.j2"
+    dest: "/etc/needrestart/conf.d/pvc.conf"
+    mode: 0444
+  tags: base-system
+
 # dns
 - name: write the hosts config
   template:
