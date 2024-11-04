@@ -683,11 +683,13 @@
   command: /usr/local/sbin/update-motd.sh
   when: profile_scripts.changed and newhost is not defined and not newhost
   tags: base-shell
+  ignore_errors: yes
 
 - name: run update-issue on change
   command: /usr/local/sbin/update-issue.sh
   when: profile_scripts.changed and newhost is not defined and not newhost
   tags: base-shell
+  ignore_errors: yes
 
 # htop
 - name: install htop configuration
