@@ -55,8 +55,8 @@
       failed_when: check_output.stdout == ""
 
     - name: stop and mask patroni service on followers to perform database upgrade (later)
-      service:
-        name: patroni
+      systemd_service:
+        name: patroni.service
         state: stopped
         masked: yes
       run_once: yes
@@ -67,10 +67,12 @@
       shell:
         cmd: "sudo -u postgres /usr/bin/pg_dumpall > upgrade_dump.sql"
         chdir: "/var/lib/postgresql"
+      run_once: yes
+      delegate_to: "{{ patroni_leader }}"
 
     - name: stop and mask patroni service on leader to perform database upgrade (later)
-      service:
-        name: patroni
+      systemd_service:
+        name: patroni.service
         state: stopped
         masked: yes
       run_once: yes
@@ -498,8 +500,8 @@
           shell: "/usr/share/zookeeper/bin/zkCli.sh -server {{ ansible_hostname }}:2181 deleteall /patroni/pvc"
 
         - name: start patroni service on leader
-          service:
-            name: patroni
+          systemd_service:
+            name: patroni.service
             state: started
             masked: no
 
@@ -535,8 +537,8 @@
       loop: "{{ patroni_followers }}"
 
     - name: start patroni service on followers
-      service:
-        name: patroni
+      systemd_service:
+        name: patroni.service
         state: started
         masked: no
       run_once: yes
