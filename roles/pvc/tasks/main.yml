@@ -65,6 +65,11 @@
   tags: pvc-autobackup
   when: pvc_autobackup is defined
 
+# Install PVC automirror
+- include: automirror/main.yml
+  tags: pvc-automirror
+  when: pvc_automirror is defined
+
 # Install CPU tuning
 - include: cputuning/main.yml
   tags: pvc-cputuning

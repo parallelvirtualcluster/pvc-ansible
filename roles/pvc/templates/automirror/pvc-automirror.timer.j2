@@ -1,0 +1,9 @@
+[Unit]
+Description=[Timer] PVC VM automirror
+
+[Timer]
+Unit=pvc-automirror.service
+OnCalendar={{ pvc_automirror.schedule.time }}
+
+[Install]
+WantedBy=pvc.target

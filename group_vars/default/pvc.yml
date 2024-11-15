@@ -300,6 +300,88 @@ pvc_autobackup:
       # This example shows an fusermount3 unmount (e.g. for SSHFS) leveraging the backup_root_path variable
       # - "/usr/bin/fusermount3 -u {backup_root_path}"
 
+# PVC VM automirrors
+# > PVC supports automirrors, which can perform automatic snapshot-level VM mirrors of selected
+#   virtual machines based on tags. The mirrors are fully managed on a consistent schedule, and
+#   include both full and incremental varieties.
+# > To solve the shared storage issue and ensure mirrors are taken off-cluster, automaticmounting
+#   of remote filesystems is supported by automirror.
+pvc_automirror:
+  # Enable or disable automirror
+  # > If disabled, no timers or "/etc/pvc/automirror.yaml" configuration will be installed, and any
+  #   existing timers or configuration will be REMOVED on each run (even if manually created).
+  # > Since automirror is an integrated PVC CLI feature, the command will always be available regardless
+  #   of this setting, but without this option enabled, the lack of a "/etc/pvc/automirror.yaml" will
+  #   prevent its use.
+  enabled: no
+  # List of possible remote clusters to mirror to
+  destinations:
+    # The name of the cluster, used in tags (e.g. 'automirror:cluster2')
+    cluster2:
+      # The destination address, either an IP or an FQDN the destination API is reachable at
+      address: pvc.cluster2.mydomain.tld
+      # The destination port (usually 7370)
+      port: 7370
+      # The API prefix (usually '/api/v1') without a trailing slash
+      prefix: "/api/v1"
+      # The API key of the destination
+      key: 00000000-0000-0000-0000-000000000000
+      # Whether or not to use SSL for the connection
+      ssl: yes
+      # Whether or not to verify SSL for the connection
+      verify_ssl: yes
+      # Storage pool for VMs on the destination
+      pool: vms
+  # The default destination to send to, for VMs tagged without an explicit cluster
+  # > This is required even if there is only one destination!
+  default_destination: cluster2
+  # Set the VM tag(s) which will be selected for automirror
+  # > Automirror selects VMs based on their tags. If a VM has a tag present in this list, it will be
+  #   selected for automirror at runtime; if not it will be ignored.
+  # > Usually, the tag "automirror" here is sufficient; the administrator should then add this tag
+  #   to any VM(s) they want to use automirrors. However, any tag may be specified to keep the tag list
+  #   cleaner and more focused, should the administrator choose to.
+  # > A cluster can be explicitly set by suffixing `:clustername` from the cluster list to the tag.
+  # > If a VM has multiple `:clustername` tags, it will be mirrored to all of them sequentially
+  #   using the same source snapshot.
+  tags:
+    - automirror
+  # Automirror scheduling
+  schedule:
+    # Mirrors are performed at regular intervals via a systemd timer
+    # > This default schedule performs a mirror every 4 hours starting at midnight
+    # > These options use a systemd timer date string; see "man systemd.time" for details
+    time:  "*-*-* 00/4:00:00"
+    # The retention count specifies how many mirrors should be kept, based on the destination count
+    # for a given VM and cluster pairing to prevent failed mirrors from being cleaned up on the source
+    # > Retention cleanup is run after each full mirror, and thus, that mirror is counted in this number
+    # > For example, a value of 7 means that there will always be at least 7 mirrors on the remote side.
+    #   When a new full mirror is taken, the oldest (i.e. 8rd) mirror is removed.
+    # > Thus, this schedule combined with this retention will ensure there's always 24 hours of mirrors.
+    retention: 7
+  # Set reporting options for automirrors
+  # NOTE: By default, pvc-ansible installs a local Postfix MTA and Postfix sendmail to send emails
+  # This may not be what you want! If you want an alternate sendmail MTA (e.g. msmtp) you must install it
+  # yourself in a custom role!
+  reporting:
+    # Enable or disable email reporting; if disabled ("no"), no reports are ever sent
+    enabled: no
+    # Email a report to these addresses; at least one MUST be specified if enabled
+    emails:
+      - myuser@domain.tld
+      - otheruser@domain.tld
+    # Email a report on the specified job results
+    # > These options are like this for clarity. Functionally, only "error" changes anything:
+    #   * If yes & yes, all results send a report.
+    #   * If yes & no, all results send a report.
+    #   * If no & yes, only errors send a report.
+    #   * If no & no, no reports are ever sent; functionally equivalent to setting enabled:no above.
+    report_on:
+      # Report on a successful job (all snapshots were sent successfully)
+      success: no
+      # Report on an error (at least one snapshot was not sent successfully)
+      error: yes
+
 # Configuration file networks
 # > Taken from base.yml's configuration; DO NOT MODIFY THIS SECTION.
 pvc_upstream_device: "{{ networks['upstream']['device'] }}"

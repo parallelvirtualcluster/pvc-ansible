@@ -1,0 +1,24 @@
+---
+
+- name: disable timer units
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: false
+  loop:
+    - pvc-automirror.timer
+  ignore_errors: yes
+
+- name: remove automirror configurations
+  file:
+    dest: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/systemd/system/pvc-automirror.timer
+    - /etc/systemd/system/pvc-automirror.service
+  register: systemd
+  ignore_errors: yes
+
+- name: reload systemd to apply changes
+  command: systemctl daemon-reload
+  when: systemd.changed

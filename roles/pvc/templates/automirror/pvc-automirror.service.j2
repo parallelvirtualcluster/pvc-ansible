@@ -1,0 +1,9 @@
+[Unit]
+Description=[Cron] PVC VM automirror
+
+[Service]
+Type=oneshot
+IgnoreSIGPIPE=false
+KillMode=process
+ExecCondition=/usr/bin/pvc --quiet node is-primary
+ExecStart=/usr/bin/pvc --quiet vm automirror --cron {% if pvc_automirror.reporting.enabled and (pvc_automirror.reporting.report_on.error or pvc_automirror.reporting.report_on.success) %}--email-report {{ pvc_automirror.reporting.emails|join(',') }}{% endif %} {% if pvc_automirror.reporting.enabled and (pvc_automirror.reporting.report_on.error and not pvc_automirror.reporting.report_on.success) %}--email-errors-only{% endif %}

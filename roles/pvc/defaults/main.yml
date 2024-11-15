@@ -91,6 +91,36 @@ pvc_autobackup:
       # Example: Unmount the {backup_root_path}
       # - "/usr/bin/umount {backup_root_path}"
 
+# PVC VM automirrors
+# This is uncommented but disabled so this is not installed by default; enable it in your per-cluster configs
+# Automirror allows the sending of VM snapshots automatically to an external cluster.
+# These values are default; ensure you modify them in your own group_vars to match your system!
+pvc_automirror:
+  enabled: no
+  destinations:
+    cluster2:
+      address: pvc.cluster2.mydomain.tld
+      port: 7370
+      prefix: "/api/v1"
+      key: 00000000-0000-0000-0000-000000000000
+      ssl: yes
+      verify_ssl: yes
+      pool: vms
+  default_destination: cluster2
+  tags:
+    - automirror
+  schedule:
+    time:  "*-*-* 00/4:00:00"
+    retention: 7
+  reporting:
+    enabled: no
+    emails:
+      - myuser@domain.tld
+      - otheruser@domain.tld
+    report_on:
+      success: no
+      error: yes
+
 # Coordinators & Nodes list
 pvc_nodes:
   - hostname: "pvc1"                # The full ansible inventory hostname of the node

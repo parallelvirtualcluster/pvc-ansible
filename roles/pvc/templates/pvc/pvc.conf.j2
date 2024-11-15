@@ -174,7 +174,7 @@ autobackup:
     full_interval: {{ pvc_autobackup.schedule.full_interval }}
     full_retention: {{ pvc_autobackup.schedule.full_retention }}
   auto_mount:
-    enabled: {{ pvc_autobackup.auto_mount.enabled }}
+    enabled: {{ 'yes' if pvc_autobackup.auto_mount.enabled else 'no' }}
     mount_cmds:
 {% for cmd in pvc_autobackup.auto_mount.mount_cmds %}
       - "{{ cmd }}"
@@ -183,6 +183,26 @@ autobackup:
 {% for cmd in pvc_autobackup.auto_mount.unmount_cmds %}
       - "{{ cmd }}"
 {% endfor %} 
+{% endif %}
+automirror:
+{% if pvc_automirror is defined and pvc_automirror.enabled is defined and pvc_automirror.enabled %}
+  destinations:
+{% for destination in pvc_automirror.destinations %}
+    {{ destination }}:
+      address: {{ pvc_automirror.destinations[destination].address }}
+      port: {{ pvc_automirror.destinations[destination].port }}
+      prefix: {{ pvc_automirror.destinations[destination].prefix }}
+      key: {{ pvc_automirror.destinations[destination].key }}
+      ssl: {{ 'yes' if pvc_automirror.destinations[destination].ssl else 'no' }}
+      verify_ssl: {{ 'yes' if pvc_automirror.destinations[destination].verify_ssl else 'no' }}
+      pool: {{ pvc_automirror.destinations[destination].pool }}
+{% endfor %}
+  default_destination: {{ pvc_automirror.default_destination }}
+  mirror_tags:
+{% for tag in pvc_automirror.tags %}
+    - {{ tag }}
+{% endfor %}
+  keep_snapshots: {{ pvc_automirror.schedule.retention }}
 {% endif %}
 
 # VIM modeline, requires "set modeline" in your VIMRC
