@@ -14,6 +14,9 @@ iface {{ network.value['device'] }} inet {{ network.value['mode']|default('manua
 {% if network.value['type'] == 'bond' %}
     bond-mode {{ network.value['bond_mode'] }}
     bond-slaves {{ network.value['bond_devices'] | join(' ') }}
+{% if network.value['bond_rate'] is defined %}
+    bond-lacp-rate {{ network.value['bond_rate'] }}
+{% endif %}
 {% endif %}
 {% if network.value['type'] == 'vlan' %}
     vlan_raw_device {{ network.value['raw_device'] }}

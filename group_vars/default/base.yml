@@ -179,6 +179,7 @@ networks:
     bond_devices:
       - enp1s0f0
       - enp1s0f1
+    bond_rate: slow  # for 802.3ad (LACP) only, set rate: fast/slow[default]
     mtu: 9000  # Forms a post-up ip link set $IFACE mtu statement; a high MTU is recommended for optimal backend network performance
   upstream:
     device: vlan1000
