@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# PVC cluster status check for Check_MK
+# PVC cluster status check for Check_MK (agent-side)
 # {{ ansible_managed }}
 
 echo "<<<pvc>>>"
-pvc cluster status --format json
+hostname -s
+pvc --quiet cluster status --format json
