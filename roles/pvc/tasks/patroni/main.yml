@@ -118,7 +118,7 @@
   with_items:
     - { src: "patroni/powerdns-schema.sql", dest: "/etc/postgresql/powerdns-schema.sql" }
 
-- include: patroni/bootstrap.yml
+- include_tasks: patroni/bootstrap.yml
   run_once: yes
   when: do_bootstrap is defined and do_bootstrap
 

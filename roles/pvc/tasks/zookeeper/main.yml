@@ -72,7 +72,7 @@
   with_items:
     - zookeeper
 
-- include: zookeeper/bootstrap.yml
+- include_tasks: zookeeper/bootstrap.yml
   when: do_bootstrap is defined and do_bootstrap
 
 - meta: flush_handlers

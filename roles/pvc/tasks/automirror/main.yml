@@ -1,7 +1,7 @@
 ---
 
-- include: enable.yml
+- include_tasks: enable.yml
   when: pvc_automirror.enabled
 
-- include: disable.yml
+- include_tasks: disable.yml
   when: not pvc_automirror.enabled

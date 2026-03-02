@@ -43,7 +43,7 @@
     dest: /etc/ceph
     state: directory
 
-- include: ceph/bootstrap.yml
+- include_tasks: ceph/bootstrap.yml
   when: do_bootstrap is defined and do_bootstrap
   run_once: yes
 

@@ -71,7 +71,7 @@
     dest: /usr/lib/check_mk_agent/plugins/pvc_status
     mode: 0755
 
-- include: pvc/bootstrap.yml
+- include_tasks: pvc/bootstrap.yml
   run_once: yes
   when: do_bootstrap is defined and do_bootstrap and is_coordinator
 

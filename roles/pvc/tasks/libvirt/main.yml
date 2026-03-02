@@ -47,7 +47,7 @@
     - ceph-secret.xml
   notify: restart libvirtd
 
-- include: libvirt/bootstrap.yml
+- include_tasks: libvirt/bootstrap.yml
   when: do_bootstrap is defined and do_bootstrap
   run_once: yes
 

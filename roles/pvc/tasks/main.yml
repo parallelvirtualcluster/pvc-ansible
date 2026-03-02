@@ -24,54 +24,54 @@
   when: newhost_check.changed
   tags: always
 
-- include: common/add_cluster_ips.yml
+- include_tasks: common/add_cluster_ips.yml
   when: newhost is defined and newhost
   tags: always
 
 # Install system tweaks
-- include: system/main.yml
+- include_tasks: system/main.yml
   tags: pvc-system
 
 # Install base databases (coordinators only)
-- include: ceph/main.yml
+- include_tasks: ceph/main.yml
   tags: pvc-ceph
   when: is_coordinator
 
-- include: zookeeper/main.yml
+- include_tasks: zookeeper/main.yml
   tags: pvc-zookeeper
   when: is_coordinator
 
-- include: patroni/main.yml
+- include_tasks: patroni/main.yml
   tags: pvc-patroni
   when: is_coordinator
 
-- include: keydb/main.yml
+- include_tasks: keydb/main.yml
   tags: pvc-keydb
   when: is_coordinator
 
 # Install core services
-- include: libvirt/main.yml
+- include_tasks: libvirt/main.yml
   tags: pvc-libvirt
 
-- include: frr/main.yml
+- include_tasks: frr/main.yml
   tags: pvc-frr
 
 # Install PVC daemon
-- include: pvc/main.yml
+- include_tasks: pvc/main.yml
   tags: pvc-daemon
 
 # Install PVC autobackup
-- include: autobackup/main.yml
+- include_tasks: autobackup/main.yml
   tags: pvc-autobackup
   when: pvc_autobackup is defined
 
 # Install PVC automirror
-- include: automirror/main.yml
+- include_tasks: automirror/main.yml
   tags: pvc-automirror
   when: pvc_automirror is defined
 
 # Install CPU tuning
-- include: cputuning/main.yml
+- include_tasks: cputuning/main.yml
   tags: pvc-cputuning
   when: debian_version|int >= 11 and cpu_tuning is defined
 

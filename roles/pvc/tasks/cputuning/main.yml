@@ -1,7 +1,7 @@
 ---
 
-- include: enable.yml
+- include_tasks: enable.yml
   when: cpu_tuning.enabled
 
-- include: disable.yml
+- include_tasks: disable.yml
   when: not cpu_tuning.enabled
